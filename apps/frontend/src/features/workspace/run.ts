@@ -16,7 +16,6 @@ export const NEW_RUN_PATH = LANDING;
 export const EMPTY_DRAFT: JobDraft = {
   text: "",
   sections: [SectionName.Summary, SectionName.Skills, SectionName.Experience],
-  intensity: Intensity.Balanced,
 };
 
 export function sessionPath(id: string): string {
@@ -44,7 +43,7 @@ export function createBody(
     resume_id: resumeId,
     jd_text: draft.text.trim(),
     sections: draft.sections,
-    intensity: draft.intensity,
+    intensity: Intensity.Bold,
     base_version_id: baseVersionId,
   };
 }
