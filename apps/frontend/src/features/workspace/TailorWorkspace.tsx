@@ -5,11 +5,13 @@ import { useRef } from "react";
 import { ErrorState } from "@/components/feedback/states";
 import { ViewMode } from "@/features/resume-canvas/view-model";
 import { useReview } from "@/features/review/store";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { useReviewKeys } from "@/features/review/useReviewKeys";
 import { AskComposer } from "./AskComposer";
 import { Intro } from "./Intro";
 import { JobComposer } from "./JobComposer";
 import { Paper } from "./Paper";
+import { ResizeHandle } from "./ResizeHandle";
 import { ReviewDock } from "./ReviewDock";
 import { Thread } from "./Thread";
 import { WorkspaceHeader } from "./WorkspaceHeader";
@@ -17,6 +19,7 @@ import { WorkspaceSkeleton } from "./WorkspaceSkeleton";
 import { draftFromRun, jobProblem } from "./run";
 import { useFollowCursor } from "./useFollowCursor";
 import { useJobDraft } from "./useJobDraft";
+import { useThreadWidth } from "./useThreadWidth";
 import { abandonRun, retryRun, startRun, useTailorSession } from "./useTailorSession";
 
 interface TailorWorkspaceProps {
@@ -30,7 +33,10 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
   const mode = useReview((s) => s.mode);
   const cursor = useReview((s) => s.cursor);
   const resume = useReview((s) => s.resume);
+  const jobTitle = useReview((s) => s.title);
+  usePageTitle(jobTitle || "New tailor");
   const paper = useRef<HTMLDivElement>(null);
+  const resizer = useThreadWidth();
 
   const started = status !== null;
   const composing = !session.sessionId && !started;
@@ -59,7 +65,8 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
         onFinalize={() => session.sessionId && session.finalize.mutate(session.sessionId)}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(380px,460px)_1fr] lg:grid-rows-[minmax(0,1fr)_auto]">
+      <div className="relative flex min-h-0 flex-1 flex-col [--thread-w:460px] lg:grid lg:grid-cols-[var(--thread-w)_1fr] lg:grid-rows-[minmax(0,1fr)_auto]">
+        <ResizeHandle resizer={resizer} />
         <div data-thread className="scroll-thin border-line lg:col-start-1 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto lg:border-r">
           <Thread
             intro={<Intro composing={composing} branching={!!baseVersionId} />}

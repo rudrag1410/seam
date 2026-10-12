@@ -266,7 +266,7 @@ export interface paths {
         get: operations["get_one_v1_tailor_sessions__session_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["remove_v1_tailor_sessions__session_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -378,7 +378,7 @@ export interface paths {
         get: operations["get_one_v1_versions__version_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["remove_v1_versions__version_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1660,6 +1660,33 @@ export interface operations {
             };
         };
     };
+    remove_v1_tailor_sessions__session_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     finalize_v1_tailor_sessions__session_id__finalize_post: {
         parameters: {
             query?: never;
@@ -1860,6 +1887,33 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["VersionDetail"];
                 };
+            };
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    remove_v1_versions__version_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                version_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             default: {
                 headers: {

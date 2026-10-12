@@ -10,17 +10,17 @@ function ResumeInUse() {
   const primary = usePrimaryResume();
   const [replacing, setReplacing] = useState(false);
 
-  if (primary.isPending) return <Skeleton className="h-[78px] rounded-[16px]" />;
+  if (primary.isPending) return <Skeleton className="h-[133px] rounded-[16px]" />;
   if (primary.data && !replacing) {
     return (
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <ResumeCard resume={primary.data} />
-        </div>
-        <Button variant="secondary" size="sm" onClick={() => setReplacing(true)}>
-          Replace
-        </Button>
-      </div>
+      <ResumeCard
+        resume={primary.data}
+        action={
+          <Button variant="secondary" size="sm" onClick={() => setReplacing(true)}>
+            Replace
+          </Button>
+        }
+      />
     );
   }
   return (

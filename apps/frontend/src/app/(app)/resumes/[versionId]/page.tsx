@@ -15,6 +15,7 @@ import { ScoreRing } from "@/features/scoring/ScoreRing";
 import { ExportPanel } from "@/features/versions/ExportPanel";
 import { InterviewPrepPanel } from "@/features/versions/InterviewPrepPanel";
 import { api, unwrap } from "@/lib/api";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { keys } from "@/lib/queries";
 
 enum Tab {
@@ -60,6 +61,7 @@ export default function VersionPage() {
     queryKey: keys.version(versionId),
     queryFn: () => unwrap(api.GET("/v1/versions/{version_id}", { params: { path: { version_id: versionId } } })),
   });
+  usePageTitle(q.data?.label);
   const view = useMemo(() => (q.data ? buildView(q.data.document, [], ViewMode.Original) : []), [q.data]);
 
   if (q.isError) return <div className="mx-auto max-w-xl p-8"><ErrorState error={q.error} onRetry={() => q.refetch()} /></div>;

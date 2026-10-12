@@ -46,6 +46,13 @@ def validate_upload(data: bytes, filename: str, settings: Settings) -> Validated
             pass
     detected = next((label for sig, label in _SIGNATURES.items() if data.startswith(sig)), None)
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "file"
+    if detected is None and ext in {"pdf", "docx"}:
+        raise AppError(
+            ErrorCode.FILE_TYPE_UNSUPPORTED,
+            f"That file doesn't look like a real {ext.upper()}.",
+            status=415,
+            hint="It may be damaged or renamed from another format. Export it again and upload the new copy.",
+        )
     raise AppError(
         ErrorCode.FILE_TYPE_UNSUPPORTED,
         f"That's {detected or f'a .{ext} file'}. Upload a PDF or DOCX.",

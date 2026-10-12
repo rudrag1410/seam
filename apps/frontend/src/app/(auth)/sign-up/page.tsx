@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { AuthForm, AuthMode } from "@/features/auth/AuthForm";
+import { AuthForm } from "@/features/auth/AuthForm";
+import { AuthMode } from "@/features/auth/mode";
 
 export const metadata: Metadata = { title: "Sign up" };
 

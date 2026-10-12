@@ -51,7 +51,7 @@ export function ActivityFeed({ limit = 20, filterable = true, paged = true }: Ac
       {q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} /> : q.isPending ? (
         <div className="space-y-3">{Array.from({ length: limit > 5 ? 8 : 5 }, (_, i) => <Skeleton key={i} className="h-[47px]" />)}</div>
       ) : items.length === 0 ? (
-        <EmptyState title="Nothing here yet" body="Uploads, reviews, exports and applications show up here as you go." />
+        <EmptyState title="Nothing here yet" body="Uploads, tailoring runs and exports show up here as you go." />
       ) : (
         <ul className="divide-y divide-line border-y border-line">
           {items.map((e) => {

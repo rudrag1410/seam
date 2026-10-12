@@ -5,6 +5,14 @@ const optionalNumber = z.preprocess(
   z.coerce.number().nonnegative("Enter a positive number").optional(),
 );
 
+const LINK_PATTERN = /^(https?:\/\/)?[^\s/.]+\.[^\s]{2,}$/i;
+
+const optionalLink = z
+  .string()
+  .trim()
+  .refine((v) => !v || LINK_PATTERN.test(v), "Enter a link, like linkedin.com/in/you")
+  .optional();
+
 export const aboutSchema = z.object({
   full_name: z.string().trim().min(1, "Enter your name"),
   phone: z.string().trim().optional(),
@@ -13,9 +21,9 @@ export const aboutSchema = z.object({
   current_title: z.string().trim().optional(),
   current_company: z.string().trim().optional(),
   years_experience: optionalNumber,
-  linkedin: z.string().trim().optional(),
-  github: z.string().trim().optional(),
-  portfolio: z.string().trim().optional(),
+  linkedin: optionalLink,
+  github: optionalLink,
+  portfolio: optionalLink,
 });
 export type AboutValues = z.infer<typeof aboutSchema>;
 

@@ -1,6 +1,7 @@
+import re
 from datetime import datetime
 
-from pydantic import EmailStr, Field
+from pydantic import EmailStr, Field, field_validator
 
 from app.schemas.base import ApiModel
 from app.schemas.enums import ActivityKind, EmploymentType, EntityType, Seniority, WorkMode
@@ -29,6 +30,9 @@ class UserOut(OrmModel):
     has_resume: bool
 
 
+LINK_PATTERN = re.compile(r"^(https?://)?[^\s/.]+\.\S{2,}$", re.IGNORECASE)
+
+
 class ProfileIO(ApiModel):
     full_name: str = ""
     phone: str | None = None
@@ -42,6 +46,14 @@ class ProfileIO(ApiModel):
     expected_ctc: float | None = None
     ctc_currency: str = "INR"
     notice_period_days: int | None = None
+
+    @field_validator("links")
+    @classmethod
+    def _links_are_urls(cls, links: dict[str, str]) -> dict[str, str]:
+        for name, value in links.items():
+            if not LINK_PATTERN.match(value.strip()):
+                raise ValueError(f"{name} must be a link, like linkedin.com/in/you")
+        return {name: value.strip() for name, value in links.items()}
 
 
 class PreferencesIO(ApiModel):

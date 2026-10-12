@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import Request
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.ops.apply_ops import apply_ops
@@ -15,6 +15,7 @@ from app.ai.scoring.ats import compute_ats
 from app.core.config import Settings
 from app.core.errors import AppError, ErrorCode, not_found
 from app.db.models import (
+    ActivityEvent,
     JobDescription,
     MasterResume,
     ResumeVersion,
@@ -363,6 +364,19 @@ async def list_sessions(db: AsyncSession, user: User, limit: int = 20) -> list[S
             )
         )
     return out
+
+
+async def delete_session(db: AsyncSession, session: TailorSession) -> None:
+    if session.status in (SessionStatus.QUEUED, SessionStatus.RUNNING):
+        raise AppError(
+            ErrorCode.SESSION_NOT_READY, "Wait for this run to finish before deleting it.", status=409
+        )
+    await db.execute(delete(Suggestion).where(Suggestion.session_id == session.id))
+    await db.execute(
+        update(ResumeVersion).where(ResumeVersion.session_id == session.id).values(session_id=None)
+    )
+    await db.execute(delete(ActivityEvent).where(ActivityEvent.entity_id == session.id))
+    await db.delete(session)
 
 
 async def apply_decisions(db: AsyncSession, session: TailorSession, body: DecisionsPatch) -> None:

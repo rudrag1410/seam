@@ -16,6 +16,7 @@ export interface JobDraft {
 }
 
 const tool = "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
+const toolShrink = "inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
 
 function jobReady(d: JobDraft): boolean {
   const n = d.text.trim().length;
@@ -85,9 +86,9 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
             {draft.byUrl ? "Paste text" : "Use a link"}
           </button>
           <Popover>
-            <PopoverTrigger className={tool} aria-label="What to tailor">
-              <SlidersHorizontal className="size-3.5" aria-hidden />
-              {draft.sections.length} {draft.sections.length === 1 ? "section" : "sections"} · {INTENSITY_LABEL[draft.intensity]}
+            <PopoverTrigger className={toolShrink} aria-label="What to tailor">
+              <SlidersHorizontal className="size-3.5 shrink-0" aria-hidden />
+              <span className="truncate">{draft.sections.length} {draft.sections.length === 1 ? "section" : "sections"} · {INTENSITY_LABEL[draft.intensity]}</span>
             </PopoverTrigger>
             <PopoverContent side="top" align="start" className="w-[min(420px,calc(100vw-32px))] p-5">
               <ScopePicker
@@ -98,9 +99,9 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
               />
             </PopoverContent>
           </Popover>
-          <span className="flex-1" />
+          <span className="min-w-0 flex-1" />
           {!draft.byUrl && n > 0 && (
-            <span className={cn("tabular mr-1 text-[12px] text-ink-muted", n > MAX_JD_CHARS && "text-del-line")}>
+            <span className={cn("tabular mr-1 hidden shrink-0 text-[12px] text-ink-muted sm:inline", n > MAX_JD_CHARS && "inline text-del-line")}>
               {n.toLocaleString()} / {MAX_JD_CHARS.toLocaleString()}
             </span>
           )}

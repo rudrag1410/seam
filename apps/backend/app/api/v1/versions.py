@@ -38,6 +38,13 @@ async def _analysis(db, version: ResumeVersion) -> JDAnalysis:
     return JDAnalysis.model_validate(jd.analysis)
 
 
+@router.delete("/{version_id}", status_code=204)
+async def remove(version_id: UUID, user: UserDep, db: DbDep) -> None:
+    version = await version_service.owned_version(db, user, version_id)
+    await version_service.delete_version(db, version)
+    await db.commit()
+
+
 @router.get("", response_model=list[VersionOut])
 async def list_versions(user: UserDep, db: DbDep) -> list[VersionOut]:
     rows = (

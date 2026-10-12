@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Activity" };
 export default function ActivityPage() {
   return (
     <PageBody>
-      <PageHeader title="Activity" body="Everything you've uploaded, reviewed, exported and applied to." />
+      <PageHeader title="Activity" body="Everything you've uploaded, tailored and exported." />
       <ActivityFeed />
     </PageBody>
   );

@@ -4641,6 +4641,40 @@
       }
     },
     "/v1/tailor-sessions/{session_id}": {
+      "delete": {
+        "operationId": "remove_v1_tailor_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
+          }
+        },
+        "summary": "Remove",
+        "tags": [
+          "tailor"
+        ]
+      },
       "get": {
         "operationId": "get_one_v1_tailor_sessions__session_id__get",
         "parameters": [
@@ -4984,6 +5018,40 @@
       }
     },
     "/v1/versions/{version_id}": {
+      "delete": {
+        "operationId": "remove_v1_versions__version_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
+          }
+        },
+        "summary": "Remove",
+        "tags": [
+          "versions"
+        ]
+      },
       "get": {
         "operationId": "get_one_v1_versions__version_id__get",
         "parameters": [

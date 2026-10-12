@@ -91,10 +91,10 @@ def compute_ats(document: dict, jd_keywords: list[str] | None = None) -> AtsScor
         ),
         AtsCheck(
             key="length",
-            label="Fits one to two pages",
+            label="Length of 250 to 1,000 words",
             weight=10,
             passed=250 <= words <= 1000,
-            hint="Aim for roughly 250 to 1,000 words.",
+            hint="Under 250 words reads thin; over 1,000 runs past two pages.",
         ),
         AtsCheck(
             key="bullets",

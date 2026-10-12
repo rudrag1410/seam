@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from app.ai.gateway.openai_client import LLM_UNAVAILABLE
 from app.schemas.enums import StreamEvent
@@ -53,6 +54,93 @@ def test_upload_errors_are_typed(authed):
         "/v1/resumes", files={"file": ("big.pdf", b"%PDF-" + b"0" * (6 * 1024 * 1024), "application/pdf")}
     )
     assert r.status_code == 413 and r.json()["error"]["code"] == "FILE_TOO_LARGE"
+
+
+def test_a_renamed_file_is_called_damaged_not_the_wrong_type(authed):
+    r = authed.post("/v1/resumes", files={"file": ("fake.pdf", b"this is not a pdf", "application/pdf")})
+    error = r.json()["error"]
+    assert r.status_code == 415 and error["code"] == "FILE_TYPE_UNSUPPORTED"
+    assert "doesn't look like a real PDF" in error["message"]
+
+
+def test_profile_links_must_be_links(authed):
+    bad = authed.put("/v1/me/profile", json={"full_name": "Aarav", "links": {"linkedin": "not a url"}})
+    assert bad.status_code == 422
+    ok = authed.put(
+        "/v1/me/profile", json={"full_name": "Aarav", "links": {"linkedin": " linkedin.com/in/aarav "}}
+    )
+    assert ok.status_code == 200 and ok.json()["links"] == {"linkedin": "linkedin.com/in/aarav"}
+
+
+def test_deleting_my_data_removes_the_account_and_every_file(authed, settings, resume_pdf, jd_text):
+    resume = _upload(authed, resume_pdf).json()
+    created = authed.post(
+        "/v1/tailor-sessions",
+        json={
+            "resume_id": resume["id"],
+            "jd_text": jd_text,
+            "sections": ["summary"],
+            "intensity": "balanced",
+        },
+    )
+    sid = created.json()["id"]
+    _sse(authed, f"/v1/tailor-sessions/{sid}/stream")
+    assert authed.post(f"/v1/tailor-sessions/{sid}/finalize").status_code == 200
+    stored = [p for p in Path(settings.local_storage_dir).rglob("*") if p.is_file()]
+    assert stored
+
+    assert authed.delete("/v1/me").status_code in (200, 204)
+
+    assert authed.get("/v1/me").status_code == 401
+    login = authed.post("/v1/auth/login", json={"email": "aarav@example.com", "password": "correct-horse"})
+    assert login.status_code == 401
+    assert [p for p in Path(settings.local_storage_dir).rglob("*") if p.is_file()] == []
+
+
+def test_a_finished_chat_can_be_deleted_but_its_version_is_kept(authed, resume_pdf, jd_text):
+    resume = _upload(authed, resume_pdf).json()
+    body = {"resume_id": resume["id"], "jd_text": jd_text, "sections": ["summary"], "intensity": "balanced"}
+    sid = authed.post("/v1/tailor-sessions", json=body).json()["id"]
+    _sse(authed, f"/v1/tailor-sessions/{sid}/stream")
+    version = authed.post(f"/v1/tailor-sessions/{sid}/finalize").json()["version_id"]
+
+    assert authed.delete(f"/v1/tailor-sessions/{sid}").status_code == 204
+    assert authed.get(f"/v1/tailor-sessions/{sid}").status_code == 404
+    assert authed.delete(f"/v1/tailor-sessions/{sid}").status_code == 404
+    assert all(item["id"] != sid for item in authed.get("/v1/tailor-sessions").json())
+    assert authed.get(f"/v1/versions/{version}").status_code == 200
+
+
+def test_a_version_can_be_deleted_with_its_letters_without_breaking_its_branches(authed, resume_pdf, jd_text):
+    resume = _upload(authed, resume_pdf).json()
+    body = {"resume_id": resume["id"], "jd_text": jd_text, "sections": ["summary"], "intensity": "balanced"}
+    sid = authed.post("/v1/tailor-sessions", json=body).json()["id"]
+    _sse(authed, f"/v1/tailor-sessions/{sid}/stream")
+    first = authed.post(f"/v1/tailor-sessions/{sid}/finalize").json()["version_id"]
+    branch = authed.post("/v1/tailor-sessions", json={**body, "base_version_id": first}).json()["id"]
+    _sse(authed, f"/v1/tailor-sessions/{branch}/stream")
+    second = authed.post(f"/v1/tailor-sessions/{branch}/finalize").json()["version_id"]
+
+    assert authed.delete(f"/v1/versions/{first}").status_code == 204
+    assert authed.get(f"/v1/versions/{first}").status_code == 404
+    kept = authed.get(f"/v1/versions/{second}")
+    assert kept.status_code == 200
+    assert [v["id"] for v in authed.get("/v1/versions").json()] == [second]
+
+
+def test_another_users_chat_cannot_be_deleted(client, resume_pdf, jd_text):
+    client.post(
+        "/v1/auth/signup", json={"email": "a@example.com", "password": "correct-horse", "full_name": "A"}
+    )
+    resume = _upload(client, resume_pdf).json()
+    body = {"resume_id": resume["id"], "jd_text": jd_text, "sections": ["summary"], "intensity": "balanced"}
+    sid = client.post("/v1/tailor-sessions", json=body).json()["id"]
+    _sse(client, f"/v1/tailor-sessions/{sid}/stream")
+    client.post("/v1/auth/logout")
+    client.post(
+        "/v1/auth/signup", json={"email": "b@example.com", "password": "correct-horse", "full_name": "B"}
+    )
+    assert client.delete(f"/v1/tailor-sessions/{sid}").status_code == 404
 
 
 def test_jd_validation(authed, resume_pdf):

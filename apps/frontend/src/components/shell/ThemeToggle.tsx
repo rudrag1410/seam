@@ -3,7 +3,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export enum Theme {
+enum Theme {
   Light = "light",
   Dark = "dark",
 }

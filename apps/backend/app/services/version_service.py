@@ -1,11 +1,12 @@
 from enum import StrEnum
 from uuid import UUID
 
+from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.scoring.ats import compute_ats
 from app.core.errors import AppError, ErrorCode, not_found
-from app.db.models import JobDescription, ResumeVersion, TailorSession, User
+from app.db.models import ActivityEvent, CoverLetter, JobDescription, ResumeVersion, TailorSession, User
 from app.export.docx import render_docx
 from app.export.pdf import render_pdf
 from app.export.txt import render_txt
@@ -41,6 +42,20 @@ async def owned_version(db: AsyncSession, user: User, version_id: UUID) -> Resum
     if row is None or row.user_id != user.id:
         raise not_found("Version")
     return row
+
+
+async def delete_version(db: AsyncSession, version: ResumeVersion) -> None:
+    await db.execute(delete(CoverLetter).where(CoverLetter.version_id == version.id))
+    await db.execute(
+        update(ResumeVersion)
+        .where(ResumeVersion.parent_version_id == version.id)
+        .values(parent_version_id=None)
+    )
+    await db.execute(
+        update(TailorSession).where(TailorSession.base_version_id == version.id).values(base_version_id=None)
+    )
+    await db.execute(delete(ActivityEvent).where(ActivityEvent.entity_id == version.id))
+    await db.delete(version)
 
 
 def version_out(v: ResumeVersion) -> VersionOut:

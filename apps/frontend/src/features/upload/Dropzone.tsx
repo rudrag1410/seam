@@ -2,7 +2,8 @@
 
 import { Badge, cn } from "@seam/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileText, Loader2, UploadCloud } from "lucide-react";
+import { Loader2, UploadCloud } from "lucide-react";
+import type { ReactNode } from "react";
 import { useDropzone } from "react-dropzone";
 import { ErrorState } from "@/components/feedback/states";
 import { API_URL } from "@/lib/env";
@@ -54,29 +55,52 @@ function summarize(resume: ResumeOut) {
 
 interface ResumeCardProps {
   resume: ResumeOut;
+  action?: ReactNode;
 }
 
-export function ResumeCard({ resume }: ResumeCardProps) {
-  const s = summarize(resume);
+function fileLabel(filename: string | null | undefined): string {
+  return (filename?.split(".").pop() ?? "file").slice(0, 4).toUpperCase();
+}
+
+interface StatProps {
+  value: number;
+  noun: string;
+}
+
+function Stat({ value, noun }: StatProps) {
   return (
-    <div className="flex min-h-[78px] items-center gap-4 rounded-[16px] border border-line bg-panel p-4">
-      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-cream">
-        <FileText className="size-5" aria-hidden />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{resume.filename ?? "Resume"}</p>
-        <p className="text-[13px] text-ink-muted">
-          {resume.size_bytes != null && formatBytes(resume.size_bytes)}
-          {resume.page_count != null && ` · ${plural(resume.page_count, "page")}`}
-          {` · ${plural(s.roles, "role")}, ${plural(s.bullets, "bullet")}, ${plural(s.skills, "skill")} found`}
-        </p>
+    <span className="tabular rounded-full bg-cream px-2.5 py-1 text-[12px] text-ink-soft">
+      <span className="font-medium text-ink">{value}</span> {value === 1 ? noun : `${noun}s`}
+    </span>
+  );
+}
+
+export function ResumeCard({ resume, action }: ResumeCardProps) {
+  const s = summarize(resume);
+  const meta = [resume.size_bytes != null && formatBytes(resume.size_bytes), resume.page_count != null && plural(resume.page_count, "page")].filter(Boolean);
+  return (
+    <div className="rounded-[16px] border border-line bg-panel p-4">
+      <div className="flex items-center gap-3.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-cream text-[11px] font-semibold tracking-wide text-ink-soft">
+          {fileLabel(resume.filename)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-medium">{resume.filename ?? "Resume"}</p>
+          <p className="text-[13px] text-ink-muted">{meta.join(" · ")}</p>
+        </div>
+        {action}
       </div>
-      {resume.parse_path === ParsePath.Vision && <Badge tone="yellow">Read as image</Badge>}
-      {resume.parse_path === ParsePath.Basic && (
-        <Badge tone="yellow" title="Read without AI. Check the details look right.">
-          Basic read
-        </Badge>
-      )}
+      <div className="mt-3.5 flex flex-wrap items-center gap-1.5 border-t border-line pt-3.5">
+        <Stat value={s.roles} noun="role" />
+        <Stat value={s.bullets} noun="bullet" />
+        <Stat value={s.skills} noun="skill" />
+        {resume.parse_path === ParsePath.Vision && <Badge tone="yellow">Read as image</Badge>}
+        {resume.parse_path === ParsePath.Basic && (
+          <Badge tone="yellow" title="Read without AI. Check the details look right.">
+            Basic read
+          </Badge>
+        )}
+      </div>
     </div>
   );
 }

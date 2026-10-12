@@ -1,10 +1,12 @@
 "use client";
 
+import { ApiException } from "@seam/api-client";
 import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import { markAppReady } from "@/lib/ready";
 import { useMe } from "@/lib/queries";
+import { ErrorState } from "../feedback/states";
 import { Logo } from "../brand";
 import { CommandPalette } from "./CommandPalette";
 import { ShellSkeleton } from "./ShellSkeleton";
@@ -13,6 +15,28 @@ import { LANDING } from "@/lib/routes";
 
 interface AppShellProps {
   children: ReactNode;
+}
+
+const UNAUTHORIZED_STATUS = 401;
+
+interface ShellErrorProps {
+  error: unknown;
+  onRetry: () => void;
+}
+
+function ShellError({ error, onRetry }: ShellErrorProps) {
+  return (
+    <div className="grid min-h-dvh place-items-center px-4">
+      <div className="w-full max-w-md space-y-6">
+        <Logo href={LANDING} />
+        <ErrorState error={error} onRetry={onRetry} />
+      </div>
+    </div>
+  );
+}
+
+function isSessionEnded(error: unknown): boolean {
+  return error instanceof ApiException && error.status === UNAUTHORIZED_STATUS;
 }
 
 export function AppShell({ children }: AppShellProps) {
@@ -30,6 +54,7 @@ export function AppShell({ children }: AppShellProps) {
     if (me.data || me.isError) markAppReady();
   }, [me.data, me.isError]);
 
+  if (!me.data && me.isError && !isSessionEnded(me.error)) return <ShellError error={me.error} onRetry={() => me.refetch()} />;
   if (!me.data?.onboarded) return <ShellSkeleton />;
 
   return (

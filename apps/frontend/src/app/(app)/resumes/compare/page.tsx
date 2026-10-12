@@ -76,7 +76,7 @@ function Compare() {
       </div>
 
       <section className="mb-10">
-        <h2 className="mb-3 text-[11px] font-medium tracking-[0.08em] text-ink-muted uppercase">{d.changes.length} changes from A to B</h2>
+        <h2 className="mb-3 text-[11px] font-medium tracking-[0.08em] text-ink-muted uppercase">{d.changes.length} {d.changes.length === 1 ? "change" : "changes"} from A to B</h2>
         {d.changes.length === 0 ? <p className="text-ink-muted">These versions are identical.</p> : (
           <ul className="divide-y divide-line border-y border-line">
             {d.changes.map((c) => (

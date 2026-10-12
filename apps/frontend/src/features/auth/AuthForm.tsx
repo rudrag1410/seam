@@ -12,6 +12,7 @@ import { ErrorState } from "@/components/feedback/states";
 import { api, unwrap } from "@/lib/api";
 import { keys } from "@/lib/queries";
 import { LANDING } from "@/lib/routes";
+import { AuthMode } from "./mode";
 
 const schema = z.object({
   full_name: z.string().trim().min(1, "Enter your name").optional(),
@@ -22,11 +23,6 @@ type Values = z.infer<typeof schema>;
 
 const SIGN_IN = "/sign-in";
 const SIGN_UP = "/sign-up";
-
-export enum AuthMode {
-  SignIn = "sign-in",
-  SignUp = "sign-up",
-}
 
 function authenticate(mode: AuthMode, v: Values) {
   return mode === AuthMode.SignUp

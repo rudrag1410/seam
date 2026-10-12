@@ -146,6 +146,9 @@ export function ReviewDock() {
         <EditBox key={s.id} suggestion={s} />
       ) : (
         <>
+          {suggestedText(s) && (
+            <p className="mt-2 line-clamp-4 rounded-[10px] bg-ins px-3 py-2 leading-relaxed lg:hidden">{suggestedText(s)}</p>
+          )}
           {s.rationale && <p className="mt-2 leading-relaxed text-ink-soft">{s.rationale}</p>}
           {reqs.length > 0 && (
             <p className="mt-2 line-clamp-2 hidden text-[12px] leading-snug sm:[display:-webkit-box]">

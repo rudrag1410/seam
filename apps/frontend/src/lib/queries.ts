@@ -13,7 +13,7 @@ export const keys = {
   versions: ["versions"] as const,
   version: (id: string) => ["version", id] as const,
   activity: (type?: string) => ["activity", type ?? "all"] as const,
-  recent: ["activity", "recent"] as const,
+  recent: ["sessions", "recent"] as const,
 };
 
 export const useMe = () =>
@@ -21,7 +21,8 @@ export const useMe = () =>
     retry: false,
     staleTime: 30_000,
     refetchOnWindowFocus: true,
-    refetchInterval: 5 * 60_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: true,
   });
 
 export const useProfile = () =>

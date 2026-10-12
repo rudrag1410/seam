@@ -53,6 +53,13 @@ async def list_all(user: UserDep, db: DbDep, limit: int = 20) -> list[SessionLis
     return await tailor_service.list_sessions(db, user, min(limit, 50))
 
 
+@router.delete("/{session_id}", status_code=204)
+async def remove(session_id: UUID, user: UserDep, db: DbDep) -> None:
+    session = await tailor_service.owned_session(db, user, session_id)
+    await tailor_service.delete_session(db, session)
+    await db.commit()
+
+
 @router.get("/{session_id}", response_model=TailorSessionOut)
 async def get_one(session_id: UUID, user: UserDep, db: DbDep, settings: SettingsDep) -> TailorSessionOut:
     session = await tailor_service.owned_session(db, user, session_id)

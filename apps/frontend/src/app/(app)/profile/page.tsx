@@ -46,10 +46,7 @@ export default function ProfilePage() {
       <PageHeader title="Profile" />
       <Section title="Master resume" body="Every tailored resume is a view of this one.">
         {resume.data && !replacing ? (
-          <div className="flex items-center gap-3">
-            <div className="min-w-0 flex-1"><ResumeCard resume={resume.data} /></div>
-            <Button variant="secondary" size="sm" onClick={() => setReplacing(true)}>Replace</Button>
-          </div>
+          <ResumeCard resume={resume.data} action={<Button variant="secondary" size="sm" onClick={() => setReplacing(true)}>Replace</Button>} />
         ) : (
           <Dropzone compact onUploaded={() => { setReplacing(false); toast.success("Resume updated"); }} />
         )}

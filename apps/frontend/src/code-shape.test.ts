@@ -72,6 +72,17 @@ function commentsIn(path: string): string[] {
   return scan.found;
 }
 
+const CLIENT_DIRECTIVE = /^\s*["']use client["']/;
+
+function clientEnums(path: string): string[] {
+  const text = readFileSync(path, "utf8");
+  if (!CLIENT_DIRECTIVE.test(text)) return [];
+  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, path.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  return source.statements
+    .filter((node): node is ts.EnumDeclaration => ts.isEnumDeclaration(node) && !!node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword))
+    .map((node) => `${relative(REPO, path)} exports enum ${node.name.text}`);
+}
+
 describe("code shape", () => {
   it("has no comments", () => {
     const problems = ROOTS.flatMap((root) => sourceFiles(join(REPO, root))).flatMap(commentsIn);
@@ -80,6 +91,11 @@ describe("code shape", () => {
 
   it("declares no function or component inside another function", () => {
     const problems = ROOTS.flatMap((root) => sourceFiles(join(REPO, root))).flatMap(nestedDeclarations);
+    expect(problems).toEqual([]);
+  });
+
+  it("exports no enum from a use-client file", () => {
+    const problems = sourceFiles(join(REPO, "apps/frontend/src")).flatMap(clientEnums);
     expect(problems).toEqual([]);
   });
 });
