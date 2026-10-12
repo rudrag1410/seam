@@ -59,7 +59,7 @@ export function AppShell({ children }: AppShellProps) {
   if (!me.data?.onboarded) return <ShellSkeleton />;
 
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[264px_1fr]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[232px_1fr]">
       <aside className="sticky top-0 hidden h-dvh border-r border-line bg-panel lg:block">
         <Sidebar name={me.data.full_name} />
       </aside>
