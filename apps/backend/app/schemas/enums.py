@@ -1,8 +1,3 @@
-"""Every closed set of values the API speaks, in one place.
-
-These are string enums, so they compare equal to their values, serialise as plain strings, and
-reach the generated TypeScript client as real enums. Use the members, never the bare strings."""
-
 from enum import StrEnum
 from typing import Any
 
@@ -16,10 +11,6 @@ def _pascal(name: str) -> str:
 
 
 class ApiEnum(StrEnum):
-    """A string enum that reaches the generated TypeScript client as a real `enum`, with members in
-    PascalCase (`Decision.Pending`). The OpenAPI document carries the member names in the
-    `x-enum-varnames` extension, which the client generator reads."""
-
     @classmethod
     def __get_pydantic_json_schema__(
         cls, schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
@@ -38,7 +29,6 @@ class SessionStatus(ApiEnum):
     FINALIZED = "finalized"
 
 
-ACTIVE_STATUSES = frozenset({SessionStatus.QUEUED, SessionStatus.RUNNING})
 REVIEWABLE_STATUSES = frozenset({SessionStatus.READY, SessionStatus.FINALIZED})
 
 
@@ -67,8 +57,6 @@ SKILL_OPS = frozenset({OpName.ADD_SKILL, OpName.REMOVE_SKILL})
 
 
 class SectionName(ApiEnum):
-    """The sections a user can ask to have tailored."""
-
     SUMMARY = "summary"
     SKILLS = "skills"
     EXPERIENCE = "experience"
@@ -76,8 +64,6 @@ class SectionName(ApiEnum):
 
 
 class SectionType(StrEnum):
-    """Every kind of section a resume can hold."""
-
     SUMMARY = "summary"
     SKILLS = "skills"
     EXPERIENCE = "experience"
@@ -93,8 +79,6 @@ class Intensity(ApiEnum):
 
 
 class StreamEvent(ApiEnum):
-    """The events a tailoring run publishes, in the order they first appear."""
-
     STAGE = "stage"
     JD = "jd"
     SCORE = "score"
@@ -183,8 +167,6 @@ class LetterLength(ApiEnum):
 
 
 class Verdict(ApiEnum):
-    """How well the resume shows a requirement."""
-
     DEMONSTRATED = "demonstrated"
     LISTED = "listed"
     MISSING = "missing"
@@ -192,8 +174,6 @@ class Verdict(ApiEnum):
 
 
 class BlockKind(StrEnum):
-    """The kinds of line an exported resume is made of."""
-
     NAME = "name"
     CONTACT = "contact"
     HEADING = "heading"
@@ -214,24 +194,18 @@ class ExportTemplate(ApiEnum):
 
 
 class Facet(StrEnum):
-    """The parts of a job posting that are read as a fixed choice."""
-
     WORK_MODE = "work_mode"
     EMPLOYMENT_TYPE = "employment_type"
     SENIORITY = "seniority"
 
 
 class DocumentKind(StrEnum):
-    """What a pasted block of text turned out to be."""
-
     JOB_DESCRIPTION = "job_description"
     RESUME = "resume"
     OTHER = "other"
 
 
 class ActivityGroup(ApiEnum):
-    """The first part of an activity kind, for filtering the feed ("resume" matches "resume.uploaded")."""
-
     RESUME = "resume"
     JD = "jd"
     TAILOR = "tailor"
@@ -242,8 +216,6 @@ class ActivityGroup(ApiEnum):
 
 
 class ActivityKind(ApiEnum):
-    """What an entry in the activity feed records."""
-
     RESUME_UPLOADED = "resume.uploaded"
     JD_ANALYZED = "jd.analyzed"
     TAILOR_COMPLETED = "tailor.completed"
@@ -258,8 +230,6 @@ class ActivityKind(ApiEnum):
 
 
 class EntityType(ApiEnum):
-    """The kind of thing an activity entry points at."""
-
     SESSION = "session"
     VERSION = "version"
     RESUME = "resume"
@@ -267,15 +237,11 @@ class EntityType(ApiEnum):
 
 
 class ParsePath(ApiEnum):
-    """How a resume was read: its text, its page images, or the built-in parser without AI."""
-
     TEXT = "text"
     VISION = "vision"
     BASIC = "basic"
 
 
 class FileKind(StrEnum):
-    """The kinds of resume file that can be uploaded."""
-
     PDF = "pdf"
     DOCX = "docx"

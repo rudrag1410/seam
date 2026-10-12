@@ -4,7 +4,6 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../cn";
 
-/** The list with one more tag, unless it is blank or already there (ignoring case). */
 function withTag(tags: string[], raw: string): string[] {
   const tag = raw.trim().replace(/,$/, "");
   return tag && !tags.some((x) => x.toLowerCase() === tag.toLowerCase()) ? [...tags, tag] : tags;
@@ -18,7 +17,6 @@ interface TagInputProps {
   id?: string;
 }
 
-/** Free-text multi-value input. Enter or comma adds a chip; Backspace on empty removes the last. */
 export function TagInput({
   value,
   onChange,
@@ -80,7 +78,6 @@ interface ChipSelectProps<T extends string> {
   single?: boolean;
 }
 
-/** Pick any number of options, shown as pills. */
 export function ChipSelect<T extends string>({
   value,
   onChange,

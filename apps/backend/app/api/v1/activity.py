@@ -21,7 +21,6 @@ async def feed(
     if cursor:
         q = q.where(ActivityEvent.id < cursor)
     if type:
-        # the stored value is an enum column, so compare it as the plain text it is
         q = q.where(type_coerce(ActivityEvent.type, String).like(f"{type.value}.%"))
     rows = (await db.scalars(q.limit(limit + 1))).all()
     page, more = rows[:limit], len(rows) > limit

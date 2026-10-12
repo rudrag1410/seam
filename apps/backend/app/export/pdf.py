@@ -45,7 +45,6 @@ def _styles(template: ExportTemplate) -> dict[str, ParagraphStyle]:
 
 
 def _flush_bullets(story: list, bullets: list[Block], style: ParagraphStyle) -> None:
-    """Moves the bullets collected so far into the story as one list, and empties the buffer."""
     if not bullets:
         return
     story.append(

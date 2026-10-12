@@ -1,5 +1,3 @@
-"""What the structuring step returns. Ids are assigned by code afterwards, never by the model."""
-
 from pydantic import Field
 
 from app.schemas.base import ApiModel

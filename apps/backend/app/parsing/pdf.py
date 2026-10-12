@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-import pymupdf as fitz  # PyMuPDF
+import pymupdf as fitz
 
 from app.core.config import Settings
 from app.core.errors import AppError, ErrorCode
@@ -10,8 +10,7 @@ from app.core.errors import AppError, ErrorCode
 class ExtractedDocument:
     text: str
     page_count: int
-    pages_text: list[str]
-    links: list[str] = field(default_factory=list)  # hyperlink targets (LinkedIn/GitHub are often just words)
+    links: list[str] = field(default_factory=list)
 
 
 def extract_pdf(data: bytes, settings: Settings) -> ExtractedDocument:
@@ -40,11 +39,10 @@ def extract_pdf(data: bytes, settings: Settings) -> ExtractedDocument:
             for link in page.get_links()
             if str(link.get("uri", "")).startswith(("http://", "https://"))
         ]
-    return ExtractedDocument("\n".join(pages).strip(), len(pages), pages, links)
+    return ExtractedDocument("\n".join(pages).strip(), len(pages), links)
 
 
 def render_pages(data: bytes, settings: Settings, zoom: float = 1.6) -> list[bytes]:
-    """PNG renders of each page, for the vision path."""
     with fitz.open(stream=data, filetype="pdf") as doc:
         return [
             page.get_pixmap(matrix=fitz.Matrix(zoom, zoom)).tobytes("png")

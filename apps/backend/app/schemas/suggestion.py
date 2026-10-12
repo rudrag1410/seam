@@ -5,8 +5,6 @@ from app.schemas.enums import Decision, OpName, SectionName
 
 
 class ModelSuggestion(ApiModel):
-    """The strict contract the generator must follow. Anything else is dropped."""
-
     op: OpName
     target: str
     after: str | None = None

@@ -36,8 +36,6 @@ class Timer:
 
 
 class DbRecorder:
-    """Writes one row per model call. Callable, so it satisfies `Recorder`."""
-
     def __init__(self, maker: async_sessionmaker[AsyncSession]) -> None:
         self._maker = maker
 
@@ -49,7 +47,7 @@ class DbRecorder:
             async with self._maker() as db:
                 db.add(ModelCall(**rec.__dict__))
                 await db.commit()
-        except Exception:  # observability must never break a request
+        except Exception:
             log.exception("failed to record model call")
 
 

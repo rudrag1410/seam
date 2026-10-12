@@ -1,7 +1,5 @@
-"""Every enum meant for the browser must reach the generated client, or the frontend can't use it."""
-
 from app.main import create_app
-from app.schemas import enums, stream  # noqa: F401  (importing registers every subclass)
+from app.schemas import enums, stream
 from app.schemas.enums import ApiEnum
 
 
@@ -14,7 +12,7 @@ def _all_subclasses(base: type) -> set[type]:
 
 
 def test_every_api_enum_is_in_the_openapi_document():
-    from app.core import errors  # noqa: F401  (ErrorCode lives beside AppError)
+    from app.core import errors
 
     schemas = create_app().openapi()["components"]["schemas"]
     missing = sorted(e.__name__ for e in _all_subclasses(ApiEnum) if e.__name__ not in schemas)

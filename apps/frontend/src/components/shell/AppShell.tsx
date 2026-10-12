@@ -23,11 +23,9 @@ export function AppShell({ children }: AppShellProps) {
 
   useEffect(() => setDrawer(false), [path]);
   useEffect(() => {
-    // expired sessions are handled globally (lib/session.ts); only onboarding is decided here
     if (me.data && !me.data.onboarded) router.replace("/onboarding/resume");
   }, [me.data, router]);
 
-  // first data (or a definitive failure) is in: let the splash lift
   useEffect(() => {
     if (me.data || me.isError) markAppReady();
   }, [me.data, me.isError]);

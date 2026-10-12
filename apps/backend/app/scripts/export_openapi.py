@@ -1,5 +1,3 @@
-"""Write the OpenAPI schema to a file without starting a server: `python -m app.scripts.export_openapi openapi.json`."""
-
 import json
 import sys
 from pathlib import Path

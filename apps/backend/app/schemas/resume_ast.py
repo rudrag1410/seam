@@ -1,9 +1,3 @@
-"""Resume AST. Every node has a stable id so the model can reference nodes instead of rewriting
-the whole document. Mirrored by `packages/resume-core/src/ast.ts`.
-
-The `type` tags stay plain literals, not `SectionType` members, so that the generated TypeScript
-union narrows on them. `SectionType` has the same values for use in code."""
-
 from typing import Annotated, Literal
 
 from pydantic import Field
@@ -98,8 +92,6 @@ Section = Annotated[
     SummarySection | SkillsSection | ExperienceSection | ProjectsSection | EducationSection | OtherSection,
     Field(discriminator="type"),
 ]
-
-TAILORABLE_SECTIONS = ("summary", "skills", "experience", "projects")
 
 
 class Resume(ApiModel):

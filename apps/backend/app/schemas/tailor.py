@@ -16,8 +16,6 @@ def _default_sections() -> list[SectionName]:
 
 
 class TailorCreate(ApiModel):
-    """Start a session from the job description text (or a link to it), or from one already analysed."""
-
     resume_id: str
     jd_text: str | None = None
     jd_url: str | None = None

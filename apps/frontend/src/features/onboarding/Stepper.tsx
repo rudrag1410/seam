@@ -2,8 +2,6 @@ import { cn } from "@seam/ui";
 import { Check } from "lucide-react";
 import { type OnboardingStep, STEPS } from "./steps";
 
-/** One row at every width: numbered circles, with only the current step's label spelled out.
- *  The connectors stretch to fill whatever space is left. */
 interface StepperProps {
   current: OnboardingStep;
 }

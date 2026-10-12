@@ -22,7 +22,6 @@ const FILTERS = [
   { value: FeedFilter.Reviews, label: "Reviews" },
 ];
 
-/** The group of events each filter narrows the feed to; none for "All". */
 const GROUP_OF: Record<FeedFilter, ActivityGroup | undefined> = {
   [FeedFilter.All]: undefined,
   [FeedFilter.Resumes]: ActivityGroup.Resume,
@@ -50,7 +49,7 @@ export function ActivityFeed({ limit = 20, filterable = true, paged = true }: Ac
     <div>
       {filterable && <Segmented size="sm" className="mb-6" aria-label="Filter activity" value={filter} onChange={setFilter} options={FILTERS} />}
       {q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} /> : q.isPending ? (
-        <div className="space-y-3">{Array.from({ length: limit > 5 ? 8 : 5 }, (_, i) => <Skeleton key={i} className="h-[46px]" />)}</div>
+        <div className="space-y-3">{Array.from({ length: limit > 5 ? 8 : 5 }, (_, i) => <Skeleton key={i} className="h-[47px]" />)}</div>
       ) : items.length === 0 ? (
         <EmptyState title="Nothing here yet" body="Uploads, reviews, exports and applications show up here as you go." />
       ) : (

@@ -10,7 +10,6 @@ import { PageBody, PageHeader } from "@/components/shell/PageHeader";
 import { timeAgo } from "@/lib/format";
 import { useVersions } from "@/lib/queries";
 
-/** At most two versions can be picked for a comparison; picking a third drops the oldest. */
 function togglePick(picked: string[], id: string, on: boolean): string[] {
   return on ? [...picked, id].slice(-2) : picked.filter((x) => x !== id);
 }
@@ -35,7 +34,7 @@ export default function Versions() {
         }
       />
       {error ? <ErrorState error={error} onRetry={() => refetch()} /> : isPending ? (
-        <div className="space-y-3">{Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-[72px]" />)}</div>
+        <div className="space-y-3">{Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-[75px]" />)}</div>
       ) : data.length === 0 ? (
         <EmptyState title="No versions yet" body="Review a tailored resume and finalize it to save your first version."
           action={<Link href="/tailor/new" className={buttonClass("primary", "md")}>Start tailoring</Link>} />

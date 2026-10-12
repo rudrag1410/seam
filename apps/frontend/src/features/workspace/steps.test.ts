@@ -33,7 +33,6 @@ describe("buildSteps", () => {
         suggestions: [sug("a", SectionName.Summary), sug("b", SectionName.Experience)],
       }),
     );
-    // skills was asked for but the resume has no skills section, so it isn't listed
     expect(steps[2]!.parts!.map((p) => [p.key, p.state, p.count])).toEqual([
       [SectionName.Summary, StepState.Done, 1],
       [SectionName.Experience, StepState.Running, 1],

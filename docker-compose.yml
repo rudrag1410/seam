@@ -1,5 +1,3 @@
-# Optional: run Postgres locally instead of the default SQLite.
-#   DATABASE_URL=postgresql+asyncpg://seam:seam@localhost:5432/seam
 services:
   postgres:
     image: postgres:16

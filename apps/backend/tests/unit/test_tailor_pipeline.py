@@ -1,5 +1,3 @@
-"""Grounding and gating logic of the tailoring pipeline, with scripted OpenAI and Jev fakes."""
-
 from types import SimpleNamespace
 
 import pytest
@@ -80,7 +78,7 @@ def _suggest(**kw) -> ModelSuggestion:
 
 async def run(suggestions, jev):
     inp = _inputs()
-    ai = AIGateway(generate=ScriptedGenerator(suggestions), jev=jev)  # type: ignore[arg-type]
+    ai = AIGateway(generate=ScriptedGenerator(suggestions), jev=jev)
     task = next(t for t in build_tasks(inp.resume, ["experience"]) if t.nodes[0]["id"] == "exp_1")
     results = [r async for r in _process_stream(ai, SETTINGS, inp, task)]
     return [item for item, _ in results], any(deg for _, deg in results)
@@ -91,7 +89,7 @@ async def test_supported_rewrite_passes_with_fit_based_delta():
     assert not degraded and len(items) == 1
     it = items[0]
     assert not it["requires_confirmation"] and it["checks"]["relation"] == "supported"
-    assert it["score_delta"] > 0  # (3.0 - 1.0) / 4 of a must-have's share
+    assert it["score_delta"] > 0
 
 
 async def test_contradiction_is_dropped():
@@ -129,9 +127,9 @@ async def test_new_number_is_flagged_even_when_jev_is_down():
 async def test_unknown_and_out_of_scope_targets_are_dropped():
     items, _ = await run(
         [
-            _suggest(target="exp_99.b1"),  # does not exist
-            _suggest(target="exp_2.b1"),  # exists, but not in this task's node
-            _suggest(op="rewrite_summary", target="summary"),  # wrong section
+            _suggest(target="exp_99.b1"),
+            _suggest(target="exp_2.b1"),
+            _suggest(op="rewrite_summary", target="summary"),
         ],
         ScriptedJev(),
     )
@@ -168,11 +166,11 @@ async def test_several_skills_can_be_added_to_the_same_group():
         ModelSuggestion(
             op="add_skill", target="sk_1", value=v, requires_confirmation=True, addresses=["req_1"]
         )
-        for v in ("GraphQL", "Kubernetes", "graphql", "GraphQL ")  # the last two repeat the first
+        for v in ("GraphQL", "Kubernetes", "graphql", "GraphQL ")
     ]
     inp = _inputs()
     inp.sections = ["skills"]
-    ai = AIGateway(generate=ScriptedGenerator(skills), jev=ScriptedJev())  # type: ignore[arg-type]
+    ai = AIGateway(generate=ScriptedGenerator(skills), jev=ScriptedJev())
     task = next(t for t in build_tasks(inp.resume, ["skills"]))
     items = [it async for it, _ in _process_stream(ai, SETTINGS, inp, task)]
     assert [i["payload"]["value"] for i in items] == ["GraphQL", "Kubernetes"]

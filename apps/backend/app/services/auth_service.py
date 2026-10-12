@@ -56,7 +56,6 @@ async def issue_tokens(
 
 
 async def rotate_refresh(db: AsyncSession, token: str, settings: Settings) -> tuple[UUID, str, str]:
-    """Rotate a refresh token. Presenting an already-used token revokes the whole family."""
     row = await db.scalar(select(RefreshToken).where(RefreshToken.token_hash == hash_token(token)))
     if row is None:
         raise unauthorized()

@@ -42,7 +42,7 @@ function StepFrame({ slug, title, body, children, skippable = true }: StepFrameP
 function FormSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-11" />)}
+      {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-[72px]" />)}
     </div>
   );
 }
@@ -58,8 +58,6 @@ export default function OnboardingPage() {
   const complete = useMutation({
     mutationFn: () => unwrap(api.POST("/v1/me/onboarding/complete")),
     onSuccess: async () => {
-      // This page doesn't observe `me`, so invalidating alone would leave the shell reading the
-      // old "not onboarded" value and bouncing the user back here. Update the cache first.
       qc.setQueryData<UserOut>(keys.me, (me) => (me ? { ...me, onboarded: true, has_resume: true } : me));
       await qc.refetchQueries({ queryKey: keys.me });
       router.push(LANDING);

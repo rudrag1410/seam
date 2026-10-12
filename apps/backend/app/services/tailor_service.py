@@ -100,7 +100,6 @@ async def create_session(request: Request, db: AsyncSession, user: User, body: T
     if body.jd_id:
         jd = await jd_service.get_jd(db, user, UUID(body.jd_id))
     else:
-        # validated here (length, link fetch) so bad input fails instantly; the analysis streams later
         jd = await jd_service.ensure_jd(db, settings, user, body.jd_text, body.jd_url)
     base_version_id = None
     if body.base_version_id:
@@ -131,7 +130,6 @@ async def create_session(request: Request, db: AsyncSession, user: User, body: T
 
 
 async def _run(app, session_id: UUID) -> None:
-    """Runs the pipeline off-request, persisting suggestions and publishing events as they land."""
     broker: TailorBroker = app.state.broker
     settings: Settings = app.state.settings
     key = str(session_id)
@@ -147,8 +145,6 @@ async def _run(app, session_id: UUID) -> None:
             session.status = SessionStatus.RUNNING
             await db.commit()
 
-            # Reading the job is the first streamed step, so the user sees progress immediately
-            # instead of waiting on a form.
             await broker.publish(key, StreamEvent.STAGE, {"stage": Stage.READING, "progress": 0.02})
             analysis, warnings, jd_degraded = await jd_service.analyze_row(
                 db, app.state.ai, settings, user, jd
@@ -252,7 +248,6 @@ async def _fail(db: AsyncSession, broker: TailorBroker, session: TailorSession, 
 async def replay_from_db(
     db: AsyncSession, settings: Settings, session: TailorSession
 ) -> AsyncIterator[tuple[int, StreamEvent, dict]]:
-    """Synthesize the event stream for a session that is no longer in memory."""
     n = 0
     jd = await db.get(JobDescription, session.jd_id)
     user = await db.get(User, session.user_id)
@@ -421,7 +416,7 @@ async def finalize(db: AsyncSession, request: Request, user: User, session: Tail
         raise AppError(ErrorCode.SESSION_NOT_READY, "Suggestions are still being generated.", status=409)
     existing = await db.scalar(select(ResumeVersion).where(ResumeVersion.session_id == session.id))
     if existing is not None:
-        return existing  # versions are immutable snapshots; finalizing twice is a no-op
+        return existing
     settings: Settings = request.app.state.settings
     rows = (
         await db.scalars(

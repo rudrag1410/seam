@@ -47,7 +47,11 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-ignore = ["E501"]  # line length is the formatter's job
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/env.py" = ["F401"]
+"tests/unit/test_api_enums.py" = ["F401"]
 
 [tool.pyright]
 include = ["app"]

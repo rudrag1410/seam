@@ -10,11 +10,9 @@ import { type BulletView, NodeState, SectionKind, type SectionView, type SkillCh
 interface CanvasProps {
   contact: Resume["contact"];
   view: SectionView[];
-  /** The suggestion currently under review, if any. */
   cursor?: string | null;
   highlight?: ReadonlySet<string>;
   onSelect?: (suggestionId: string) => void;
-  /** Kinds of section that suggestions are still being written for. */
   busy?: ReadonlySet<SectionKind>;
 }
 
@@ -36,7 +34,6 @@ function Heading({ children, busy }: HeadingProps) {
   return (
     <h2 className="relative mt-5 mb-2 border-b border-ink/80 pb-0.5 text-[11.5px] font-semibold tracking-[0.08em] text-ink uppercase">
       {children}
-      {/* sits in the heading's own line, so a section starting or finishing work moves nothing */}
       {busy && <StitchLine className="absolute right-0 bottom-1.5 w-14 text-[#100f0f]/60" />}
     </h2>
   );
@@ -50,9 +47,6 @@ interface NodeProps {
   onSelect?: (suggestionId: string) => void;
 }
 
-// Node and Chip live at module scope on purpose. Declared inside the canvas they would be new
-// component types on every render, and React would unmount and rebuild every line each time
-// anything in the review changed.
 function Node({ node, inList = false, cursor, highlight, onSelect }: NodeProps) {
   const primary = node.suggestionId ?? node.suggestionIds[0];
   const active = !!cursor && node.suggestionIds.includes(cursor);
@@ -73,7 +67,6 @@ function Node({ node, inList = false, cursor, highlight, onSelect }: NodeProps) 
           onSelect(primary);
         }
       }}
-      // -mx/px give the hover and active backgrounds breathing room without moving the text
       className={cn(
         "relative -mx-1.5 rounded-[4px] px-1.5 py-0.5 transition-colors duration-150",
         actionable && "cursor-pointer hover:bg-cream/60",
@@ -82,7 +75,6 @@ function Node({ node, inList = false, cursor, highlight, onSelect }: NodeProps) 
         node.state === NodeState.Removed && "text-ink-muted line-through decoration-del-line",
       )}
     >
-      {/* change bar lives in the margin, clear of list markers, so text never shifts */}
       <span
         aria-hidden
         className={cn(
@@ -131,8 +123,6 @@ function Chip({ chip, active, onSelect }: ChipProps) {
   );
 }
 
-/** The paper. Every node that carries a suggestion exposes `data-anchor`, so the workspace can
- *  scroll the one under review into view. Selecting a node never changes the layout. */
 export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy }: CanvasProps) {
   return (
     <MotionConfig reducedMotion="user">
@@ -196,7 +186,6 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
                       {item.bullets.map((b) => (
                         <motion.li
                           key={b.id}
-                          // only items whose order can change animate, so unrelated height changes never slide
                           layout={item.reorderId ? "position" : false}
                           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                           className="list-disc marker:text-[#5b5853]"

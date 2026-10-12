@@ -24,8 +24,7 @@ const DECIDED: Record<Decision, string> = {
   [Decision.Rejected]: "Rejected",
 };
 
-export const canEdit = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.RemoveBullet;
-/** Rewrites can be redone with an instruction; reorders and skill changes can't. */
+const canEdit = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.RemoveBullet;
 export const canReword = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.AddSkill && s.op !== OpName.RemoveSkill;
 
 function startEdit(id: string): void {
@@ -36,7 +35,6 @@ function cancelEdit(): void {
   useReview.setState({ editing: null });
 }
 
-/** The user's own wording replaces the suggestion's. An empty box saves nothing. */
 function saveEdit(id: string, text: string): void {
   if (text.trim()) decide(id, Decision.Edited, text.trim());
 }
@@ -103,8 +101,6 @@ function EditBox({ suggestion: s }: EditBoxProps) {
   );
 }
 
-/** The suggestion under review. It sits in a fixed place above the composer, so stepping through
- *  suggestions and deciding on them never covers or moves the resume. */
 export function ReviewDock() {
   const cursor = useReview((st) => st.cursor);
   const suggestions = useReview((st) => st.suggestions);
@@ -115,7 +111,6 @@ export function ReviewDock() {
   const index = suggestions.findIndex((x) => x.id === cursor);
   const s = suggestions[index];
 
-  // E starts an edit from the keyboard; make sure the box is on screen when it opens
   useEffect(() => {
     if (editing) document.getElementById("review-dock")?.scrollIntoView({ block: "nearest" });
   }, [editing]);

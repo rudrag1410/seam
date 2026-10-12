@@ -30,7 +30,6 @@ class Profile(Base):
     current_company: Mapped[str | None] = mapped_column(String(200), nullable=True)
     years_experience: Mapped[float | None] = mapped_column(Float, nullable=True)
     links: Mapped[dict] = mapped_column(Json, default=dict)
-    # Compensation is encrypted at rest and never leaves the backend.
     current_ctc_enc: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     expected_ctc_enc: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     ctc_currency: Mapped[str] = mapped_column(String(3), default="INR")

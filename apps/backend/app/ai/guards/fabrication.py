@@ -1,8 +1,3 @@
-"""Deterministic fabrication guard. A cheap exact check that runs before any model judgment.
-
-New numbers are replaced with a placeholder and flagged. New technologies are flagged.
-"""
-
 import re
 from dataclasses import dataclass
 
@@ -28,7 +23,6 @@ def _numbers(text: str) -> set[str]:
 
 
 def _is_years_of_experience(norm: str, tail: str, estimated_years: float | None) -> bool:
-    """'6 years' is not a new claim when it matches the experience the resume's dates add up to."""
     if estimated_years is None or not _YEARS_AFTER.match(tail):
         return False
     try:
@@ -38,7 +32,6 @@ def _is_years_of_experience(norm: str, tail: str, estimated_years: float | None)
 
 
 def _redact_new_numbers(after: str, known: set[str], estimated_years: float | None) -> tuple[str, list[str]]:
-    """Replaces every number the evidence doesn't contain with a placeholder, and says which."""
     out: list[str] = []
     reasons: list[str] = []
     cursor = 0

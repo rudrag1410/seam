@@ -1,5 +1,3 @@
-"""Typed application errors. Every error has a stable `code` the frontend maps to copy."""
-
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -9,8 +7,6 @@ from app.schemas.enums import ApiEnum
 
 
 class ErrorCode(ApiEnum):
-    """Stable codes the frontend maps to copy and a recovery action. Never reuse or rename one."""
-
     CSRF_BLOCKED = "CSRF_BLOCKED"
     EMAIL_TAKEN = "EMAIL_TAKEN"
     EXPORT_FAILED = "EXPORT_FAILED"
@@ -85,7 +81,6 @@ async def _app_error(request: Request, exc: Exception) -> JSONResponse:
     if exc.code == ErrorCode.UNAUTHORIZED and (
         ACCESS_COOKIE in request.cookies or REFRESH_COOKIE in request.cookies
     ):
-        # the session is over: drop the dead cookies so the client lands on sign-in and stays there
         clear_auth_cookies(response, request.app.state.settings)
     return response
 

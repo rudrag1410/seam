@@ -1,10 +1,3 @@
-"""LLM evals over the shared fixtures. `uv run python -m evals.run`
-
-Runs the real pipeline (live providers when keys are set, the offline mock otherwise) on every
-resume x JD pair and gates on the metrics that matter: no unflagged invented claims, valid
-schemas, concise bullets, and a coverage lift. Exits non-zero when a gate fails.
-"""
-
 import asyncio
 import re
 import statistics
@@ -34,7 +27,6 @@ async def evaluate() -> int:
     ai = build_gateway(settings)
     rows, failures = [], []
     for resume_path in sorted((FIXTURES / "resumes").glob("*.txt")):
-        # the text path of the parser: structure once per resume
         text = resume_path.read_text()
         resume = build_resume(heuristic_parse(text)).model_dump()
         for jd_path in sorted((FIXTURES / "jds").glob("*.txt")):
@@ -73,7 +65,7 @@ async def evaluate() -> int:
                     unflagged += 1
                 banned += sum(p in new_text.lower() for p in BANNED)
                 if s["op"] == "replace_text" and len(new_text.split()) > MAX_WORDS:
-                    banned += 1  # over-long bullets count against concision
+                    banned += 1
             rows.append(
                 {
                     "pair": label,

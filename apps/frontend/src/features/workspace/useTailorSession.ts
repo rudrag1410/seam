@@ -27,7 +27,6 @@ function createSession(body: TailorCreate) {
   return unwrap(api.POST("/v1/tailor-sessions", { body }));
 }
 
-/** Decisions are saved in the background, so make sure they have all landed before saving a version. */
 async function finalizeSession(id: string) {
   await flushDecisions(id);
   return unwrap(api.POST("/v1/tailor-sessions/{session_id}/finalize", { params: { path: { session_id: id } } }));
@@ -37,8 +36,6 @@ function reportError(error: unknown): void {
   toast.error(presentError(error).title);
 }
 
-/** Owns one tailoring session from the screen's point of view: which session is open, loading
- *  it, following its stream, saving decisions, and the requests that start and finish a run. */
 export function useTailorSession(initialSessionId: string | undefined, baseVersionId: string | null) {
   const router = useRouter();
   const path = usePathname();
@@ -56,8 +53,6 @@ export function useTailorSession(initialSessionId: string | undefined, baseVersi
     queryKey: keys.session(sessionId ?? ""),
     queryFn: () => fetchSession(sessionId!),
     enabled: !!sessionId,
-    // decisions are saved separately, so a cached copy goes stale the moment one is made:
-    // never refetch under the user, and never reuse a copy from an earlier visit
     staleTime: Infinity,
     gcTime: 0,
   });
@@ -66,14 +61,12 @@ export function useTailorSession(initialSessionId: string | undefined, baseVersi
     if (query.data) hydrate(query.data);
   }, [query.data]);
   useEffect(() => reset, []);
-  // "New tailor" in the sidebar while a run started here is on screen: begin again
   useEffect(() => {
     if (path !== NEW_RUN_PATH || initialSessionId || !useReview.getState().sessionId) return;
     reset();
     setSessionId(null);
   }, [path, initialSessionId]);
 
-  // a finished run adds an entry to the sidebar's recent list
   const finished = useReview((s) => s.status === SessionStatus.Ready);
   useEffect(() => {
     if (finished) qc.invalidateQueries({ queryKey: keys.recent });
@@ -87,7 +80,7 @@ export function useTailorSession(initialSessionId: string | undefined, baseVersi
     onSuccess: ({ id }) => {
       useReview.setState({ sessionId: id });
       setSessionId(id);
-      showAddress(sessionPath(id)); // a refresh or a shared link lands on this session
+      showAddress(sessionPath(id));
       qc.invalidateQueries({ queryKey: keys.recent });
     },
     onError: (error) => {
@@ -106,14 +99,12 @@ export function useTailorSession(initialSessionId: string | undefined, baseVersi
     onError: reportError,
   });
 
-  // what the paper shows before a run has loaded its own copy
   const baseResume = (baseVersionId ? baseVersion.data?.document : primary.data?.document) ?? null;
   return { sessionId, setSessionId, fault, setFault, primary, query, create, finalize, baseResume, loadingResume: primary.isPending || baseVersion.isPending, baseVersionId };
 }
 
 export type TailorSession = ReturnType<typeof useTailorSession>;
 
-/** Sends the job description: the conversation shows it at once, and the request follows. */
 export function startRun(session: TailorSession, draft: JobDraft): void {
   const resume = session.primary.data;
   if (!resume || !session.baseResume) return;
@@ -122,7 +113,6 @@ export function startRun(session: TailorSession, draft: JobDraft): void {
   session.create.mutate(createBody(draft, resume.id, session.baseVersionId));
 }
 
-/** Runs the same resume and job again after a failure. */
 export function retryRun(session: TailorSession): void {
   const prev = session.query.data;
   if (!prev) return;
@@ -131,7 +121,6 @@ export function retryRun(session: TailorSession): void {
   session.create.mutate(retryBody(prev));
 }
 
-/** Leaves a run that can't continue and goes back to an empty composer at the starting address. */
 export function abandonRun(session: TailorSession): void {
   reset();
   session.setSessionId(null);

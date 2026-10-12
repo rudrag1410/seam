@@ -1,15 +1,9 @@
-"""Pure function that applies accepted suggestion ops to a resume document.
-
-Mirrored by `packages/resume-core/src/apply-ops.ts`; both run the shared vectors in
-`packages/fixtures/apply-ops`. Operates on plain dicts so it is trivially portable.
-"""
-
 import copy
 from typing import Any
 
 from app.schemas.enums import OpName, SectionType
 
-Op = dict[str, Any]  # {op, target, payload, edited_text?}
+Op = dict[str, Any]
 
 
 def _find_bullet_parent(doc: dict, bullet_id: str) -> tuple[list, int] | None:
@@ -91,7 +85,6 @@ def _apply_one(doc: dict, op: Op) -> None:
 
 
 def apply_ops(document: dict, ops: list[Op]) -> dict:
-    """Return a new document with `ops` applied in order. The input is never mutated."""
     doc = copy.deepcopy(document)
     for op in ops:
         _apply_one(doc, op)

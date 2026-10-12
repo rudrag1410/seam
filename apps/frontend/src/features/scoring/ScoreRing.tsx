@@ -3,7 +3,6 @@
 import { cn } from "@seam/ui";
 import { useEffect, useRef, useState } from "react";
 
-/** One eased run from a number to another, a frame at a time. */
 class Roll {
   private frame = 0;
   private started = 0;
@@ -15,7 +14,6 @@ class Roll {
     private readonly onValue: (value: number) => void,
   ) {}
 
-  /** Begins the run and returns the function that stops it. */
   start(): () => void {
     if (this.from === this.to || matchMedia("(prefers-reduced-motion: reduce)").matches) {
       this.onValue(this.to);
@@ -35,8 +33,7 @@ class Roll {
   private readonly stop = (): void => cancelAnimationFrame(this.frame);
 }
 
-/** Animated number that rolls toward its target. */
-export function useRollingNumber(target: number, ms = 450) {
+function useRollingNumber(target: number, ms = 450) {
   const [value, setValue] = useState(target);
   const from = useRef(target);
   useEffect(() => {

@@ -2,9 +2,6 @@ import { Decision, ErrorCode, type Resume, type SectionName, SessionStatus, type
 import { ViewMode, sortSuggestions } from "../resume-canvas/view-model";
 import { type Note, type ReviewState, type Snapshot, initialState, useReview } from "./store";
 
-/** Every change to the review state goes through one of these. Each is a plain function, so it can
- *  be called from a component, a key handler or the event stream alike. */
-
 type Change = Partial<ReviewState>;
 
 function snapshot(s: SuggestionOut): Snapshot {
@@ -15,7 +12,6 @@ function withDecision(s: SuggestionOut, status: Decision, editedText?: string): 
   return { ...s, status, edited_text: status === Decision.Edited ? (editedText ?? null) : null };
 }
 
-/** The next undecided suggestion after this one, wrapping round to the top. */
 function nextPending(suggestions: SuggestionOut[], id: string): SuggestionOut | undefined {
   const at = suggestions.findIndex((s) => s.id === id);
   return [...suggestions.slice(at + 1), ...suggestions.slice(0, at)].find((s) => s.status === Decision.Pending);
@@ -26,7 +22,6 @@ function errorOf(session: TailorSessionOut): ReviewState["error"] {
   return { code: session.error_code ?? ErrorCode.TailorFailed, message: session.error_message ?? "Generation failed.", retryable: true };
 }
 
-/** A decision made here but not yet saved wins over what the server returned. */
 function keepUnsaved(cur: ReviewState, incoming: SuggestionOut): SuggestionOut {
   const local = cur.suggestions.find((x) => x.id === incoming.id);
   return local && cur.dirty.has(incoming.id) ? { ...incoming, status: local.status, edited_text: local.edited_text } : incoming;
@@ -60,7 +55,6 @@ function hydrated(cur: ReviewState, session: TailorSessionOut): Change {
 function decided(cur: ReviewState, id: string, status: Decision, editedText?: string): Change {
   const target = cur.suggestions.find((s) => s.id === id);
   if (!target) return {};
-  // one-tap confirmation for anything that claims something new
   if (status === Decision.Accepted && target.requires_confirmation && cur.confirming !== id) return { confirming: id };
   const suggestions = cur.suggestions.map((s) => (s.id === id ? withDecision(s, status, editedText) : s));
   return {
@@ -69,7 +63,6 @@ function decided(cur: ReviewState, id: string, status: Decision, editedText?: st
     history: [...cur.history, snapshot(target)],
     confirming: null,
     editing: null,
-    // move on to the next undecided suggestion so review flows
     cursor: status === Decision.Pending ? id : (nextPending(suggestions, id)?.id ?? id),
   };
 }
@@ -85,7 +78,6 @@ function undone(cur: ReviewState): Change {
   };
 }
 
-/** Flagged suggestions always need an individual confirmation, so a bulk accept skips them. */
 function isSafeToAccept(s: SuggestionOut, section: string | null): boolean {
   return s.status === Decision.Pending && !s.requires_confirmation && (section === null || s.section === section);
 }
@@ -124,7 +116,6 @@ export function reset(): void {
   useReview.setState(initialState());
 }
 
-/** Shows the run as started the moment the user sends, before the server has answered. */
 export function begin(run: { resume: Resume; jdText: string; jdUrl: string | null; sections: SectionName[] }): void {
   useReview.setState({ ...initialState(), status: SessionStatus.Queued, ...run });
 }
@@ -170,7 +161,6 @@ export function move(delta: 1 | -1): void {
   useReview.setState((cur) => moved(cur, delta));
 }
 
-/** Selects a suggestion for review (or none), dropping any half-finished edit or confirmation. */
 export function select(id: string | null): void {
   useReview.setState({ cursor: id, confirming: null, editing: null });
 }

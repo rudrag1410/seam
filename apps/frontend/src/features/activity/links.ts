@@ -1,6 +1,5 @@
 import { type ActivityOut, EntityType } from "@seam/api-client";
 
-/** Where an activity entry deep-links to. */
 export function activityHref(e: Pick<ActivityOut, "entity_type" | "entity_id">): string | null {
   switch (e.entity_type) {
     case EntityType.Session:

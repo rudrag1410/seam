@@ -38,7 +38,6 @@ function fetchMe() {
   return unwrap(api.GET("/v1/me"));
 }
 
-/** Back to where the user was heading, as long as that is a page of ours. */
 function destination(next: string | null): string {
   return next && next.startsWith("/") ? next : LANDING;
 }

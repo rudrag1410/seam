@@ -1,4 +1,3 @@
-/** The job text typed into the composer survives a refresh until a run has used it. */
 const KEY = "seam-jd-draft";
 
 export interface JdDraft {

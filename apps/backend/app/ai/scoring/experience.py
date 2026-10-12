@@ -1,5 +1,3 @@
-"""Derive years of experience and a coarse seniority level from a resume document."""
-
 import re
 from datetime import date
 

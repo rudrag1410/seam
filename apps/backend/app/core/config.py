@@ -22,9 +22,7 @@ class Settings(BaseSettings):
     cookie_samesite: Literal["lax", "none", "strict"] = "lax"
     cookie_domain: str | None = None
 
-    # AI: "live" calls OpenAI/Jev, "mock" uses deterministic offline stand-ins.
     ai_mode: Literal["live", "mock"] = "live"
-    # seconds the offline mock waits between suggestions, so streaming is visible in demos
     mock_stream_delay_s: float = 0.1
     openai_api_key: str = ""
     llm_model_openai_fast: str = "gpt-5-mini"
@@ -32,12 +30,9 @@ class Settings(BaseSettings):
     llm_model_openai_vision: str = "gpt-5-mini"
     prompt_version: str = "v1"
 
-    # Caps on what goes into and comes out of the model. Tokens are estimated at ~4 characters.
-    llm_max_output_tokens: int = 6000  # hard ceiling per call; each task also has a smaller budget
-    llm_max_jd_tokens: int = 4000  # longer job descriptions are rejected, not silently cut
-    llm_max_resume_tokens: int = 8000  # resume text sent to a model is clipped to this
-    # How hard reasoning models (gpt-5, o-series) think before answering. Lower is much faster.
-    # Leave empty to send nothing (non-reasoning models reject the parameter).
+    llm_max_output_tokens: int = 6000
+    llm_max_jd_tokens: int = 4000
+    llm_max_resume_tokens: int = 8000
     llm_reasoning_effort: str = "low"
 
     typesafe_api_key: str = ""
@@ -46,7 +41,6 @@ class Settings(BaseSettings):
     jev_confidence_low: float = 0.50
     jev_timeout_s: float = 6.0
 
-    # Object storage: local disk by default, Cloudflare R2 when R2_ENDPOINT is set.
     local_storage_dir: str = "./data/files"
     r2_endpoint: str = ""
     r2_access_key_id: str = ""
@@ -61,7 +55,6 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def _async_driver(cls, url: str) -> str:
-        """Hosts hand out `postgres://` or `postgresql://`; SQLAlchemy async needs the asyncpg driver."""
         for prefix in ("postgres://", "postgresql://"):
             if url.startswith(prefix):
                 return "postgresql+asyncpg://" + url[len(prefix) :]
@@ -81,7 +74,6 @@ class Settings(BaseSettings):
 
     @property
     def has_llm(self) -> bool:
-        """True when generation can run: a real OpenAI key, or the offline mock."""
         return self.is_mock or bool(self.openai_api_key)
 
     @property

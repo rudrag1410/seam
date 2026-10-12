@@ -2,7 +2,6 @@ import { Skeleton } from "@seam/ui";
 import { Logo } from "../brand";
 import { LANDING } from "@/lib/routes";
 
-/** Same grid, widths and paddings as the real shell, so the swap is invisible. */
 export function ShellSkeleton() {
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[264px_1fr]" aria-busy>

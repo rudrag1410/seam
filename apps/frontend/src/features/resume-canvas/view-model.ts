@@ -1,18 +1,12 @@
 import { Decision, OpName, type Resume, SectionName, type SuggestionOut } from "@seam/api-client";
 import { type DiffRun, wordDiff } from "@seam/resume-core";
 
-/** Pure translation of (resume, suggestions, decisions) into what the canvas draws.
- *  Kept free of React so every review state can be unit-tested. */
-
-/** Suggestions shows every change still in play; Clean shows exactly what finalizing would save;
- *  Original shows the resume as uploaded. */
 export enum ViewMode {
   Suggestions = "suggestions",
   Clean = "clean",
   Original = "original",
 }
 
-/** How a line or chip is marked on the paper. */
 export enum NodeState {
   Plain = "plain",
   Changed = "changed",
@@ -22,7 +16,6 @@ export enum NodeState {
   Settled = "settled",
 }
 
-/** The kinds of section the paper draws. */
 export enum SectionKind {
   Summary = "summary",
   Skills = "skills",
@@ -43,7 +36,7 @@ export interface BulletView {
   movedFrom?: number;
 }
 
-export interface ItemView {
+interface ItemView {
   id: string;
   title: string;
   subtitle: string;
@@ -61,7 +54,6 @@ export interface SkillChip {
   flagged: boolean;
 }
 
-/** The paper's kind for each section a user can ask to have tailored. */
 export const KIND_OF_SECTION: Record<SectionName, SectionKind> = {
   [SectionName.Summary]: SectionKind.Summary,
   [SectionName.Skills]: SectionKind.Skills,
@@ -69,13 +61,13 @@ export const KIND_OF_SECTION: Record<SectionName, SectionKind> = {
   [SectionName.Projects]: SectionKind.Projects,
 };
 
-export interface SkillGroupView {
+interface SkillGroupView {
   id: string;
   label: string;
   chips: SkillChip[];
 }
 
-export interface EducationView {
+interface EducationView {
   id: string;
   title: string;
   subtitle: string;
@@ -107,15 +99,12 @@ type ProjectItem = Extract<Section, { type: "projects" }>["items"][number];
 type EducationItem = Extract<Section, { type: "education" }>["items"][number];
 type BulletOwner = { id: string; bullets: { id: string; text: string }[] };
 
-/** What one pass over the resume needs to know: the view, and the suggestions that count in it. */
 interface Scope {
   mode: ViewMode;
   active: SuggestionOut[];
   byTarget: Map<string, SuggestionOut[]>;
 }
 
-/** Suggestions shows everything still in play. Clean shows exactly what finalizing would save:
- *  the changes that have been accepted, with no review marks. Original shows none. */
 function live(s: SuggestionOut, mode: ViewMode): boolean {
   if (mode === ViewMode.Suggestions) return s.status !== Decision.Rejected;
   return mode === ViewMode.Clean && (s.status === Decision.Accepted || s.status === Decision.Edited);
@@ -144,7 +133,6 @@ function skillValue(s: SuggestionOut): string {
   return s.status === Decision.Edited && s.edited_text ? s.edited_text : String((s.payload as { value: string }).value);
 }
 
-/** How something added shows up: unmarked in Clean, otherwise as new until it has been decided. */
 function addedState(scope: Scope, s: SuggestionOut): NodeState {
   if (scope.mode === ViewMode.Clean) return NodeState.Plain;
   return s.status === Decision.Pending ? NodeState.Inserted : NodeState.Settled;
@@ -161,7 +149,6 @@ function dateRange(start?: string | null, end?: string | null): string {
   return [formatDate(start), formatDate(end)].filter(Boolean).join(" – ");
 }
 
-/** A line of text, with whichever of the given kinds of rewrite applies to it. */
 function textNode(scope: Scope, id: string, original: string, ...ops: string[]): BulletView {
   const s = forTarget(scope, id, ...ops);
   if (!s) return { id, text: original, runs: null, state: NodeState.Plain, suggestionIds: [], flagged: false };
@@ -172,7 +159,6 @@ function textNode(scope: Scope, id: string, original: string, ...ops: string[]):
   return { ...base, text: after(s), runs: null, state: s.status === Decision.Pending || scope.mode === ViewMode.Clean ? NodeState.Plain : NodeState.Settled };
 }
 
-/** The item's bullet ids in display order: the reorder's order first, anything it left out after. */
 function bulletOrder(item: BulletOwner, reorder: SuggestionOut | undefined): string[] {
   const ids = item.bullets.map((b) => b.id);
   if (!reorder) return ids;
@@ -181,7 +167,6 @@ function bulletOrder(item: BulletOwner, reorder: SuggestionOut | undefined): str
   return [...order.filter((id) => ids.includes(id)), ...ids.filter((id) => !listed.has(id))];
 }
 
-/** One existing bullet, or null when an accepted removal has taken it out. */
 function bulletView(scope: Scope, item: BulletOwner, id: string, position: number, reorder: SuggestionOut | undefined): BulletView | null {
   const original = item.bullets.find((b) => b.id === id)!.text;
   const removal = forTarget(scope, id, OpName.RemoveBullet);
@@ -248,8 +233,6 @@ function skillGroup(scope: Scope, group: SkillGroup): SkillGroupView {
   return { id: group.id, label: group.label, chips };
 }
 
-/** The paper's section for one resume section. The API tags its sections with plain literals so that
- *  this switch narrows them; the paper's own view uses `SectionKind`. */
 function sectionView(scope: Scope, sec: Section): SectionView {
   switch (sec.type) {
     case "summary":
@@ -272,7 +255,6 @@ export function buildView(resume: Resume, suggestions: SuggestionOut[], mode: Vi
   return resume.sections.map((sec) => sectionView(scope, sec));
 }
 
-/** The ids of everything a suggestion can target, in reading order. */
 function nodeIds(resume: Resume): string[] {
   const ids: string[] = [];
   for (const s of resume.sections) {
@@ -288,9 +270,7 @@ function nodeIds(resume: Resume): string[] {
   return ids;
 }
 
-/** Position of every node in reading order, so suggestions can be reviewed top to bottom no matter
- *  which section the model finished first. */
-export function nodeOrder(resume: Resume): Map<string, number> {
+function nodeOrder(resume: Resume): Map<string, number> {
   return new Map(nodeIds(resume).map((id, position) => [id, position]));
 }
 

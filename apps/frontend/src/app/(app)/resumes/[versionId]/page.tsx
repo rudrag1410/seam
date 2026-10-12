@@ -1,6 +1,7 @@
 "use client";
 
 import { Segmented, Skeleton, buttonClass } from "@seam/ui";
+import { PaperSkeleton } from "@/features/workspace/WorkspaceSkeleton";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, GitBranch } from "lucide-react";
 import Link from "next/link";
@@ -28,6 +29,30 @@ const TAB_OPTIONS = [
   { value: Tab.Prep, label: "Interview prep" },
 ];
 
+function VersionSkeleton() {
+  return (
+    <div className="grid min-h-dvh lg:grid-cols-[1fr_380px]" aria-busy>
+      <div className="min-w-0 bg-cream/40 px-3 py-6 sm:px-8">
+        <div className="mx-auto mb-4 flex max-w-[794px] items-center gap-3">
+          <Skeleton className="size-8 rounded-full" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+        <PaperSkeleton />
+      </div>
+      <aside className="space-y-6 border-t border-line bg-bg p-6 lg:border-t-0 lg:border-l">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-[84px] rounded-full" />
+          <Skeleton className="size-[84px] rounded-full" />
+          <Skeleton className="ml-auto h-8 w-24 rounded-full" />
+        </div>
+        <Skeleton className="h-40" />
+        <Skeleton className="h-8 w-64 rounded-full" />
+        <Skeleton className="h-32" />
+      </aside>
+    </div>
+  );
+}
+
 export default function VersionPage() {
   const { versionId } = useParams<{ versionId: string }>();
   const [tab, setTab] = useState<Tab>(Tab.Export);
@@ -38,7 +63,7 @@ export default function VersionPage() {
   const view = useMemo(() => (q.data ? buildView(q.data.document, [], ViewMode.Original) : []), [q.data]);
 
   if (q.isError) return <div className="mx-auto max-w-xl p-8"><ErrorState error={q.error} onRetry={() => q.refetch()} /></div>;
-  if (!q.data) return <div className="p-8"><Skeleton className="mx-auto h-[720px] max-w-[794px]" /></div>;
+  if (!q.data) return <VersionSkeleton />;
   const v = q.data;
 
   return (

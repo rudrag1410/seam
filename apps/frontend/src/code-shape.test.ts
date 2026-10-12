@@ -3,11 +3,6 @@ import { join, relative } from "node:path";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
-/** House rule: no named function or component is declared inside another function. Helpers live
- *  at module level (or as class members), so each one can be read, named and tested alone.
- *  Anonymous callbacks handed straight to a call or a prop (effects, event handlers, map) are
- *  how React and the DOM work, and are not what this rule is about. */
-
 const REPO = join(__dirname, "..", "..", "..");
 const ROOTS = ["apps/frontend/src", "packages/ui/src", "packages/api-client/src", "packages/resume-core/src", "packages/resume-core/test"];
 const SKIP = new Set(["node_modules", "dist"]);
@@ -27,7 +22,6 @@ function isFunction(node: ts.Node): boolean {
   return ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node) || ts.isMethodDeclaration(node);
 }
 
-/** The name a function is declared under, if the node declares one. */
 function declaredName(node: ts.Node): string | null {
   if (ts.isFunctionDeclaration(node) && node.name) return node.name.text;
   if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer && (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))) {
@@ -50,7 +44,40 @@ function nestedDeclarations(path: string): string[] {
   return found;
 }
 
+interface CommentScan {
+  path: string;
+  text: string;
+  source: ts.SourceFile;
+  seen: Set<number>;
+  found: string[];
+}
+
+function scanComments(scan: CommentScan, node: ts.Node): void {
+  if (node.kind !== ts.SyntaxKind.JsxText) {
+    for (const range of ts.getLeadingCommentRanges(scan.text, node.getFullStart()) ?? []) {
+      if (scan.seen.has(range.pos)) continue;
+      scan.seen.add(range.pos);
+      scan.found.push(`${relative(REPO, scan.path)}:${scan.source.getLineAndCharacterOfPosition(range.pos).line + 1}`);
+    }
+  }
+  for (const child of node.getChildren(scan.source)) scanComments(scan, child);
+}
+
+function commentsIn(path: string): string[] {
+  const text = readFileSync(path, "utf8");
+  const kind = path.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, kind);
+  const scan: CommentScan = { path, text, source, seen: new Set(), found: [] };
+  scanComments(scan, source);
+  return scan.found;
+}
+
 describe("code shape", () => {
+  it("has no comments", () => {
+    const problems = ROOTS.flatMap((root) => sourceFiles(join(REPO, root))).flatMap(commentsIn);
+    expect(problems).toEqual([]);
+  });
+
   it("declares no function or component inside another function", () => {
     const problems = ROOTS.flatMap((root) => sourceFiles(join(REPO, root))).flatMap(nestedDeclarations);
     expect(problems).toEqual([]);

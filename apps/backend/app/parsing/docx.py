@@ -42,4 +42,4 @@ def extract_docx(data: bytes, settings: Settings) -> ExtractedDocument:
             ErrorCode.TOO_MANY_PAGES,
             f"Resumes over {settings.max_pages} pages aren't supported. Is this the right file?",
         )
-    return ExtractedDocument(text, pages, [text], links)
+    return ExtractedDocument(text, pages, links)

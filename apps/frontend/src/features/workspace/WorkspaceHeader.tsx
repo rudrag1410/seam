@@ -42,7 +42,6 @@ function Match() {
   );
 }
 
-/** Always 56px tall, with or without a session, so starting a run doesn't move anything. */
 interface WorkspaceHeaderProps {
   started: boolean;
   versionId?: string | null;

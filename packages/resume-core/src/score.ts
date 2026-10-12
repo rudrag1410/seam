@@ -1,6 +1,3 @@
-/** Live score projection. Each suggestion carries a server-computed `score_delta`;
- *  the client adds up the accepted ones so the number moves in the same frame as the click.
- *  The server re-scores authoritatively when you finalize. */
 
 export interface ScoredSuggestion {
   id: string;

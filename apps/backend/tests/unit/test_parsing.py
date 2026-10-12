@@ -49,9 +49,6 @@ def test_validate_rejects_large_and_empty():
     assert e.value.code == "FILE_EMPTY"
 
 
-# --- a real-world layout: two-digit years, title line + company line, tech-stack lines, spaced skills
-
-
 def test_real_world_layout():
     p = heuristic_parse(fixture_text("resumes/two_digit_years.txt"), ["https://www.linkedin.com/in/jane-doe"])
     assert p.contact.name == "Jane Doe" and p.contact.headline == "Full Stack Developer"
@@ -72,10 +69,8 @@ def test_real_world_layout():
         "2023-12",
     )
 
-    # wrapped lines join into their bullet, and hyphenated wraps are repaired
     assert "with Redis caching under high concurrency" in first.bullets[1]
     assert any("lead-acquisition efficiency" in b for b in second.bullets)
-    # tech-stack lines stay attached to their role and don't swallow the previous bullet
     assert first.bullets[-1].startswith("Tech Stack:") and not first.bullets[-2].startswith("Tech Stack")
 
     assert [x.name for x in p.projects] == ["Sample Assistant"] and len(p.projects[0].bullets) == 3
@@ -130,6 +125,5 @@ Brightside Health, Austin | Jun 2018 - Feb 2021
         ("Senior Backend Engineer", "Northwind Logistics", None),
         ("Backend Engineer", "Brightside Health", "Austin"),
     ]
-    # the second title must not be glued onto the bullet above it
     assert roles[0].bullets[-1] == "Mentored 4 engineers and ran the weekly design review."
     assert roles[1].start == "2018-06" and roles[1].end == "2021-02"

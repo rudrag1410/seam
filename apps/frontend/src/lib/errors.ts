@@ -6,7 +6,6 @@ export interface Presentable {
   retryable: boolean;
 }
 
-/** Every backend error has a stable `code`; this maps codes to copy and recovery hints. */
 const COPY: Partial<Record<ApiError["code"], Partial<Presentable>>> = {
   [ErrorCode.FileTypeUnsupported]: { hint: "Resumes must be PDF or DOCX files." },
   [ErrorCode.FileTooLarge]: { hint: "Export a smaller copy and try again." },
@@ -17,7 +16,6 @@ const COPY: Partial<Record<ApiError["code"], Partial<Presentable>>> = {
   [ErrorCode.InvalidCredentials]: { hint: "Check your email and password." },
 };
 
-/** True for the errors that mean the job text itself is the problem, so the user can fix it and resend. */
 export function isJobTextCode(code: ApiError["code"]): boolean {
   return JOB_TEXT_CODES.has(code as ErrorCode);
 }

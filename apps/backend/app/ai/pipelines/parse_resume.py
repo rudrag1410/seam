@@ -46,8 +46,6 @@ async def _vision(ai: AIGateway, settings: Settings, data: bytes) -> ParsedResum
 async def _structure(
     ai: AIGateway, settings: Settings, data: bytes, doc: ExtractedDocument, file: ValidatedFile
 ) -> tuple[ParsedResume, ParsePath]:
-    """Structure the extracted text. Uses the model when one is configured and answering,
-    and the built-in parser otherwise, so uploading a resume never depends on an AI key."""
     can_vision = file.kind is FileKind.PDF and not settings.is_mock and settings.has_llm
     path = await choose_path(ai, doc.text, doc.page_count) if file.kind is FileKind.PDF else ParsePath.TEXT
 
@@ -94,7 +92,6 @@ async def parse_resume(ai: AIGateway, settings: Settings, data: bytes, file: Val
         )
 
     parsed, path = await _structure(ai, settings, data, doc, file)
-    # LinkedIn/GitHub are often just words in the PDF; the real URLs live in the hyperlinks
     parsed.contact.links = merge_links(parsed.contact.links, doc.links)
 
     resume = build_resume(parsed)

@@ -1,6 +1,5 @@
 import logging
 from contextlib import asynccontextmanager
-from functools import partial
 from typing import Any
 from urllib.parse import urlparse
 
@@ -30,11 +29,10 @@ _UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Builds everything a request needs from the settings `create_app` put on the app."""
     settings: Settings = app.state.settings
     engine = make_engine(settings)
     if settings.database_url.startswith("sqlite"):
-        async with engine.begin() as conn:  # zero-setup local dev; Postgres uses Alembic
+        async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
     maker = make_sessionmaker(engine)
     app.state.engine = engine
@@ -48,7 +46,6 @@ async def lifespan(app: FastAPI):
 
 
 async def origin_check(request: Request, call_next: RequestResponseEndpoint) -> Response:
-    """CSRF defence on top of SameSite: state-changing browser requests must come from our origins."""
     if request.method in _UNSAFE and (origin := request.headers.get("origin")):
         settings: Settings = request.app.state.settings
         allowed = {o.rstrip("/") for o in settings.cors_origin_list}
@@ -60,22 +57,20 @@ async def origin_check(request: Request, call_next: RequestResponseEndpoint) -> 
     return await call_next(request)
 
 
-#: Enums the client uses but no request or response body mentions (event names, and export choices
-#: that arrive as plain query strings so a bad value gets our own error code), so nothing else
-#: would put them in the schema.
 CLIENT_ONLY_ENUMS: tuple[type[ApiEnum], ...] = (StreamEvent, ExportFormat, ExportTemplate)
 
 
-def _openapi_with_client_enums(app: FastAPI) -> dict[str, Any]:
-    schema = FastAPI.openapi(app)
-    for enum in CLIENT_ONLY_ENUMS:
-        schema["components"]["schemas"][enum.__name__] = TypeAdapter(enum).json_schema()
-    return schema
+class SeamAPI(FastAPI):
+    def openapi(self) -> dict[str, Any]:
+        schema = super().openapi()
+        for enum in CLIENT_ONLY_ENUMS:
+            schema["components"]["schemas"][enum.__name__] = TypeAdapter(enum).json_schema()
+        return schema
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
-    app = FastAPI(
+    app = SeamAPI(
         title="Seam API",
         version="0.1.0",
         lifespan=lifespan,
@@ -83,7 +78,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     install_error_handlers(app)
-    app.openapi = partial(_openapi_with_client_enums, app)  # type: ignore[method-assign]
     app.add_middleware(BaseHTTPMiddleware, dispatch=origin_check)
     app.add_middleware(
         CORSMiddleware,

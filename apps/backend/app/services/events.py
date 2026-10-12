@@ -1,9 +1,3 @@
-"""In-process event log per tailor session, replayable via Last-Event-ID.
-
-Single-process by design (see README trade-offs). Swapping this class for Redis Streams
-changes no caller: publish / finish / subscribe keep the same contract.
-"""
-
 import asyncio
 import contextlib
 from collections.abc import AsyncIterator
@@ -49,7 +43,6 @@ class TailorBroker:
     async def subscribe(
         self, session_id: str, last_id: int = -1
     ) -> AsyncIterator[tuple[int, StreamEvent, dict[str, Any]] | None]:
-        """Yields (id, event, data); yields None as a heartbeat tick while idle."""
         stream = self._streams[session_id]
         cursor = last_id + 1
         while True:

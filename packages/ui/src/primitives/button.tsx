@@ -33,8 +33,6 @@ export function buttonClass(variant: Variant = "primary", size: Size = "md", ext
   );
 }
 
-/** While loading, the label stays in the layout (hidden) and the spinner is overlaid,
- *  so the button never changes width. */
 export function Button({ variant, size, loading, className, children, disabled, ref, ...props }: ButtonProps) {
   return (
     <button ref={ref} className={buttonClass(variant, size, className)} disabled={disabled || loading} aria-busy={loading || undefined} {...props}>

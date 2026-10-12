@@ -1,8 +1,6 @@
 import { Badge } from "@seam/ui";
 import { ArrowUp, Check } from "lucide-react";
 
-/** Static product mockups for the landing page. Mirrors the real review UI. */
-
 export function MockReview() {
   return (
     <div className="mx-auto w-full max-w-[460px] rounded-[14px] bg-bg p-5 text-left shadow-[0_0_0_1px_var(--line)]">

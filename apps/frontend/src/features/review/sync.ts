@@ -11,7 +11,6 @@ import { useReview } from "./store";
 const DEBOUNCE_MS = 600;
 const MAX_BACKOFF_MS = 15_000;
 
-/** The decisions for these suggestions, as the API takes them. */
 function decisionsFor(ids: string[]) {
   const { suggestions } = useReview.getState();
   return ids.flatMap((id) => {
@@ -31,8 +30,6 @@ function saveDecisions(sessionId: string, ids: string[]) {
   });
 }
 
-/** Optimistic decisions: the UI updates instantly and changes are saved as one batched request
- *  shortly after, retried with a growing delay if the save fails. */
 class DecisionSync {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private saving = false;
@@ -41,7 +38,6 @@ class DecisionSync {
 
   constructor(private readonly sessionId: string) {}
 
-  /** Starts watching for decisions and returns the function that stops, saving what is left. */
   start(): () => void {
     this.unsubscribe = [
       useReview.subscribe((s, prev) => {
@@ -74,7 +70,6 @@ class DecisionSync {
     this.schedule(Math.min(1000 * 2 ** this.failures, MAX_BACKOFF_MS));
   };
 
-  /** Last chance on unload: keepalive lets the request finish after the page is gone. */
   private readonly saveOnLeave = (): void => {
     const ids = dirtyIds();
     if (!ids.length) return;
@@ -98,7 +93,6 @@ export function useDecisionSync(sessionId: string | null) {
   useEffect(() => (sessionId ? new DecisionSync(sessionId).start() : undefined), [sessionId]);
 }
 
-/** Resolves once every local decision has reached the server. */
 export async function flushDecisions(sessionId: string): Promise<void> {
   for (let attempt = 0; attempt < 20; attempt++) {
     const ids = dirtyIds();

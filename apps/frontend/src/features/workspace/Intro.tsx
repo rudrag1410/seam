@@ -6,7 +6,6 @@ import { Dropzone, ResumeCard } from "@/features/upload/Dropzone";
 import { useMe, usePrimaryResume } from "@/lib/queries";
 import { Say } from "./Thread";
 
-/** The resume the run will use, with a way to swap it. Only shown before anything is sent. */
 function ResumeInUse() {
   const primary = usePrimaryResume();
   const [replacing, setReplacing] = useState(false);
@@ -41,7 +40,6 @@ interface IntroProps {
   branching: boolean;
 }
 
-/** How every conversation opens. */
 export function Intro({ composing, branching }: IntroProps) {
   const first = useMe().data?.full_name.split(" ")[0];
   return (

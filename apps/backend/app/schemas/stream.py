@@ -1,9 +1,3 @@
-"""The payload of every server-sent event, by event name.
-
-The tailoring pipeline publishes plain dicts; these models say what those dicts must contain. They
-are exported in the OpenAPI document, so the browser handles each event with a real type, and a
-test checks that every event a run publishes validates against its model."""
-
 from pydantic import BaseModel
 
 from app.core.errors import ErrorCode
@@ -17,8 +11,8 @@ from app.schemas.suggestion import SuggestionOut
 class StageData(ApiModel):
     stage: Stage
     progress: float
-    section: SectionName | None = None  # a piece of this section finished
-    tasks: dict[SectionName, int] | None = None  # the plan: pieces of work per section
+    section: SectionName | None = None
+    tasks: dict[SectionName, int] | None = None
 
 
 class JobData(ApiModel):
@@ -59,7 +53,6 @@ class LetterSavedData(ApiModel):
     id: str
 
 
-#: What each event of a tailoring run carries.
 TAILOR_EVENTS: dict[StreamEvent, type[BaseModel]] = {
     StreamEvent.STAGE: StageData,
     StreamEvent.JD: JobData,
@@ -72,8 +65,6 @@ TAILOR_EVENTS: dict[StreamEvent, type[BaseModel]] = {
 
 
 class TailorEvents(ApiModel):
-    """One field per event name, so the generated client has a type for each payload."""
-
     stage: StageData
     jd: JobData
     score: ScoreData
@@ -91,8 +82,6 @@ class ErrorBody(ApiModel):
 
 
 class ErrorEnvelope(ApiModel):
-    """The body of every failed request."""
-
     error: ErrorBody
 
 

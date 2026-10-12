@@ -2,7 +2,6 @@
   "components": {
     "schemas": {
       "ActivityGroup": {
-        "description": "The first part of an activity kind, for filtering the feed (\"resume\" matches \"resume.uploaded\").",
         "enum": [
           "resume",
           "jd",
@@ -25,7 +24,6 @@
         ]
       },
       "ActivityKind": {
-        "description": "What an entry in the activity feed records.",
         "enum": [
           "resume.uploaded",
           "jd.analyzed",
@@ -718,7 +716,6 @@
         ]
       },
       "EntityType": {
-        "description": "The kind of thing an activity entry points at.",
         "enum": [
           "session",
           "version",
@@ -770,7 +767,6 @@
         "type": "object"
       },
       "ErrorCode": {
-        "description": "Stable codes the frontend maps to copy and a recovery action. Never reuse or rename one.",
         "enum": [
           "CSRF_BLOCKED",
           "EMAIL_TAKEN",
@@ -874,7 +870,6 @@
         "type": "object"
       },
       "ErrorEnvelope": {
-        "description": "The body of every failed request.",
         "properties": {
           "error": {
             "$ref": "#/components/schemas/ErrorBody"
@@ -1689,7 +1684,6 @@
         "type": "object"
       },
       "ParsePath": {
-        "description": "How a resume was read: its text, its page images, or the built-in parser without AI.",
         "enum": [
           "text",
           "vision",
@@ -2623,7 +2617,6 @@
         "type": "object"
       },
       "SectionName": {
-        "description": "The sections a user can ask to have tailored.",
         "enum": [
           "summary",
           "skills",
@@ -2951,7 +2944,6 @@
         "type": "object"
       },
       "StreamEvent": {
-        "description": "The events a tailoring run publishes, in the order they first appear.",
         "enum": [
           "stage",
           "jd",
@@ -3168,7 +3160,6 @@
         "type": "object"
       },
       "TailorCreate": {
-        "description": "Start a session from the job description text (or a link to it), or from one already analysed.",
         "properties": {
           "base_version_id": {
             "anyOf": [
@@ -3251,7 +3242,6 @@
         "type": "object"
       },
       "TailorEvents": {
-        "description": "One field per event name, so the generated client has a type for each payload.",
         "properties": {
           "done": {
             "$ref": "#/components/schemas/DoneData"
@@ -3518,7 +3508,6 @@
         "type": "object"
       },
       "Verdict": {
-        "description": "How well the resume shows a requirement.",
         "enum": [
           "demonstrated",
           "listed",
@@ -4184,7 +4173,6 @@
     },
     "/v1/me": {
       "delete": {
-        "description": "Deletes the user and, by cascade, every row; purges the user's stored files.",
         "operationId": "delete_me_v1_me_delete",
         "responses": {
           "204": {

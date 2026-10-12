@@ -65,8 +65,6 @@ function applyOne(doc: Resume, op: Op): void {
   }
 }
 
-/** Returns a new document with `ops` applied in order. Never mutates the input.
- *  Mirrors apps/backend/app/ai/ops/apply_ops.py; both run packages/fixtures/apply-ops. */
 export function applyOps(document: Resume, ops: Op[]): Resume {
   const doc = structuredClone(document);
   for (const op of ops) applyOne(doc, op);

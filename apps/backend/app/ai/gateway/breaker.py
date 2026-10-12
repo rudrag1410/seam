@@ -2,8 +2,6 @@ import time
 
 
 class CircuitBreaker:
-    """Opens after `threshold` failures inside `window_s`, stays open for `cooldown_s`."""
-
     def __init__(self, threshold: int = 5, window_s: float = 30, cooldown_s: float = 60) -> None:
         self.threshold = threshold
         self.window_s = window_s

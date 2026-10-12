@@ -24,13 +24,10 @@ jobs:
         with: { enable-cache: true }
       - run: pnpm install --frozen-lockfile
       - run: uv sync --directory apps/backend --frozen
-
-      # The API contract is generated from the backend. Fail if someone changed the API
-      # without committing the regenerated spec and client.
       - name: OpenAPI drift check
         run: |
           pnpm generate
-          git diff --exit-code apps/backend/openapi.json packages/api-client/src/schema.d.ts
+          git diff --exit-code apps/backend/openapi.json packages/api-client/src/schema.ts
 
       - run: pnpm turbo run lint typecheck test
       - run: pnpm --filter @seam/frontend build

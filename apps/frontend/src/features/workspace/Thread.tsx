@@ -20,7 +20,6 @@ function highlightRequirement(id: string | null): void {
   useReview.setState({ activeReq: id });
 }
 
-/** Opens the first undecided suggestion in a section (or its first one, if all are decided). */
 function jumpToSection(section: SectionName): void {
   const inSection = useReview.getState().suggestions.filter((x) => x.section === section);
   const target = inSection.find((x) => x.status === Decision.Pending) ?? inSection[0];
@@ -29,7 +28,6 @@ function jumpToSection(section: SectionName): void {
   select(target.id);
 }
 
-/** Scrolls the conversation to its newest line, unless the reader has scrolled back up. */
 function followLatest(end: HTMLElement | null): void {
   const scroller = end?.closest<HTMLElement>("[data-thread]");
   if (!scroller || scroller.scrollHeight <= scroller.clientHeight) return;
@@ -51,7 +49,7 @@ interface UserBubbleProps {
   children: ReactNode;
 }
 
-export function UserBubble({ children }: UserBubbleProps) {
+function UserBubble({ children }: UserBubbleProps) {
   return (
     <div className="ml-auto max-w-[88%] rounded-[18px] border border-line bg-bg px-4 py-2.5 text-[14.5px] leading-relaxed shadow-[0_1px_2px_rgba(16,15,15,0.04)]">
       {children}
@@ -136,15 +134,12 @@ function ScoreDetails() {
 }
 
 interface ThreadProps {
-  /** Shown before anything has been sent: the greeting and the resume in use. */
   intro: ReactNode;
   onRetry: () => void;
   onEditJob: () => void;
   retrying: boolean;
 }
 
-/** The conversation. Everything in it is derived from the run's state, so a refresh or a
- *  reconnect rebuilds exactly the same thread. */
 export function Thread({ intro, onRetry, onEditJob, retrying }: ThreadProps) {
   const s = useReview();
   const started = s.status !== null;
@@ -154,7 +149,6 @@ export function Thread({ intro, onRetry, onEditJob, retrying }: ThreadProps) {
   const safeLeft = s.status === SessionStatus.Ready ? s.suggestions.filter((x) => x.status === Decision.Pending && !x.requires_confirmation).length : 0;
   const jobProblem = !!s.error && isJobTextCode(s.error.code);
 
-  // keep the newest line in view while things arrive, without fighting someone reading back
   const end = useRef<HTMLDivElement>(null);
   const signature = `${s.status}|${!!s.jd}|${!!s.scoreBefore}|${s.suggestions.length}|${s.notes.length}|${s.asking}|${allDecided}`;
   useEffect(() => followLatest(end.current), [signature]);

@@ -26,7 +26,6 @@ const skill = sug({ id: "s", op: OpName.AddSkill, target: "sk_1", payload: { val
 
 const exp = (v: ReturnType<typeof buildView>) => v.find((s) => s.type === "experience")!;
 
-/** The skills the Clean view shows in the first group. */
 function cleanSkills(s: SuggestionOut[]): string[] {
   return (buildView(resume, s, ViewMode.Clean).find((x) => x.type === "skills") as any).groups[0].chips.map((c: any) => c.value);
 }
@@ -82,7 +81,7 @@ describe("sortSuggestions", () => {
     const later = sug({ id: "x", seq: 1, op: OpName.AddSkill, target: "sk_1", payload: { value: "Go" }, section: SectionName.Skills });
     const bullet = sug({ id: "y", seq: 2, op: OpName.ReplaceText, target: "exp_1.b2", payload: { after: "b" } });
     const summary = sug({ id: "z", seq: 3, op: OpName.RewriteSummary, target: "summary", payload: { after: "s" }, section: SectionName.Summary });
-    const arrivalOrder = [later, bullet, summary]; // experience and skills finished before the summary
+    const arrivalOrder = [later, bullet, summary];
     expect(sortSuggestions(resume, arrivalOrder).map((s) => s.id)).toEqual(["z", "x", "y"]);
   });
 

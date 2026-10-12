@@ -38,7 +38,6 @@ function onLetterError(err: ErrorData): void {
   else toast.error(err.message);
 }
 
-/** One handler per event of a streamed letter, each checked against that event's payload. */
 function letterHandlers(handlers: LetterHandlers): EventHandlers<LetterEventPayloads> {
   return {
     [StreamEvent.Chunk]: (data) => handlers.onText(data.text),
@@ -47,7 +46,6 @@ function letterHandlers(handlers: LetterHandlers): EventHandlers<LetterEventPayl
   };
 }
 
-/** Streams a new letter from the API. Resolves when the stream ends, however it ends. */
 async function writeLetter(versionId: string, options: LetterOptions, signal: AbortSignal, handlers: LetterHandlers): Promise<void> {
   try {
     await postStream(`${API_URL}/v1/versions/${versionId}/cover-letter`, options, letterHandlers(handlers), signal);
@@ -74,7 +72,7 @@ export function CoverLetterPanel({ versionId }: CoverLetterPanelProps) {
     queryFn: () => unwrap(api.GET("/v1/versions/{version_id}/cover-letters", { params: { path: { version_id: versionId } } })),
   });
   const latest: CoverLetterOut | undefined = saved.data?.[0];
-  useEffect(() => { if (latest && !text && !streaming) setText(latest.body); }, [latest]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (latest && !text && !streaming) setText(latest.body); }, [latest]);
   useEffect(() => () => abort.current?.abort(), []);
 
   return (

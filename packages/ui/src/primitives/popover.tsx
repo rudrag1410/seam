@@ -6,7 +6,6 @@ import { cn } from "../cn";
 
 export const Popover = P.Root;
 export const PopoverTrigger = P.Trigger;
-export const PopoverAnchor = P.Anchor;
 
 export function PopoverContent({ className, sideOffset = 8, ...props }: ComponentProps<typeof P.Content>) {
   return (

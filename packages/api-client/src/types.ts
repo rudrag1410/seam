@@ -2,7 +2,6 @@ import type { components } from "./schema";
 
 type S = components["schemas"];
 
-/** Friendly aliases. Reads use the `-Output` variants, which have every defaulted field present. */
 export type Profile = S["ProfileIO-Output"];
 export type Preferences = S["PreferencesIO-Output"];
 export type ResumeOut = S["ResumeOut"];
@@ -24,7 +23,6 @@ export type CoverLetterOut = S["CoverLetterOut"];
 export type InterviewPrep = S["InterviewPrep"];
 export type UserOut = S["UserOut"];
 
-// What each server-sent event carries. See the schema's `TailorEvents` and `LetterEvents`.
 export type StageData = S["StageData"];
 export type JobData = S["JobData"];
 export type ScoreData = S["ScoreData"];

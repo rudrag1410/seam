@@ -13,8 +13,6 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.config import Settings
 from app.main import create_app
 
-# Tests must be hermetic. A developer's .env or shell can hold real API keys and a real storage
-# bucket, and the suite uploads and exports files, so never let any of it leak in.
 Settings.model_config["env_file"] = None
 for _name in Settings.model_fields:
     os.environ.pop(_name.upper(), None)
@@ -61,7 +59,6 @@ async def _truncate_all(url: str) -> None:
 
 
 def _reset_postgres(url: str) -> None:
-    """Empty every table between tests when running against a real Postgres (TEST_DATABASE_URL)."""
     asyncio.run(_truncate_all(url))
 
 

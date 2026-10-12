@@ -23,7 +23,7 @@ def _prefill(resume: Resume) -> dict[str, str | float | None]:
     c = resume.contact
     exp = next((s for s in resume.sections if isinstance(s, ExperienceSection)), None)
     first = exp.items[0] if exp and exp.items else None
-    years = round(estimate_years(resume.model_dump()) * 2) / 2  # nearest half year
+    years = round(estimate_years(resume.model_dump()) * 2) / 2
     links = {
         "linkedin": next((x for x in c.links if "linkedin" in x.lower()), None),
         "github": next((x for x in c.links if "github" in x.lower()), None),
@@ -34,9 +34,7 @@ def _prefill(resume: Resume) -> dict[str, str | float | None]:
         "email": c.email,
         "phone": c.phone,
         "location": c.location,
-        "current_title": first.title.split(" | ")[0].strip()
-        if first and first.title
-        else None,  # "A | B" lists two titles; use the first
+        "current_title": first.title.split(" | ")[0].strip() if first and first.title else None,
         "current_company": first.company if first else None,
         "years_experience": years if years else None,
         **links,
@@ -69,7 +67,6 @@ async def upload_resume(
     file = validate_upload(data, filename, settings)
     sha = hashlib.sha256(data).hexdigest()
 
-    # Content-addressed: the same file re-uploaded is a cache hit.
     source = await db.scalar(
         select(SourceFile).where(SourceFile.user_id == user.id, SourceFile.sha256 == sha)
     )

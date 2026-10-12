@@ -46,7 +46,6 @@ def _html_to_text(raw: str) -> str:
 
 
 async def fetch_url_text(url: str) -> str:
-    """Server-side fetch with SSRF protection: http(s) only, public IPs only, 5s, 2 MB."""
     current = url
     async with httpx.AsyncClient(timeout=5.0, follow_redirects=False) as client:
         for _ in range(4):
@@ -101,14 +100,12 @@ async def build_fit(db: AsyncSession, user: User, settings: Settings, analysis: 
 async def ensure_jd(
     db: AsyncSession, settings: Settings, user: User, text: str | None, url: str | None
 ) -> JobDescription:
-    """Find or create the job description row for this text, without analysing it.
-    Length is validated here, synchronously, so bad input fails before any work starts."""
     if not text and not url:
         raise AppError(ErrorCode.JD_EMPTY, "Paste the job description to continue.")
     source_url = None
     if not text:
         source_url = url
-        text = await fetch_url_text(url)  # type: ignore[arg-type]
+        text = await fetch_url_text(url or "")
     text = sanitize(text)
     check_jd_length(text, settings)
 
@@ -126,12 +123,11 @@ async def ensure_jd(
 async def analyze_row(
     db: AsyncSession, ai: AIGateway, settings: Settings, user: User, row: JobDescription
 ) -> tuple[JDAnalysis, list[str], bool]:
-    """Analyse a job description row (cached on the row). Returns (analysis, warnings, degraded)."""
     if row.analysis:
         return JDAnalysis.model_validate(row.analysis), [], False
     result = await analyze_jd(ai, settings, row.raw_text)
     analysis = result.analysis
-    row.raw_text = result.text  # injected lines, if any, are stripped
+    row.raw_text = result.text
     row.analysis = analysis.model_dump()
     row.title = analysis.title or None
     row.company = analysis.company or None

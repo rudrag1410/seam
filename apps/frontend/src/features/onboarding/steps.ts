@@ -1,4 +1,3 @@
-/** The pages of first-time setup, in order. The value is the page's address. */
 export enum OnboardingStep {
   Resume = "resume",
   About = "about",
@@ -20,7 +19,6 @@ export const STEPS: StepInfo[] = [
   { slug: OnboardingStep.Ready, label: "Ready" },
 ];
 
-/** The step an address names, or undefined when it names none. */
 export function stepFor(slug: string): OnboardingStep | undefined {
   return STEPS.find((s) => s.slug === slug)?.slug;
 }

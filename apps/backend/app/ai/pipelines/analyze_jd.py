@@ -64,7 +64,6 @@ def _heuristic_kind(text: str) -> DocumentKind:
 
 
 def _member[E: StrEnum](options: type[E], value: str, fallback: E) -> E:
-    """The enum member for something a model said, or the fallback when it said something else."""
     try:
         return options(value)
     except ValueError:
@@ -85,7 +84,6 @@ def _requirements(draft: list[_DraftRequirement], prefix: str) -> list[Requireme
 
 
 def check_jd_length(text: str, settings: Settings) -> None:
-    """Bounds what a job description can cost: too short to analyse, or too long to send."""
     if len(text) < settings.min_jd_chars:
         raise AppError(
             ErrorCode.JD_TOO_SHORT,
@@ -138,7 +136,7 @@ async def analyze_jd(ai: AIGateway, settings: Settings, raw: str) -> AnalysisRes
     seniority = _member(Seniority, draft.seniority, Seniority.UNSPECIFIED)
     confidence: dict[str, float] = {}
     for facet, (label, conf) in facets.items():
-        confidence[facet] = conf  # a low one makes the fit check say "unclear"
+        confidence[facet] = conf
         if conf < settings.jev_confidence_low:
             continue
         if facet == Facet.WORK_MODE:

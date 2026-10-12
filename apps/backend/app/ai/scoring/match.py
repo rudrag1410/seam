@@ -1,6 +1,3 @@
-"""Explainable match score: per-requirement coverage levels (Jev, or a keyword fallback)
-combined with explicit weights in code."""
-
 import re
 
 from app.ai.scoring.experience import estimate_years, seniority_fit
@@ -17,7 +14,6 @@ from app.schemas.scores import MatchScore, RequirementCoverage
 WEIGHTS = {"must": 0.50, "nice": 0.15, "keywords": 0.15, "seniority": 0.10, "sections": 0.10}
 MAX_LEVEL = 4.0
 
-# requirement id -> (level 0..4, confidence or None)
 Coverage = dict[str, tuple[float, float | None]]
 
 
@@ -33,7 +29,6 @@ def _experience_text(document: dict) -> str:
 
 
 def keyword_coverage(document: dict, requirements: list[Requirement]) -> Coverage:
-    """Degraded-mode coverage: alias-aware keyword matching, no model involved."""
     exp_text = _experience_text(document)
     exp_kw = set(find_keywords(exp_text))
     all_kw = set(find_keywords(resume_text(document)))

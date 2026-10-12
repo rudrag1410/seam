@@ -5,8 +5,6 @@ from app.ai.gateway.jev_client import Battery
 
 
 def grounding_battery(keys: list[str]) -> Battery:
-    """One set of questions per suggestion, all in a single request per section.
-    State is {key: {original, rewrite, evidence, requirement}}; questions are namespaced by key."""
     questions: dict = {}
     for k in keys:
         questions[f"{k}__relation"] = Choice(

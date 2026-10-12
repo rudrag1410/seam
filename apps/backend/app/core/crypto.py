@@ -1,5 +1,3 @@
-"""Field-level encryption for compensation data. Never logged, never sent to a model."""
-
 import base64
 import hashlib
 
@@ -9,7 +7,6 @@ from app.core.config import Settings
 
 
 def _fernet(settings: Settings) -> Fernet:
-    # Derive a valid Fernet key from whatever secret is configured, so dev works out of the box.
     secret = settings.field_encryption_key or settings.jwt_secret
     key = base64.urlsafe_b64encode(hashlib.sha256(secret.encode()).digest())
     return Fernet(key)

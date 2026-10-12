@@ -19,8 +19,7 @@ class Route:
     model: str
     fallback: str | None
     timeout_s: float
-    max_output: int  # tokens; reasoning tokens count toward this on reasoning models
-    # extraction needs little thinking; None means "use the configured LLM_REASONING_EFFORT"
+    max_output: int
     effort: str | None = None
 
 

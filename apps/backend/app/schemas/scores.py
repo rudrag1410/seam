@@ -8,7 +8,7 @@ class RequirementCoverage(ApiModel):
     id: str
     text: str
     must_have: bool
-    level: float  # 0..4, fractional
+    level: float
     confidence: float | None = None
     verdict: Verdict
 

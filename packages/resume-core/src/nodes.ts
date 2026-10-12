@@ -1,6 +1,5 @@
 import type { Resume } from "./ast";
 
-/** Plain text of a bullet or summary node, or undefined if the id is unknown. */
 export function nodeText(doc: Resume, id: string): string | undefined {
   for (const s of doc.sections) {
     if (s.type === "summary" && s.id === id) return s.text;

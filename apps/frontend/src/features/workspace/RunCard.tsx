@@ -20,7 +20,6 @@ const PILL_TONE: Record<StepState, string> = {
   [StepState.Failed]: "bg-del text-del-line",
 };
 
-/** What a step says under its title while it has nothing more specific to report. */
 const IDLE_LINE: Record<StepState, string> = {
   [StepState.Pending]: "",
   [StepState.Running]: "Working on it…",
@@ -72,9 +71,7 @@ function Pill({ state }: PillProps) {
 
 interface RowProps {
   step: Step;
-  /** What opens when a finished step is clicked. */
   children?: ReactNode;
-  /** Sits under the row, outside its click target. */
   after?: ReactNode;
 }
 
@@ -86,7 +83,6 @@ function Row({ step, children, after }: RowProps) {
       <StateIcon state={step.state} />
       <span className="min-w-0 flex-1">
         <span className={cn("block text-[14px] font-medium", step.state === StepState.Pending && "text-ink-muted")}>{step.title}</span>
-        {/* the line is always there, so a step finishing never changes the card's height */}
         <span className="flex h-[18px] items-center gap-2 text-[12.5px] leading-[18px] text-ink-muted">
           {step.state === StepState.Running && <StitchLine className="shrink-0 text-ink-soft" />}
           <span className="truncate">{step.summary ?? IDLE_LINE[step.state]}</span>
@@ -140,7 +136,6 @@ function Parts({ parts, onJump, footer }: PartsProps) {
   );
 }
 
-/** The card's overall state: stopped if any step stopped, done once every step is, else working. */
 function overallState(steps: Step[]): StepState {
   if (steps.some((s) => s.state === StepState.Failed)) return StepState.Failed;
   return steps.every((s) => s.state === StepState.Done) ? StepState.Done : StepState.Running;
@@ -148,15 +143,11 @@ function overallState(steps: Step[]): StepState {
 
 interface RunCardProps {
   steps: Step[];
-  /** What each finished step opens to show. */
   details: Partial<Record<StepKey, ReactNode>>;
   onJump?: (section: SectionName) => void;
-  /** Sits under the list of sections once suggestions exist. */
   footer?: ReactNode;
 }
 
-/** One card for the whole run: each step ticks off as the stream reports it, and a finished
- *  step opens to show what it found. */
 export function RunCard({ steps, details, onJump, footer }: RunCardProps) {
   return (
     <section aria-label="Tailoring progress" className="rounded-[18px] border border-line bg-bg">

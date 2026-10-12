@@ -20,7 +20,6 @@ export const useMe = () =>
   useQuery({ queryKey: keys.me, queryFn: () => unwrap(api.GET("/v1/me")),
     retry: false,
     staleTime: 30_000,
-    // an expired session is noticed when you come back to the tab, not on your next click
     refetchOnWindowFocus: true,
     refetchInterval: 5 * 60_000,
   });

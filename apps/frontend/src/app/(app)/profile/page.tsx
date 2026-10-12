@@ -55,16 +55,16 @@ export default function ProfilePage() {
         )}
       </Section>
       <Section title="About you">
-        {profile.data ? <AboutForm profile={profile.data} prefill={resume.data?.prefill} submitLabel="Save details" onSaved={() => toast.success("Details saved")} /> : <Skeleton className="h-64" />}
+        {profile.data ? <AboutForm profile={profile.data} prefill={resume.data?.prefill} submitLabel="Save details" onSaved={() => toast.success("Details saved")} /> : <Skeleton className="h-[672px]" />}
       </Section>
       <Section title="Compensation">
-        {profile.data ? <CompensationForm profile={profile.data} submitLabel="Save compensation" onSaved={() => toast.success("Compensation saved")} /> : <Skeleton className="h-40" />}
+        {profile.data ? <CompensationForm profile={profile.data} submitLabel="Save compensation" onSaved={() => toast.success("Compensation saved")} /> : <Skeleton className="h-[279px]" />}
       </Section>
       <Section title="What you're looking for" body="Each job is checked against this, and mismatches are flagged on the fit check.">
         {prefs.data ? (
           <PreferencesForm preferences={prefs.data} submitLabel="Save preferences" onSaved={() => toast.success("Preferences saved")} />
         ) : (
-          <Skeleton className="h-96" />
+          <Skeleton className="h-[926px]" />
         )}
       </Section>
       <Section title="Delete my data" body="Removes your account, resumes, versions and exported files. This can't be undone.">

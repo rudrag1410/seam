@@ -14,7 +14,6 @@ function isPaletteShortcut(e: KeyboardEvent): boolean {
   return e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey);
 }
 
-/** Every item closes the palette before it acts. */
 function closeThen(setOpen: (open: boolean) => void, action: () => void): void {
   setOpen(false);
   action();
@@ -26,7 +25,6 @@ export function CommandPalette() {
   const signOut = useSignOut();
   const { toggle } = useTheme();
 
-  // ⌘K toggles it; the sidebar's button asks for it with an event
   useEffect(
     () =>
       listen("keydown", (e) => {

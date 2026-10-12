@@ -1,5 +1,3 @@
-"""Upload validation by magic bytes, not by extension."""
-
 import io
 import zipfile
 from dataclasses import dataclass

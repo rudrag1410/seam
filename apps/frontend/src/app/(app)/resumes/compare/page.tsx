@@ -12,6 +12,7 @@ import { ErrorState } from "@/components/feedback/states";
 import { InlineDiff } from "@/features/resume-canvas/InlineDiff";
 import { ResumeCanvas } from "@/features/resume-canvas/ResumeCanvas";
 import { ViewMode, buildView } from "@/features/resume-canvas/view-model";
+import { PaperSkeleton } from "@/features/workspace/WorkspaceSkeleton";
 import { api, unwrap } from "@/lib/api";
 
 const KIND: Record<ChangeKind, string> = {
@@ -31,6 +32,22 @@ function Delta({ label, value }: DeltaProps) {
   return <Badge tone={value > 0 ? "green" : value < 0 ? "orange" : "neutral"} className="tabular">{label} {value > 0 ? "+" : ""}{value}</Badge>;
 }
 
+function CompareSkeleton() {
+  return (
+    <div className="mx-auto max-w-[1500px] px-4 py-8 sm:px-8" aria-busy>
+      <div className="mb-8 flex items-center gap-3">
+        <Skeleton className="size-8 rounded-full" />
+        <Skeleton className="h-9 w-72" />
+      </div>
+      <Skeleton className="mb-10 h-40" />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <PaperSkeleton />
+        <PaperSkeleton />
+      </div>
+    </div>
+  );
+}
+
 function Compare() {
   const params = useSearchParams();
   const a = params.get("a");
@@ -47,7 +64,7 @@ function Compare() {
 
   if (!a || !b) return <p className="p-8">Pick two versions to compare.</p>;
   if (q.isError) return <div className="mx-auto max-w-xl p-8"><ErrorState error={q.error} onRetry={() => q.refetch()} /></div>;
-  if (!q.data || !views) return <div className="p-8"><Skeleton className="h-96" /></div>;
+  if (!q.data || !views) return <CompareSkeleton />;
   const d = q.data;
 
   return (

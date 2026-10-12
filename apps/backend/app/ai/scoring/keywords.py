@@ -1,5 +1,3 @@
-"""Keyword canonicalization and detection, shared by scoring, guards and the mock provider."""
-
 import re
 from functools import lru_cache
 from pathlib import Path
@@ -29,7 +27,6 @@ def _longest_alias_first(entry: tuple[str, str]) -> int:
 @lru_cache
 def _patterns() -> list[tuple[re.Pattern[str], str]]:
     pats = []
-    # Longest aliases first so "react native" wins over "react".
     for alias, canonical in sorted(_alias_map().items(), key=_longest_alias_first):
         pats.append((re.compile(rf"(?<![\w+#.]){re.escape(alias)}(?![\w+#]|\.\w)", re.I), canonical))
     return pats
@@ -41,7 +38,6 @@ def canonicalize(term: str) -> str:
 
 
 def find_keywords(text: str) -> list[str]:
-    """Canonical skills mentioned in `text`, in order of first appearance."""
     hits: list[tuple[int, str]] = []
     seen: set[str] = set()
     for pat, canonical in _patterns():
@@ -53,7 +49,6 @@ def find_keywords(text: str) -> list[str]:
 
 
 def resume_text(document: dict) -> str:
-    """Flatten a resume document into searchable text."""
     parts: list[str] = [document.get("contact", {}).get("name", "")]
     for s in document.get("sections", []):
         if s["type"] == SectionType.SUMMARY:
@@ -76,7 +71,6 @@ def resume_text(document: dict) -> str:
 
 
 def keyword_alignment(document: dict, jd_keywords: list[str]) -> tuple[float, list[str], list[str]]:
-    """Share of canonical JD keywords present in the resume (alias-aware)."""
     if not jd_keywords:
         return 1.0, [], []
     have = set(find_keywords(resume_text(document)))

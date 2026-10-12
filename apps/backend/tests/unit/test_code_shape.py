@@ -1,7 +1,6 @@
-"""House rule: no function is defined inside another function, and that includes lambdas.
-Helpers live at module level or as methods, so each one can be read, named and tested alone."""
-
 import ast
+import io
+import tokenize
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[2]
@@ -17,7 +16,6 @@ def _nested(node: ast.AST, inside: str | None, found: list[str]) -> None:
                 found.append(f"line {child.lineno}: {name} inside {inside}")
             _nested(child, name, found)
         elif isinstance(child, ast.ClassDef):
-            # a class in a function hides functions just as well; methods of a module-level class are fine
             if inside is not None:
                 found.append(f"line {child.lineno}: class {child.name} inside {inside}")
             _nested(child, inside, found)
@@ -31,4 +29,19 @@ def test_no_function_is_defined_inside_another():
         found: list[str] = []
         _nested(ast.parse(path.read_text()), None, found)
         problems += [f"{path.relative_to(BACKEND)} {f}" for f in found]
+    assert not problems, "\n".join(problems)
+
+
+def test_no_comments_or_docstrings():
+    problems: list[str] = []
+    for path in SOURCES:
+        source = path.read_text()
+        for token in tokenize.generate_tokens(io.StringIO(source).readline):
+            if token.type == tokenize.COMMENT:
+                problems.append(f"{path.relative_to(BACKEND)}:{token.start[0]} comment")
+        for node in ast.walk(ast.parse(source)):
+            if isinstance(
+                node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef
+            ) and ast.get_docstring(node):
+                problems.append(f"{path.relative_to(BACKEND)} docstring on {getattr(node, 'name', 'module')}")
     assert not problems, "\n".join(problems)

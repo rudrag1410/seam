@@ -16,7 +16,6 @@ function FromResume() {
   return <span className="ml-2 rounded-full bg-cream px-2 py-0.5 text-[11px] font-normal text-ink-muted">from resume</span>;
 }
 
-/** The user's own value, or what the resume said when they haven't set one. */
 function pick(prefill: Prefill, own: string | null | undefined, key: string): string {
   return own || (prefill[key] as string | undefined) || "";
 }
@@ -58,8 +57,6 @@ export function AboutForm({
     resolver: zodResolver(aboutSchema),
     defaultValues: aboutDefaults(profile, prefill),
   });
-  // prefill arrives after the upload resolves
-  // biome-ignore lint: reset only when the prefill identity changes
   useEffect(() => reset(aboutDefaults(profile, prefill)), [prefill.full_name, prefill.email, prefill.current_title, prefill.headline, prefill.years_experience]);
 
   const onSubmit = handleSubmit(async (v) => {

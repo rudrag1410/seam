@@ -1,5 +1,3 @@
-"""End-to-end API flow in mock AI mode: upload -> analyze -> tailor (SSE) -> review -> finalize -> export."""
-
 import json
 
 from app.ai.gateway.openai_client import LLM_UNAVAILABLE
@@ -75,14 +73,14 @@ def test_full_tailoring_flow(authed, resume_pdf, jd_text):
     resume = r.json()
     assert resume["filename"] == "aarav.pdf" and resume["parse_path"] == "text"
     assert resume["prefill"]["full_name"] == "Aarav Mehta"
-    assert _upload(authed, resume_pdf).json()["id"] == resume["id"]  # content-addressed re-upload
+    assert _upload(authed, resume_pdf).json()["id"] == resume["id"]
 
     jd = authed.post("/v1/jobs/analyze", json={"text": jd_text})
     assert jd.status_code == 200, jd.text
     jd = jd.json()
     assert jd["title"].startswith("Senior Frontend") and len(jd["analysis"]["must_haves"]) >= 4
     again = authed.post("/v1/jobs/analyze", json={"text": jd_text}).json()
-    assert again["id"] == jd["id"]  # cached by hash
+    assert again["id"] == jd["id"]
 
     created = authed.post(
         "/v1/tailor-sessions",
@@ -104,7 +102,6 @@ def test_full_tailoring_flow(authed, resume_pdf, jd_text):
     ops = {s["op"] for s in suggestions}
     assert "reorder" in ops and "add_skill" in ops
 
-    # a reconnect after completion replays from the database
     replay = _sse(authed, f"/v1/tailor-sessions/{sid}/stream")
     assert [d["id"] for n, d in replay if n == "suggestion"] == [s["id"] for s in suggestions]
 
@@ -124,7 +121,7 @@ def test_full_tailoring_flow(authed, resume_pdf, jd_text):
     fin = authed.post(f"/v1/tailor-sessions/{sid}/finalize")
     assert fin.status_code == 200, fin.text
     vid = fin.json()["version_id"]
-    assert authed.post(f"/v1/tailor-sessions/{sid}/finalize").json()["version_id"] == vid  # idempotent
+    assert authed.post(f"/v1/tailor-sessions/{sid}/finalize").json()["version_id"] == vid
 
     version = authed.get(f"/v1/versions/{vid}").json()
     assert version["ats"]["total"] > 0 and version["match_score"] is not None
@@ -138,10 +135,9 @@ def test_full_tailoring_flow(authed, resume_pdf, jd_text):
     cmp = authed.get(f"/v1/versions/{vid}/compare/{vid}").json()
     assert cmp["changes"] == []
 
-    assert authed.get("/v1/applications").status_code == 404  # the tracker is gone
+    assert authed.get("/v1/applications").status_code == 404
 
     feed = authed.get("/v1/activity").json()["items"]
-    # the feed can be narrowed to one kind of event, and rejects a group that doesn't exist
     resumes = authed.get("/v1/activity", params={"type": "resume"}).json()["items"]
     assert resumes and all(item["type"].startswith("resume.") for item in resumes)
     assert authed.get("/v1/activity", params={"type": "nonsense"}).status_code == 422
@@ -187,9 +183,6 @@ def test_unreadable_pdf_gets_a_clear_error(authed):
     assert r.status_code in (400, 422) and r.json()["error"]["code"] == "RESUME_UNREADABLE"
 
 
-# --- no AI key: the first-run experience -------------------------------------------------------
-
-
 def _live_client(settings, **overrides):
     from fastapi.testclient import TestClient
 
@@ -213,12 +206,12 @@ def test_upload_and_autofill_work_without_an_ai_key(settings):
         r = c.post("/v1/resumes", files={"file": ("jane.pdf", _real_world_pdf(), "application/pdf")})
         assert r.status_code == 201, r.text
         body = r.json()
-        assert body["parse_path"] == "basic"  # read by the built-in parser, no model involved
+        assert body["parse_path"] == "basic"
         pre = body["prefill"]
         assert pre["full_name"] == "Jane Doe" and pre["headline"] == "Full Stack Developer"
         assert pre["phone"] == "+91 9000000001" and pre["location"] == "Pune, India"
         assert pre["current_company"] == "examplecorp.io"
-        assert pre["current_title"] == "Founding Engineer"  # first of "A | B"
+        assert pre["current_title"] == "Founding Engineer"
         assert pre["years_experience"] and pre["years_experience"] >= 4
         exp = next(s for s in body["document"]["sections"] if s["type"] == "experience")
         assert [i["company"] for i in exp["items"]] == ["examplecorp.io", "Acme Technology"]
@@ -234,8 +227,6 @@ def test_ai_steps_say_why_they_cannot_run(settings, jd_text):
 
 
 class _GeneratorDown:
-    """A generator whose every call fails the way an OpenAI outage does."""
-
     breaker_open = False
 
     async def structured(self, *a, **k):
@@ -244,13 +235,10 @@ class _GeneratorDown:
 
 def test_upload_survives_an_ai_outage(settings):
     with _live_client(settings, openai_api_key="sk-test") as c:
-        c.app.state.ai.generate = _GeneratorDown()  # type: ignore[attr-defined]
+        c.app.state.ai.generate = _GeneratorDown()
         c.post("/v1/auth/signup", json={"email": "j@x.co", "password": "longenough", "full_name": "Jane"})
         r = c.post("/v1/resumes", files={"file": ("jane.pdf", _real_world_pdf(), "application/pdf")})
         assert r.status_code == 201 and r.json()["parse_path"] == "basic"
-
-
-# --- start from raw job text: the analysis streams inside the session ---------------------------
 
 
 def _start(client, resume_id, **jd):
@@ -263,38 +251,32 @@ def _start(client, resume_id, **jd):
 def test_session_starts_from_pasted_text_and_streams_the_analysis(authed, resume_pdf, jd_text):
     rid = _upload(authed, resume_pdf).json()["id"]
     created = _start(authed, rid, jd_text=jd_text)
-    assert created.status_code == 202, created.text  # returns immediately; no analysis blocked it
+    assert created.status_code == 202, created.text
     sid = created.json()["id"]
 
     events = _sse(authed, f"/v1/tailor-sessions/{sid}/stream")
     names = [n for n, _ in events]
-    # reading the job comes first, then the analysis, then suggestions stream in
     assert names[0] == "stage" and events[0][1]["stage"] == "reading"
     assert names.index("jd") < names.index("suggestion") < names.index("done")
     jd_event = next(d for n, d in events if n == "jd")
     assert jd_event["title"].startswith("Senior Frontend") and jd_event["analysis"]["must_haves"]
     assert jd_event["fit"]["items"]
 
-    # the plan says how many pieces each section has, and every piece reports back when it finishes,
-    # which is what lets the client tick sections off one by one
     plan = next(d["tasks"] for n, d in events if n == "stage" and "tasks" in d)
     finished = [d["section"] for n, d in events if n == "stage" and "section" in d]
     assert plan and all(finished.count(section) == pieces for section, pieces in plan.items())
 
-    # every event a run publishes matches its declared payload, which is what the client is typed from
     for name, data in events:
         TAILOR_EVENTS[StreamEvent(name)].model_validate(data)
 
-    # a reconnect shortly after replays the live log; once that is gone it replays from the database
     live = [n for n, _ in _sse(authed, f"/v1/tailor-sessions/{sid}/stream")]
     assert live == names
-    authed.app.state.broker._streams.clear()  # type: ignore[attr-defined]
+    authed.app.state.broker._streams.clear()
     stored = [n for n, _ in _sse(authed, f"/v1/tailor-sessions/{sid}/stream")]
     assert stored[0] == "jd" and stored[-1] == "done" and "suggestion" in stored
 
     session = authed.get(f"/v1/tailor-sessions/{sid}").json()
     assert session["status"] == "ready" and session["jd"]["title"].startswith("Senior Frontend")
-    # the conversation shows what the user sent, including after a reload
     assert session["jd_text"] == jd_text.strip() and session["jd_url"] is None
 
 
@@ -311,10 +293,10 @@ def test_bad_job_text_is_rejected_instantly(authed, resume_pdf):
     rid = _upload(authed, resume_pdf).json()["id"]
     short = _start(authed, rid, jd_text="too short")
     assert short.status_code == 400 and short.json()["error"]["code"] == "JD_TOO_SHORT"
-    long = _start(authed, rid, jd_text="Senior engineer. " * 2000)  # ~34k chars, over the cap
+    long = _start(authed, rid, jd_text="Senior engineer. " * 2000)
     assert long.status_code == 413 and long.json()["error"]["code"] == "JD_TOO_LONG"
-    assert _start(authed, rid).status_code == 422  # a job source is required
-    assert _start(authed, rid, jd_text="x" * 400, jd_url="https://x.co").status_code == 422  # but only one
+    assert _start(authed, rid).status_code == 422
+    assert _start(authed, rid, jd_text="x" * 400, jd_url="https://x.co").status_code == 422
 
 
 def test_a_resume_pasted_as_the_job_fails_in_the_stream_with_a_clear_error(authed, resume_pdf):
@@ -330,12 +312,9 @@ def test_a_resume_pasted_as_the_job_fails_in_the_stream_with_a_clear_error(authe
     assert session["status"] == "failed" and session["error_code"] == "JD_NOT_A_JD"
 
 
-# --- expired sessions -----------------------------------------------------------------------------
-
-
 def test_a_dead_session_clears_its_cookies_so_the_client_can_sign_in_again(authed):
-    authed.post("/v1/auth/logout")  # revokes the refresh token server-side
-    stale = authed.cookies  # a client still holding the old cookies
+    authed.post("/v1/auth/logout")
+    stale = authed.cookies
     authed.cookies.set("seam_access", "not-a-valid-jwt")
     authed.cookies.set("seam_refresh", "revoked-or-unknown-token")
     r = authed.get("/v1/me")

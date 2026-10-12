@@ -26,7 +26,6 @@ router = APIRouter(prefix="/tailor-sessions", tags=["tailor"])
 
 
 async def _live(broker: TailorBroker, key: str, last: int) -> AsyncIterator[str]:
-    """A run still in memory: replay what was missed, then follow it."""
     async for item in broker.subscribe(key, last):
         if item is None:
             yield ": heartbeat\n\n"
@@ -38,7 +37,6 @@ async def _live(broker: TailorBroker, key: str, last: int) -> AsyncIterator[str]
 async def _replay(
     db: AsyncSession, settings: Settings, session: TailorSession, last: int
 ) -> AsyncIterator[str]:
-    """A run no longer in memory: rebuild its events from what was saved."""
     async for event_id, event, data in tailor_service.replay_from_db(db, settings, session):
         if event_id > last:
             yield frame(event, data, event_id)

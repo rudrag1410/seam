@@ -2,7 +2,6 @@ import createClient from "openapi-fetch";
 import { ErrorCode } from "./schema";
 import type { paths } from "./schema";
 
-/** Problems the browser finds before or instead of an answer from the API. */
 export enum ClientErrorCode {
   Network = "NETWORK",
   Unknown = "UNKNOWN",
@@ -16,7 +15,6 @@ export interface ApiError {
   retryable?: boolean;
 }
 
-/** Thrown by `unwrap` so callers and React Query see a typed, user-presentable error. */
 export class ApiException extends Error {
   constructor(
     public readonly status: number,
@@ -63,7 +61,6 @@ export async function unwrap<T>(result: Promise<Result<T>>): Promise<T> {
   return res.data as T;
 }
 
-/** The codes that mean the job text itself is the problem, so the user can fix it and send again. */
 export const JOB_TEXT_CODES: ReadonlySet<ErrorCode> = new Set([
   ErrorCode.JdEmpty,
   ErrorCode.JdNotAJd,

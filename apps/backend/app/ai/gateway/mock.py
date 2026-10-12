@@ -1,8 +1,3 @@
-"""Deterministic offline generator for tests and `AI_MODE=mock` demos. No network, no keys.
-
-It consumes the same `context` the real prompts are built from, so the pipelines run unchanged.
-"""
-
 import asyncio
 import re
 from collections.abc import AsyncIterator
@@ -118,7 +113,6 @@ def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
     elif section in (SectionName.EXPERIENCE, SectionName.PROJECTS):
         for item in nodes:
             bullets = item["bullets"]
-            # most relevant first; ties keep their original order
             relevance = [_overlap(b["text"], jd_kw) for b in bullets]
             order = sorted(range(len(bullets)), key=relevance.__getitem__, reverse=True)
             ranked = [bullets[i] for i in order]
@@ -169,7 +163,7 @@ class MockGenerator:
         self, task: Task, *, system: str, user: str, schema: type[T], context: dict | None = None
     ) -> AsyncIterator[dict]:
         for suggestion in _mock_tailor(context or {}).suggestions:
-            await asyncio.sleep(self._delay)  # visible, like a model writing one suggestion at a time
+            await asyncio.sleep(self._delay)
             yield suggestion.model_dump()
 
     async def vision_structured(

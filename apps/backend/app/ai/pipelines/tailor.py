@@ -1,10 +1,3 @@
-"""Tailoring pipeline.
-
-OpenAI proposes typed patch ops per section (in parallel). Code and Jev then decide what the user
-sees: references are checked, new claims are caught by string guards, and a second model grades
-every text change against the original and the candidate's evidence.
-"""
-
 import asyncio
 import json
 import logging
@@ -58,8 +51,6 @@ SECTION_LABEL = {
 
 
 class RunEvent(TypedDict):
-    """One thing a run reports: which event, and its payload (see `app.schemas.stream`)."""
-
     event: StreamEvent
     data: dict[str, Any]
 
@@ -114,7 +105,6 @@ def build_tasks(resume: dict, sections: list[SectionName]) -> list[SectionTask]:
 
 
 async def get_coverage(ai: AIGateway, document: dict, jd: JDAnalysis) -> tuple[Coverage, bool]:
-    """Jev rates every requirement in one request; falls back to keyword matching."""
     reqs = jd.requirements()
     answers = await ai.jev.ask({"resume": resume_text(document)}, coverage_battery(reqs))
     if answers is None:
@@ -141,7 +131,6 @@ def _analysis_json(jd: JDAnalysis) -> str:
 async def _generate_stream(
     ai: AIGateway, settings: Settings, inp: TailorInputs, task: SectionTask
 ) -> AsyncIterator[dict]:
-    """The model's raw suggestions, one at a time, as soon as each is written."""
     reqs = _requirement_lines(inp.jd)
     context_text = clip(resume_text(inp.resume), settings.llm_max_resume_tokens)
     user = render(
@@ -195,7 +184,6 @@ def _payload_of(s: ModelSuggestion, seq_hint: str) -> dict:
 
 
 def _estimate_delta(s: ModelSuggestion, jd: JDAnalysis, before_text: str, after_text: str) -> float:
-    """Keyword-based fallback estimate of the match-score change, in points."""
     if not jd.keywords:
         return 0.0
     wanted = {canonicalize(k) for k in jd.keywords}
@@ -225,7 +213,6 @@ def _guard(
     full_text: str,
     years: float,
 ) -> dict | None:
-    """Deterministic checks: new numbers and technologies are flagged, no-ops are dropped."""
     flag: str | None = None
     needs = s.requires_confirmation
     before_text = texts.get(s.target, "")
@@ -272,7 +259,6 @@ def _guard(
 async def _ground(
     ai: AIGateway, settings: Settings, inp: TailorInputs, it: dict, texts: dict[str, str], full_text: str
 ) -> tuple[dict | None, bool]:
-    """Jev grades one text change against the original and the evidence. Returns (item or None, degraded)."""
     if it["op"] not in TEXT_OPS:
         return it, False
     reqs_by_id = {r.id: r.text for r in inp.jd.requirements()}
@@ -287,7 +273,7 @@ async def _ground(
     }
     answers = await ai.jev.ask(state, grounding_battery(["s0"]))
     if answers is None:
-        return it, True  # the string-level guard is the only check
+        return it, True
 
     relation, rel_conf = answers.choice("s0__relation")
     fit_o, fo_conf = answers.score("s0__fit_original")
@@ -330,13 +316,10 @@ async def _ground(
 async def _process_stream(
     ai: AIGateway, settings: Settings, inp: TailorInputs, task: SectionTask
 ) -> AsyncIterator[tuple[dict, bool]]:
-    """Generate, validate, guard and ground one section's suggestions, yielding each the moment it
-    clears every check. Yields (suggestion, degraded)."""
     doc = inp.resume
     index, texts = node_index(doc), bullet_text(doc)
     full_text = resume_text(doc)
     years = estimate_years(doc)
-    # the model may only touch nodes it was shown
     allowed = {n["id"] for n in task.nodes} | {b["id"] for n in task.nodes for b in n.get("bullets", [])}
 
     seen: set[str] = set()
@@ -346,7 +329,6 @@ async def _process_stream(
             s = ModelSuggestion.model_validate(raw)
         except ValidationError:
             continue
-        # one edit per node, except skills: several different skills may be added to the same group
         key = f"{s.op}:{s.target}:{(s.value or '').strip().lower()}" if s.op in SKILL_OPS else s.target
         if key in seen or s.target not in allowed or not is_valid_reference(s, index, {task.section}):
             continue
@@ -362,15 +344,13 @@ async def _process_stream(
 
 
 class WorkKind(Enum):
-    ITEM = "item"  # one suggestion is ready
-    FAILED = "failed"  # the piece couldn't be written
-    FINISHED = "finished"  # the piece is over, however it went
+    ITEM = "item"
+    FAILED = "failed"
+    FINISHED = "finished"
 
 
 @dataclass(frozen=True)
 class WorkMessage:
-    """What a section worker tells the run loop."""
-
     kind: WorkKind
     task: SectionTask
     payload: Any = None
@@ -388,14 +368,13 @@ async def _section_worker(
     queue: WorkQueue,
     sem: asyncio.Semaphore,
 ) -> None:
-    """Writes one piece of the resume, handing each suggestion to the queue as it is ready."""
     try:
         async with sem:
             async for item, deg in _process_stream(ai, settings, inp, task):
                 await queue.put(WorkMessage(WorkKind.ITEM, task, item, deg))
     except asyncio.CancelledError:
         raise
-    except Exception as exc:  # one bad section must not sink the run
+    except Exception as exc:
         if not isinstance(exc, AppError):
             log.exception("tailor task failed")
         await queue.put(WorkMessage(WorkKind.FAILED, task, exc))
@@ -404,18 +383,12 @@ async def _section_worker(
 
 
 async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> AsyncIterator[RunEvent]:
-    """Yields SSE-shaped events: stage, score, suggestion, warning, done.
-
-    Sections run in parallel and each suggestion is emitted the moment it is ready, so the first
-    one appears after a single model call's first few seconds rather than after the whole run."""
     degraded = False
     yield {"event": StreamEvent.STAGE, "data": {"stage": Stage.ANALYZING, "progress": 0.05}}
-    # the "before" score runs alongside generation instead of blocking it
     before_task = asyncio.create_task(score_document(ai, settings, inp.resume, inp.jd))
 
     tasks = build_tasks(inp.resume, inp.sections)
     total = len(tasks)
-    # how many pieces each section is split into, so the client can show per-section progress
     plan: dict[SectionName, int] = {}
     for t in tasks:
         plan[t.section] = plan.get(t.section, 0) + 1
@@ -431,7 +404,6 @@ async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> As
     finished = 0
     next_event = asyncio.create_task(queue.get())
     try:
-        # wait on the queue and the "before" score together, so each is sent the moment it is ready
         while finished < total or before is None:
             waiting: set[asyncio.Task] = set()
             if finished < total:
@@ -515,7 +487,6 @@ async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> As
 async def regenerate_one(
     ai: AIGateway, settings: Settings, inp: TailorInputs, target: str, section: SectionName, instruction: str
 ) -> dict:
-    """Re-run a single node with a user instruction. Jev maps the instruction to a template."""
     answers = await ai.jev.ask(instruction, intent_battery())
     text = f'User instruction: "{instruction}".'
     if answers is not None:

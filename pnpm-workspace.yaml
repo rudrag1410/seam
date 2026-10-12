@@ -1,8 +1,6 @@
 packages:
   - "apps/*"
   - "packages/*"
-
-# Postinstall scripts we trust.
 allowBuilds:
   esbuild: true
   sharp: true

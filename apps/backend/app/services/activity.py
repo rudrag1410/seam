@@ -16,7 +16,6 @@ def record(
     entity_id: UUID | None = None,
     meta: dict | None = None,
 ) -> None:
-    """Append an event inside the caller's transaction, so the feed can't drift from reality."""
     db.add(
         ActivityEvent(
             user_id=user_id,

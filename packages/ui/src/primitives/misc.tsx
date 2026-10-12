@@ -19,36 +19,8 @@ export function Badge({ tone = "neutral", className, ...props }: HTMLAttributes<
   );
 }
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("rounded-[16px] border border-line bg-panel", className)} {...props} />;
-}
-
-/** A loading placeholder with a shimmer. Give it the size of what it stands in for, so that
- *  nothing moves when the real content arrives. */
 export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div aria-hidden className={cn("skeleton rounded-md", className)} {...props} />;
-}
-
-interface SkeletonLinesProps {
-  /** How many lines of text it stands in for. */
-  lines: number;
-  /** Line height in pixels; each line is this tall including its gap. */
-  lineHeight?: number;
-  className?: string;
-}
-
-/** A paragraph's worth of placeholder, with a shorter last line the way text ends. Its height is
- *  exactly `lines * lineHeight`, so it can be matched to the text it replaces. */
-export function SkeletonLines({ lines, lineHeight = 22, className }: SkeletonLinesProps) {
-  return (
-    <div aria-hidden className={cn("flex flex-col justify-center", className)} style={{ height: lines * lineHeight }}>
-      {Array.from({ length: lines }, (_, i) => (
-        <div key={i} style={{ height: lineHeight }} className="flex items-center">
-          <Skeleton className={cn("h-3", i === lines - 1 && lines > 1 ? "w-3/5" : "w-full")} />
-        </div>
-      ))}
-    </div>
-  );
 }
 
 interface KbdProps {
@@ -66,20 +38,6 @@ export function Kbd({ children, className }: KbdProps) {
     >
       {children}
     </kbd>
-  );
-}
-
-interface SpinnerProps {
-  className?: string;
-}
-
-export function Spinner({ className }: SpinnerProps) {
-  return (
-    <span
-      role="status"
-      aria-label="Loading"
-      className={cn("inline-block size-4 animate-spin rounded-full border-2 border-line-strong border-t-ink", className)}
-    />
   );
 }
 
@@ -117,7 +75,6 @@ interface StitchRingProps {
   label?: string;
 }
 
-/** The "working" mark: a ring of stitches that slowly turns. Sized by its font size or `className`. */
 export function StitchRing({ className, label = "In progress" }: StitchRingProps) {
   return (
     <svg viewBox="0 0 20 20" role="img" aria-label={label} className={cn("stitch-ring size-4 shrink-0", className)}>
@@ -130,7 +87,6 @@ interface StitchLineProps {
   className?: string;
 }
 
-/** A short line of stitches that sews itself, for "this is being worked on". */
 export function StitchLine({ className }: StitchLineProps) {
   return <span aria-hidden className={cn("stitch-sew w-12", className)} />;
 }

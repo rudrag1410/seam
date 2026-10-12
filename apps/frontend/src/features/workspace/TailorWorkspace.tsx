@@ -24,12 +24,6 @@ interface TailorWorkspaceProps {
   baseVersionId?: string | null;
 }
 
-/** One screen for the whole job: the job description goes in on the left, the run streams into
- *  the same conversation, and the resume on the right picks up suggestions as they arrive.
- *  Starting a run changes the address but never swaps the screen.
- *
- *  This component only lays the pieces out. The session lives in `useTailorSession`, the text
- *  being typed in `useJobDraft`, and everything shown is read from the review store. */
 export function TailorWorkspace({ initialSessionId, baseVersionId = null }: TailorWorkspaceProps) {
   const session = useTailorSession(initialSessionId, baseVersionId);
   const status = useReview((s) => s.status);
@@ -53,7 +47,6 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
       </div>
     );
   }
-  // a session opened by its address has nothing to show until it loads
   if (!composing && !started) return <WorkspaceSkeleton />;
 
   const problem = jobProblem(session.fault);
@@ -66,8 +59,6 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
         onFinalize={() => session.sessionId && session.finalize.mutate(session.sessionId)}
       />
 
-      {/* One set of elements for both layouts. Wide: conversation and composer stacked on the
-          left, paper on the right. Narrow: conversation, paper, then the composer pinned below. */}
       <div className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[minmax(380px,460px)_1fr] lg:grid-rows-[minmax(0,1fr)_auto]">
         <div data-thread className="scroll-thin border-line lg:col-start-1 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto lg:border-r">
           <Thread

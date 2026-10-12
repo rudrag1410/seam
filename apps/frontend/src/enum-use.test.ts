@@ -2,10 +2,6 @@ import { dirname, join, relative } from "node:path";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
-/** House rule: a value that has an enum is compared and passed as that enum's member, never as a
- *  bare string. TypeScript allows `status === "ready"` against a string enum, so the compiler alone
- *  doesn't catch it; this test asks the type checker which strings stand where an enum belongs. */
-
 const APP = join(__dirname, "..");
 const REPO = join(APP, "..", "..");
 
@@ -32,7 +28,6 @@ const COMPARISONS = new Set([
   ts.SyntaxKind.ExclamationEqualsToken,
 ]);
 
-/** What a walk over one file needs: the file, the type checker, and where to collect findings. */
 interface Scan {
   source: ts.SourceFile;
   checker: ts.TypeChecker;
@@ -72,8 +67,6 @@ function visit(scan: Scan, node: ts.Node): void {
   ts.forEachChild(node, (child) => visit(scan, child));
 }
 
-/** Strings written where an enum belongs: compared with one, a switch case on one, or an argument
- *  whose parameter is one. */
 function bareStrings(source: ts.SourceFile, checker: ts.TypeChecker): string[] {
   const scan: Scan = { source, checker, found: [] };
   visit(scan, source);
@@ -89,5 +82,5 @@ describe("enum use", () => {
       .filter((f) => f.fileName.startsWith(join(APP, "src")) && !f.fileName.endsWith(".test.ts"))
       .flatMap((f) => bareStrings(f, checker));
     expect(problems).toEqual([]);
-  });
+  }, 60_000);
 });

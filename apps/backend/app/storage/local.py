@@ -4,8 +4,6 @@ from pathlib import Path
 
 
 class LocalStorage:
-    """Disk-backed storage for local development."""
-
     def __init__(self, root: str) -> None:
         self._root = Path(root).resolve()
         self._root.mkdir(parents=True, exist_ok=True)

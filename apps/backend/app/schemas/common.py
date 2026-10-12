@@ -10,17 +10,6 @@ class OrmModel(ApiModel):
     model_config = {"from_attributes": True}
 
 
-class ErrorBody(ApiModel):
-    code: str
-    message: str
-    hint: str | None = None
-    retryable: bool = False
-
-
-class ErrorResponse(ApiModel):
-    error: ErrorBody
-
-
 class SignupRequest(ApiModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=200)

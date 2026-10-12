@@ -6,11 +6,13 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "generate": "openapi-typescript ../../apps/backend/openapi.json --enum --conditional-enums --dedupe-enums -o src/schema.ts",
+    "generate": "openapi-typescript ../../apps/backend/openapi.json --enum --conditional-enums --dedupe-enums -o src/schema.ts && node scripts/strip-comments.mjs src/schema.ts",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json"
   },
-  "dependencies": { "openapi-fetch": "^0.13.0" },
+  "dependencies": {
+    "openapi-fetch": "^0.13.0"
+  },
   "devDependencies": {
     "@seam/tsconfig": "workspace:*",
     "openapi-typescript": "^7.5.0",

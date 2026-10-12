@@ -1,6 +1,3 @@
-"""Flatten a resume document into plain blocks shared by every export format.
-Plain, single-column, no tables or images: ATS-safe by construction."""
-
 from dataclasses import dataclass
 
 from app.schemas.enums import BlockKind, SectionType
@@ -19,7 +16,7 @@ HEADINGS = {
 class Block:
     kind: BlockKind
     text: str
-    meta: str = ""  # role: dates
+    meta: str = ""
 
 
 def fmt_date(value: str | None) -> str:

@@ -1,9 +1,3 @@
-"""Drop the applications table: the tracker was removed from the product.
-
-Revision ID: 0002
-Revises: 0001
-"""
-
 import sqlalchemy as sa
 
 from alembic import op

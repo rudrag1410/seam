@@ -116,7 +116,6 @@ async def _cover_letter_events(
     body: CoverLetterIn,
     notice: int | None,
 ) -> AsyncIterator[str]:
-    """Streams the letter as it is written, then saves it and says so."""
     parts: list[str] = []
     try:
         async for chunk in stream_cover_letter(

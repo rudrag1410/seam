@@ -6,14 +6,10 @@ from sqlalchemy import JSON, DateTime, String, TypeDecorator, Uuid
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-# JSONB on Postgres, plain JSON elsewhere (SQLite for zero-setup local dev).
 Json = JSON().with_variant(JSONB(), "postgresql")
 
 
 class UTCDateTime(TypeDecorator):
-    """Timezone-aware UTC datetimes on every backend. SQLite drops tzinfo, which would
-    otherwise serialize without a `Z` and be read as local time by clients."""
-
     impl = DateTime(timezone=True)
     cache_ok = True
 
@@ -24,9 +20,6 @@ class UTCDateTime(TypeDecorator):
 
 
 class EnumString[E: StrEnum](TypeDecorator[E]):
-    """A string enum stored as plain text. The column stays a VARCHAR on every backend (no native
-    enum to migrate), and rows come back as members rather than bare strings."""
-
     impl = String
     cache_ok = True
 

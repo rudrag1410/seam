@@ -1,5 +1,3 @@
-"""Assign stable ids to a parsed resume, producing the Resume AST."""
-
 from app.schemas.parsed import ParsedResume
 from app.schemas.resume_ast import (
     Bullet,

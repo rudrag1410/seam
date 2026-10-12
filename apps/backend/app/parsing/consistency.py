@@ -1,5 +1,3 @@
-"""Every parsed bullet must come from the source text. Catches parser hallucination."""
-
 import re
 
 from rapidfuzz import fuzz

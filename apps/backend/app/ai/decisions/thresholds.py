@@ -1,5 +1,3 @@
-"""Confidence bands for Jev answers. Thresholds live in config, not code."""
-
 from enum import StrEnum
 
 from app.core.config import Settings

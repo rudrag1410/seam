@@ -1,11 +1,3 @@
-"""Deterministic resume text -> ParsedResume.
-
-This is the no-AI path: it runs when no model is configured, when the model is down, and as the
-offline stand-in in mock mode. It has to cope with real resumes, so it handles two-digit years
-(`Jan '24`), a title line followed by a company line, "Tech Stack:" lines, wrapped bullets and
-skills separated only by spacing.
-"""
-
 import re
 
 from app.schemas.parsed import (
@@ -82,7 +74,6 @@ def _looks_like_title(s: str) -> bool:
 
 
 def _split_header(text: str) -> tuple[str, str]:
-    """('left', 'right') from a header line split on a separator."""
     text = text.strip(" ,|-–—·")
     for sep in (" — ", " – ", " | ", " - ", " at ", ", "):
         if sep in text:
@@ -92,7 +83,6 @@ def _split_header(text: str) -> tuple[str, str]:
 
 
 def _split_gap(text: str) -> tuple[str, str]:
-    """'left      right' (a wide gap or a pipe/dot) -> ('left', 'right')."""
     parts = re.split(r"\s{2,}|\s[|·•]\s", text.strip(), maxsplit=1)
     return parts[0].strip(), (parts[1].strip() if len(parts) > 1 else "")
 
@@ -150,9 +140,9 @@ def heuristic_parse(text: str, links: list[str] | None = None) -> ParsedResume:
     contact = parse_contact(nonblank)
     contact.links = merge_links(contact.links, links or [])
 
-    blocks: list[tuple[str, str, list[str]]] = []  # (kind, title, lines)
+    blocks: list[tuple[str, str, list[str]]] = []
     current: tuple[str, str, list[str]] | None = None
-    first = next((i for i, ln in enumerate(lines) if ln.strip()), 0)  # the name line is not a heading
+    first = next((i for i, ln in enumerate(lines) if ln.strip()), 0)
     for i, ln in enumerate(lines):
         kind = None if i == first else _heading_kind(ln)
         if kind:
@@ -201,17 +191,15 @@ def _parse_skills(body: list[str]) -> list[ParsedSkillGroup]:
 def _flush(bullets: list[str], buf: list[str]) -> None:
     if buf:
         text = " ".join(buf).strip()
-        bullets.append(re.sub(r"(\w)- (?=[a-z])", r"\1-", text))  # "lead- acquisition" -> "lead-acquisition"
+        bullets.append(re.sub(r"(\w)- (?=[a-z])", r"\1-", text))
         buf.clear()
 
 
 def _is_continuation(line: str) -> bool:
-    """Wrapped text: indented or starting lowercase, as opposed to a fresh line."""
     return line[:1].isspace() or line.lstrip()[:1].islower()
 
 
 def _dated(line: str) -> re.Match[str] | None:
-    """The match for a header line that carries a role's dates, if this is one."""
     if BULLET.match(line) or TECH.match(line):
         return None
     m = RANGE.search(line)
@@ -219,12 +207,10 @@ def _dated(line: str) -> re.Match[str] | None:
 
 
 def _head_of(line: str, m: re.Match[str]) -> str:
-    """A dated header line with its dates taken out."""
     return (line[: m.start()] + " " + line[m.end() :]).strip(" |,-–—·")
 
 
 def _is_title_above(line: str, following: str | None) -> bool:
-    """A job title on its own line, directly above a "Company | dates" line."""
     nxt = _dated(following) if following is not None else None
     return bool(
         nxt
@@ -239,9 +225,6 @@ def _is_title_above(line: str, following: str | None) -> bool:
 
 
 class _RoleParser:
-    """Reads an experience section line by line. A role starts at a line with a date range; the
-    lines around it decide which text is the company, the title and the location."""
-
     def __init__(self) -> None:
         self.roles: list[ParsedRole] = []
         self._role: ParsedRole | None = None
@@ -263,7 +246,7 @@ class _RoleParser:
         if m:
             self._start_role(line, m)
         elif _is_title_above(line, following):
-            self._title_above = line.strip()  # belongs to the next role, not to the bullet above it
+            self._title_above = line.strip()
         elif self._role is None:
             return
         elif BULLET.match(line) or TECH.match(line):
@@ -271,7 +254,7 @@ class _RoleParser:
             _flush(self._role.bullets, self._buf)
             self._buf.append(BULLET.sub("", line).strip())
         elif self._buf:
-            self._buf.append(line.strip())  # wrapped continuation of the previous bullet
+            self._buf.append(line.strip())
         elif not self._resolved:
             self._second_header_line(self._role, line)
         elif not self._role.location:
@@ -291,22 +274,20 @@ class _RoleParser:
             self._title_above, self._resolved = "", True
 
     def _resolve_alone(self) -> None:
-        """No second header line followed: split the one line into company and title."""
         if self._role is None or self._resolved:
             return
         a, b = _split_header(self._head)
         if b and not _looks_like_title(b) and _looks_like_title(a):
-            a, b = b, a  # "Title, Company" -> company first
+            a, b = b, a
         if not b and _looks_like_title(a):
             a, b = "", a
         self._role.company, self._role.title = a, b
         self._resolved = True
 
     def _second_header_line(self, role: ParsedRole, line: str) -> None:
-        """Decide what the dated line and the line under it each are."""
         left, right = _split_gap(line)
         a, b = _split_header(self._head)
-        if b and (_looks_like_title(a) != _looks_like_title(b)):  # "Company — Title" already on one line
+        if b and (_looks_like_title(a) != _looks_like_title(b)):
             self._resolve_alone()
             role.location = line.strip()
             return
@@ -340,7 +321,6 @@ def _parse_projects(body: list[str]) -> list[ParsedProject]:
         elif buf and _is_continuation(ln):
             buf.append(ln.strip())
         elif proj is not None and not proj.bullets and not buf and not described:
-            # the line under a project's title describes it
             proj.subtitle = " · ".join(x for x in [proj.subtitle, ln.strip()] if x)
             described = True
         else:
@@ -363,7 +343,6 @@ def _parse_education(body: list[str]) -> list[ParsedEducation]:
         text = (ln[: m.start()] + ln[m.end() :]).strip(" ,|-–—") if m else ln.strip()
         if _DEGREE.search(text):
             a, b = _split_header(text)
-            # "B.Tech in CS — Some University" vs "Bachelor of Engineering — Computer Science"
             if b and (_INSTITUTION.search(b) or (_INSTITUTION.search(a) and not _DEGREE.search(b))):
                 degree, school = (a, b) if _DEGREE.search(a) else (b, a)
             else:
@@ -375,7 +354,7 @@ def _parse_education(body: list[str]) -> list[ParsedEducation]:
                 item.end = year.group()
             items.append(item)
         elif items and not items[-1].school:
-            school, _ = _split_gap(text)  # the trailing location repeats; keep the name
+            school, _ = _split_gap(text)
             items[-1].school = school
             if m:
                 items[-1].start, items[-1].end = _norm_date(m.group(1)), _norm_date(m.group(2))

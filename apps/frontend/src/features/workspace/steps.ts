@@ -1,9 +1,6 @@
 import { SectionName, SessionStatus, Verdict } from "@seam/api-client";
 import type { ReviewState } from "../review/store";
 
-/** Pure translation of the run's state into the steps the conversation shows.
- *  Kept free of React so every stage of a run can be unit-tested. */
-
 export enum StepState {
   Pending = "pending",
   Running = "running",
@@ -49,8 +46,6 @@ function isFinished(s: RunState): boolean {
   return s.status === SessionStatus.Ready || s.status === SessionStatus.Finalized;
 }
 
-/** A finished step is done. Otherwise, once the step before it has finished, it is the one in
- *  progress (or the one that failed); until then it is waiting. */
 function stepState(s: RunState, done: boolean, started: boolean): StepState {
   if (done) return StepState.Done;
   if (!started) return StepState.Pending;
@@ -63,8 +58,6 @@ function countBySection(s: RunState): Map<SectionName, number> {
   return counts;
 }
 
-/** One line per section being written. Uses the server's plan when it has arrived; a session
- *  loaded after the fact has no plan, so it falls back to what was asked for and what was found. */
 function sectionParts(s: RunState, writing: StepState): StepPart[] {
   const counts = countBySection(s);
   const planned = Object.keys(s.tasks).length > 0;
@@ -111,7 +104,6 @@ export function buildSteps(s: RunState): Step[] {
   ];
 }
 
-/** What the assistant says once the run is over. */
 export function closingMessage(s: RunState): string | null {
   if (!isFinished(s)) return null;
   const total = s.suggestions.length;

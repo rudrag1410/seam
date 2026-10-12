@@ -1,6 +1,3 @@
-"""OpenAI generation: structured JSON with one repair attempt, a model fallback,
-a circuit breaker, streaming text and a vision path."""
-
 import base64
 import json
 import logging
@@ -55,14 +52,17 @@ class OpenAIGenerator:
     def breaker_open(self) -> bool:
         return self._breaker.is_open
 
+    async def _create(self, **params: Any) -> Any:
+        create = cast(Any, self._client.chat.completions.create)
+        return await create(**params)
+
     def _limits(self, route: Route, model: str) -> dict[str, Any]:
-        """Output cap on every call, and a lower reasoning effort on reasoning models (much faster)."""
         kw: dict[str, Any] = {"max_completion_tokens": min(route.max_output, self._s.llm_max_output_tokens)}
         configured = self._s.llm_reasoning_effort
         if configured and re.match(r"(gpt-5|o\d)", model):
             effort = route.effort or configured
             if effort == "minimal" and model.startswith("o"):
-                effort = "low"  # o-series has no "minimal"
+                effort = "low"
             kw["reasoning_effort"] = effort
         return kw
 
@@ -96,12 +96,7 @@ class OpenAIGenerator:
             kwargs["response_format"] = {"type": "json_object"}
         with timed() as t:
             try:
-                resp = await self._client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    timeout=route.timeout_s,
-                    **kwargs,  # type: ignore[arg-type]
-                )
+                resp = await self._create(model=model, messages=messages, timeout=route.timeout_s, **kwargs)
             except Exception:
                 await self._record(task, model, None, t.ms, "error")
                 raise
@@ -120,7 +115,6 @@ class OpenAIGenerator:
         try:
             return schema.model_validate_json(text)
         except (ValidationError, ValueError) as err:
-            # One repair attempt with the validator error fed back.
             repair = _messages(
                 [
                     *messages,
@@ -180,12 +174,12 @@ class OpenAIGenerator:
             raise LLM_UNAVAILABLE
         messages = _messages([{"role": "system", "content": system}, {"role": "user", "content": user}])
         try:
-            stream = await self._client.chat.completions.create(
+            stream = await self._create(
                 model=route.model,
                 messages=messages,
                 stream=True,
                 timeout=route.timeout_s,
-                **self._limits(route, route.model),  # type: ignore[arg-type]
+                **self._limits(route, route.model),
             )
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:
@@ -199,8 +193,6 @@ class OpenAIGenerator:
     async def stream_objects(
         self, task: Task, *, system: str, user: str, schema: type[T], context: dict | None = None
     ) -> AsyncIterator[dict]:
-        """Stream a `{"<key>": [ {...}, ... ]}` response and yield each array element as soon as the
-        model finishes writing it. If the stream dies after some elements, what arrived is kept."""
         route = route_for(task, self._s)
         if not self._s.openai_api_key:
             raise LLM_NOT_CONFIGURED
@@ -226,14 +218,14 @@ class OpenAIGenerator:
             status = "ok"
             with timed() as t:
                 try:
-                    stream = await self._client.chat.completions.create(
+                    stream = await self._create(
                         model=model,
                         messages=messages,
                         stream=True,
                         stream_options={"include_usage": True},
                         response_format={"type": "json_object"},
                         timeout=route.timeout_s,
-                        **self._limits(route, model),  # type: ignore[arg-type]
+                        **self._limits(route, model),
                     )
                     async for chunk in stream:
                         if getattr(chunk, "usage", None):
@@ -252,13 +244,12 @@ class OpenAIGenerator:
                     log.warning("openai stream failed on %s: %s", model, exc)
                     await self._record(task, model, usage, t.ms, status)
                     if emitted:
-                        return  # keep what arrived; retrying would duplicate suggestions
+                        return
         raise LLM_UNAVAILABLE
 
     async def _with_fallback(
         self, task: Task, route: Route, messages: list[ChatCompletionMessageParam], schema: type[T]
     ) -> T:
-        """One structured call on the route's model, then on its fallback, behind the breaker."""
         if not self._s.openai_api_key:
             raise LLM_NOT_CONFIGURED
         if self._breaker.is_open:

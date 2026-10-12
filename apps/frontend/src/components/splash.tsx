@@ -6,20 +6,17 @@ import { useEffect, useState } from "react";
 import { whenAppReady } from "@/lib/ready";
 
 const APP_ROUTE = /^\/(tailor|resumes|activity|profile|preferences)(\/|$)/;
-const MIN_FIRST_MS = 900; // long enough for the stitch to finish on a first visit
+const MIN_FIRST_MS = 900;
 const MIN_REPEAT_MS = 250;
-const MAX_MS = 4000; // never trap the user behind the splash
+const MAX_MS = 4000;
 const FADE_MS = 450;
 
-/** Where the splash is in its life: covering the page, fading out, or removed. */
 enum SplashPhase {
   Show = "show",
   Hide = "hide",
   Gone = "gone",
 }
 
-/** Covers the very first paint, so nothing flashes or reflows while fonts load and the
- *  session resolves. It is part of the server HTML, so there is no unstyled frame before it. */
 export function Splash() {
   const path = usePathname();
   const [phase, setPhase] = useState<SplashPhase>(SplashPhase.Show);
@@ -45,8 +42,6 @@ export function Splash() {
     return () => {
       cancelled = true;
     };
-    // run once per full page load; client navigations don't remount the root layout
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

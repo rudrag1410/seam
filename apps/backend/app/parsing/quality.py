@@ -1,5 +1,3 @@
-"""Choose between the text path and the vision path for structuring a resume."""
-
 import re
 
 from app.ai.decisions.reading_order import reading_order_battery
@@ -12,7 +10,7 @@ _LIGATURES = re.compile("[ﬀ-ﬆ�]")
 
 def heuristics_say_vision(text: str, pages: int) -> bool:
     if len(text) / max(pages, 1) < MIN_CHARS_PER_PAGE:
-        return True  # probably scanned
+        return True
     lines = [ln for ln in text.split("\n") if ln.strip()]
     if not lines:
         return True

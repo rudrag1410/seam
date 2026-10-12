@@ -3,7 +3,6 @@ from typesafe_sdk import Choice, Noul
 from app.ai.gateway.jev_client import Battery
 from app.schemas.enums import DocumentKind, EmploymentType, Facet, Seniority, WorkMode
 
-# names of the questions in the battery, as the Jev API sees them
 QUESTION_KIND = "kind"
 QUESTION_INJECTION = "injection"
 
@@ -38,7 +37,6 @@ _KINDS = {
 
 
 def input_gate_battery() -> Battery:
-    """Is this a JD? Does it contain injected instructions? Plus facets, in one request."""
     return Battery(
         name="input_gate",
         version="input_gate@1",

@@ -1,5 +1,4 @@
 export const MIN_JD_CHARS = 300;
-/** Mirrors the server's LLM_MAX_JD_TOKENS (4,000 tokens, about 16,000 characters). The server enforces it. */
 export const MAX_JD_CHARS = 16_000;
 
 export function jdProblem(chars: number): string | null {

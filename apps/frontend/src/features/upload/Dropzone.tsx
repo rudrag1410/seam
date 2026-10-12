@@ -29,7 +29,6 @@ function clientError(file: File): string | null {
 async function uploadResume(file: File): Promise<ResumeOut> {
   const form = new FormData();
   form.append("file", file);
-  // multipart: use fetch directly, the typed client serialises JSON
   let res: Response;
   try {
     res = await fetch(`${API_URL}/v1/resumes`, { method: "POST", body: form, credentials: "include" });
@@ -42,7 +41,7 @@ async function uploadResume(file: File): Promise<ResumeOut> {
   return body as ResumeOut;
 }
 
-export function summarize(resume: ResumeOut) {
+function summarize(resume: ResumeOut) {
   const roles = resume.document.sections.find((s) => s.type === "experience");
   const skills = resume.document.sections.find((s) => s.type === "skills");
   const bullets = roles && "items" in roles ? roles.items.reduce((n, i) => n + ("bullets" in i ? i.bullets.length : 0), 0) : 0;
@@ -106,14 +105,12 @@ export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
     accept: TYPES,
     multiple: false,
     noClick: false,
-    // accept everything and validate ourselves, so the user gets a specific message
     validator: () => null,
     onDrop: (accepted, rejected) => {
       const file = accepted[0] ?? rejected[0]?.file;
       if (file) mutation.mutate(file);
     },
   });
-  // react-dropzone's `accept` filters in the picker only; drops go through onDrop validation above.
   const busy = mutation.isPending;
 
   return (

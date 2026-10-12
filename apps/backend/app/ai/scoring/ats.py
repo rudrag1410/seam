@@ -1,5 +1,3 @@
-"""Rule-based ATS-friendliness estimate with fix-it hints. Labelled an estimate in the UI."""
-
 import re
 
 from app.ai.scoring.keywords import find_keywords, keyword_alignment, resume_text
@@ -51,7 +49,6 @@ def _bullets(document: dict) -> list[str]:
 
 
 def bullet_strength(text: str) -> float:
-    """0..1: strong opening verb, a number, and a sensible length."""
     words = text.split()
     first = words[0].lower().strip(",.") if words else ""
     score = 0.0

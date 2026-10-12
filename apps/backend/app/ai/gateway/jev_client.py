@@ -1,9 +1,3 @@
-"""TypeSafe Jev client: typed decisions with calibrated confidence.
-
-Every decision has a deterministic degraded mode. `ask` returns None when Jev is
-unavailable, and callers fall back to code. Jev failures never block the user.
-"""
-
 import hashlib
 import json
 import logging
@@ -21,8 +15,6 @@ log = logging.getLogger("seam.jev")
 
 @dataclass
 class Battery:
-    """A typed, versioned group of questions that share one state and go out as one request."""
-
     name: str
     version: str
     questions: dict[str, Choice | Score | Noul]

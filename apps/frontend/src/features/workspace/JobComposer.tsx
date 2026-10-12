@@ -17,7 +17,7 @@ export interface JobDraft {
 
 const tool = "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
 
-export function jobReady(d: JobDraft): boolean {
+function jobReady(d: JobDraft): boolean {
   const n = d.text.trim().length;
   const job = d.byUrl ? /^https?:\/\/\S+\.\S+/.test(d.url.trim()) : n >= MIN_JD_CHARS && n <= MAX_JD_CHARS;
   return job && d.sections.length > 0;
@@ -28,19 +28,16 @@ interface JobComposerProps {
   onChange: (patch: Partial<JobDraft>) => void;
   onSend: () => void;
   sending: boolean;
-  /** Why sending isn't possible yet for a reason outside this box (e.g. no resume). */
   disabledReason?: string;
   error?: string | null;
 }
 
-/** Where the job description goes in. Sending it is the only thing that starts any work. */
 export function JobComposer({ draft, onChange, onSend, sending, disabledReason, error }: JobComposerProps) {
   const area = useRef<HTMLTextAreaElement>(null);
   const n = draft.text.trim().length;
   const problem = draft.byUrl ? null : jdProblem(n);
   const canSend = jobReady(draft) && !disabledReason && !sending;
 
-  // grow with the text up to a cap, then scroll inside
   useLayoutEffect(() => {
     const el = area.current;
     if (!el) return;
@@ -119,7 +116,6 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
           </button>
         </div>
       </div>
-      {/* one fixed line, so hints and errors never push the composer around */}
       <p role={error ? "alert" : undefined} className={cn("mt-2 h-5 truncate px-2 text-[12.5px] text-ink-muted", (error || n > MAX_JD_CHARS) && "text-del-line")}>
         {hint ?? "Nothing runs until you send it."}
       </p>

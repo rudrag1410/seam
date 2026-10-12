@@ -22,7 +22,6 @@ async def upload(
     settings: SettingsDep,
     file: Annotated[UploadFile, File()],
 ) -> ResumeOut:
-    # Read at most limit+1 bytes so an oversized upload is rejected without buffering it all.
     data = await file.read(settings.max_upload_bytes + 1)
     out = await resume_service.upload_resume(db, ai, storage, settings, user, file.filename or "resume", data)
     await db.commit()
@@ -47,7 +46,7 @@ async def update(resume_id: UUID, body: Resume, user: UserDep, db: DbDep) -> Res
     master, source = await resume_service.get_resume(db, user, resume_id)
     try:
         master.document = body.model_dump()
-    except ValidationError as exc:  # pragma: no cover - body is already validated
+    except ValidationError as exc:
         raise AppError(ErrorCode.VALIDATION_FAILED, str(exc)) from exc
     await db.commit()
     return resume_service.to_out(master, source)

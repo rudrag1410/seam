@@ -1,26 +1,13 @@
-"""Pull complete objects out of a JSON array while the model is still writing it.
-
-The tailoring prompt asks for `{"suggestions": [ {...}, {...} ]}`. Waiting for the whole document
-means waiting for the slowest suggestion. This scanner watches the character stream and hands over
-each element of the array the moment its closing brace arrives, so the UI can show it right away.
-"""
-
 import json
 from typing import Any
 
 
 class ArrayObjectScanner:
-    """Feed text chunks; `feed` returns the objects that completed inside them.
-
-    Only objects that sit directly inside an array nested in the top-level object are emitted,
-    which is exactly the shape of the suggestions list. Braces inside strings are ignored.
-    """
-
     def __init__(self) -> None:
         self._depth = 0
         self._in_string = False
         self._escape = False
-        self._buf: list[str] = []  # characters of the object currently being read
+        self._buf: list[str] = []
         self._capturing = False
 
     def feed(self, chunk: str) -> list[dict[str, Any]]:
@@ -41,7 +28,6 @@ class ArrayObjectScanner:
             if ch == '"':
                 self._in_string = True
             elif ch in "{[":
-                # an object opening at depth 2 is an element of the array inside the top-level object
                 if ch == "{" and self._depth == 2 and not self._capturing:
                     self._capturing = True
                     self._buf = ["{"]
@@ -53,7 +39,7 @@ class ArrayObjectScanner:
                     try:
                         obj = json.loads("".join(self._buf))
                     except json.JSONDecodeError:
-                        continue  # a malformed element is skipped, the rest of the stream is still good
+                        continue
                     if isinstance(obj, dict):
                         out.append(obj)
         return out

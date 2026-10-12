@@ -1,27 +1,20 @@
-/* Seam design tokens. Warm white canvas, near-black ink, cream panels, hairline borders and
-   pill controls, with a tight-tracked serif for display type. */
+
 
 :root {
-  /* surfaces */
+
   --bg: #ffffff;
   --panel: #f9f9f6;
   --cream: #f2f2eb;
   --line: #ebe9e1;
   --line-strong: rgba(16, 15, 15, 0.14);
 
-  /* text */
   --ink: #100f0f;
   --ink-soft: rgba(16, 15, 15, 0.72);
   --ink-muted: rgba(16, 15, 15, 0.56);
   --on-ink: #f9f9f6;
-
-  /* accents, used sparingly */
-  --green: #27d271;
   --yellow: #ffd862;
-  --orange: #ff8042;
   --blue: #88a5ff;
 
-  /* diff semantics */
   --ins-bg: rgba(39, 210, 113, 0.16);
   --ins-line: #1fae5b;
   --del-bg: rgba(255, 128, 66, 0.14);
@@ -34,7 +27,7 @@
   --radius-lg: 20px;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-pop: 0 10px 30px -12px rgba(16, 15, 15, 0.22), 0 0 0 1px var(--line);
-  /* the highlight that sweeps across a loading placeholder */
+
   --shimmer: rgba(255, 255, 255, 0.65);
 }
 
@@ -68,9 +61,7 @@
   --color-ink-soft: var(--ink-soft);
   --color-ink-muted: var(--ink-muted);
   --color-on-ink: var(--on-ink);
-  --color-green: var(--green);
   --color-yellow: var(--yellow);
-  --color-orange: var(--orange);
   --color-blue: var(--blue);
   --color-ins: var(--ins-bg);
   --color-ins-line: var(--ins-line);
@@ -91,7 +82,7 @@
   html {
     color-scheme: light;
     background: var(--bg);
-    /* keep the page width constant whether or not a scrollbar is showing */
+
     scrollbar-gutter: stable;
   }
   html[data-theme="dark"] {
@@ -137,7 +128,6 @@
   to { clip-path: inset(0 0 0 0); }
 }
 
-/* a thread being sewn: stitches appear left to right, hold, then the pass starts again */
 @keyframes seam-sew {
   0% { clip-path: inset(0 100% 0 0); opacity: 1; }
   65%, 85% { clip-path: inset(0 0 0 0); opacity: 1; }
@@ -153,7 +143,7 @@
 @layer utilities {
   .animate-fade-in { animation: seam-fade 0.2s var(--ease-out) both; }
   .animate-rise { animation: seam-rise 0.3s var(--ease-out) both; }
-  /* a dashed line that "sews" itself left to right */
+
   .splash-stitch {
     display: block;
     width: 112px;
@@ -161,8 +151,7 @@
     background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 11px);
     animation: seam-stitch 1s var(--ease-out) 0.15s both;
   }
-  /* a loading placeholder: the panel colour with a soft highlight sweeping across it. The highlight is
-     clipped to the box and moves by transform only, so it can't change the layout. */
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -177,7 +166,6 @@
     animation: seam-shimmer 1.5s ease-in-out infinite;
   }
 
-  /* the working indicators: a line of stitches being sewn, and a stitched ring that turns */
   .stitch-sew {
     display: block;
     height: 2px;

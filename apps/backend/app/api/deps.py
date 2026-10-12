@@ -43,8 +43,6 @@ BrokerDep = Annotated[TailorBroker, Depends(get_broker)]
 
 
 async def current_user(request: Request, response: Response, db: DbDep, settings: SettingsDep) -> User:
-    """Resolve the user from the access cookie. When it has expired, silently rotate the
-    refresh token so every client (including EventSource) stays signed in."""
     user_id = None
     if token := request.cookies.get(ACCESS_COOKIE):
         user_id = decode_access_token(token, settings)

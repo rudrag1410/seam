@@ -30,7 +30,6 @@ FORMATS = {
 
 
 def _choice[E: StrEnum](options: type[E], value: str) -> E | None:
-    """The member for a value the client sent, or None when it isn't one of them."""
     try:
         return options(value)
     except ValueError:
@@ -72,7 +71,6 @@ async def version_detail(db: AsyncSession, v: ResumeVersion) -> VersionDetail:
 
 
 def _flatten(doc: dict) -> dict[str, tuple[str, str, str, int]]:
-    """node id -> (section, text, parent id, index)."""
     nodes: dict[str, tuple[str, str, str, int]] = {}
     for s in doc["sections"]:
         if s["type"] == SectionType.SUMMARY:
@@ -132,7 +130,6 @@ async def render_export(
     requested_format: str,
     requested_template: str,
 ) -> tuple[str, bytes | None, str, str, str]:
-    """Returns (storage_key, bytes_or_None, content_type, filename, ext). Cached in storage."""
     fmt = _choice(ExportFormat, requested_format)
     template = _choice(ExportTemplate, requested_template)
     if fmt is None:

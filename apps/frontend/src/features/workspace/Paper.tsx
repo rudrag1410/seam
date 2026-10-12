@@ -10,25 +10,20 @@ import { ModeSwitch } from "./WorkspaceHeader";
 import { PaperSkeleton } from "./WorkspaceSkeleton";
 import { StepKey, StepState, buildSteps } from "./steps";
 
-/** Suggestions that address the requirement the user picked in the conversation. */
 function addressing(s: ReviewState): Set<string> {
   if (!s.activeReq) return new Set();
   return new Set(s.suggestions.filter((x) => x.addresses.includes(s.activeReq!)).map((x) => x.id));
 }
 
-/** Sections the model is still writing for, which show a line of stitches on the paper. */
 function sectionsInProgress(s: ReviewState): Set<SectionKind> {
   const parts = buildSteps(s).find((step) => step.key === StepKey.Write)?.parts ?? [];
   return new Set(parts.filter((p) => p.state === StepState.Running).map((p) => KIND_OF_SECTION[p.key]));
 }
 
-/** The resume side of the screen: the document itself, a placeholder while it loads, or a note
- *  that there is nothing to show yet. */
 interface PaperProps {
   resume: Resume | null;
   loading: boolean;
   started: boolean;
-  /** Suggestions can be selected and decided on. */
   reviewing: boolean;
   scroller: RefObject<HTMLDivElement | null>;
 }

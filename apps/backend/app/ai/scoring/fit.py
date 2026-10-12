@@ -1,6 +1,3 @@
-"""Fit check: compares JD facets with the user's preferences.
-Compensation is compared here, in code. Expected CTC is never sent to any model."""
-
 from app.ai.scoring.experience import level_for_years
 from app.schemas.enums import (
     SENIORITY_LADDER,
@@ -29,7 +26,6 @@ def _item(key: FitKey, label: str, status: FitStatus, detail: str) -> FitItem:
 
 
 def _unclear(jd: JDAnalysis, facet: Facet, low_confidence: float) -> bool:
-    """The posting's reading of this facet is too uncertain to compare against."""
     return jd.facet_confidence.get(facet, 1.0) < low_confidence
 
 
@@ -86,7 +82,6 @@ def _job_type(jd: JDAnalysis, prefs: dict, low_confidence: float) -> FitItem:
 
 
 def _compensation(jd: JDAnalysis, expected_ctc: float | None, ctc_currency: str) -> FitItem:
-    """Compared here, in code. The expected figure never reaches a model."""
     sr = jd.salary_range
     if sr is None or (sr.min is None and sr.max is None):
         return _item(
@@ -100,7 +95,12 @@ def _compensation(jd: JDAnalysis, expected_ctc: float | None, ctc_currency: str)
         detail = f"Range is in {sr.currency}; your expectation is in {ctc_currency}."
         return _item(FitKey.COMPENSATION, "Compensation", FitStatus.UNCLEAR, detail)
     factor = 12 if sr.period == SalaryPeriod.MONTH else 1
-    top = (sr.max if sr.max is not None else sr.min) * factor  # type: ignore[operator]
+    bound = sr.max if sr.max is not None else sr.min
+    if bound is None:
+        return _item(
+            FitKey.COMPENSATION, "Compensation", FitStatus.UNCLEAR, "No salary range in the posting."
+        )
+    top = bound * factor
     if top >= expected_ctc:
         return _item(FitKey.COMPENSATION, "Compensation", FitStatus.OK, "Range reaches your expected CTC.")
     gap = round((expected_ctc - top) / expected_ctc * 100)

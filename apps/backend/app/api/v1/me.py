@@ -62,7 +62,6 @@ async def complete_onboarding(user: UserDep, db: DbDep) -> None:
 async def delete_me(
     response: Response, user: UserDep, db: DbDep, storage: StorageDep, settings: SettingsDep
 ) -> None:
-    """Deletes the user and, by cascade, every row; purges the user's stored files."""
     for prefix in user_prefixes(user.id):
         await storage.delete_prefix(prefix)
     await db.delete(user)

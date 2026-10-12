@@ -1,7 +1,5 @@
 import type { OpName } from "@seam/api-client";
 
-/** Resume AST. Mirrors apps/backend/app/schemas/resume_ast.py. */
-
 export interface Contact {
   name: string;
   headline?: string | null;
@@ -98,10 +96,8 @@ export interface Resume {
   sections: Section[];
 }
 
-// One definition of each, shared with the API client, so an operation can't be added to one side only.
 export { Decision, OpName } from "@seam/api-client";
 
-/** The slice of a suggestion the pure functions need. */
 export interface Op {
   op: OpName;
   target: string;

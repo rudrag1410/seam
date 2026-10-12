@@ -13,7 +13,6 @@ function nextMode(mode: ViewMode): ViewMode {
   return MODES[(MODES.indexOf(mode) + 1) % MODES.length]!;
 }
 
-/** J/K move, A accept, R reject, E edit, Shift+A accept all in section, V cycle view, Cmd+Z undo. */
 function onReviewKey(e: KeyboardEvent): void {
   if (isTyping(e.target) || e.altKey) return;
   const key = e.key.toLowerCase();

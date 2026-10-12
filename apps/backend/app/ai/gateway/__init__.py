@@ -1,6 +1,6 @@
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import Protocol, TypeVar
+from typing import Protocol, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -36,20 +36,14 @@ class Generator(Protocol):
 
 @dataclass
 class AIGateway:
-    """OpenAI generates; Jev decides. Jev is optional and every decision has a code fallback."""
-
     generate: Generator
     jev: JevClient
-
-    @property
-    def degraded_reason(self) -> str | None:
-        return None if self.jev.enabled and not self.jev.breaker_open else "jev_unavailable"
 
 
 def build_gateway(settings: Settings, recorder: Recorder | None = None) -> AIGateway:
     generator: Generator = (
         MockGenerator(settings.mock_stream_delay_s)
         if settings.is_mock
-        else OpenAIGenerator(settings, recorder)  # type: ignore[assignment]
+        else cast(Generator, OpenAIGenerator(settings, recorder))
     )
     return AIGateway(generate=generator, jev=JevClient(settings, recorder))

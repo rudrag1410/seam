@@ -1,5 +1,3 @@
-"""OpenAI generator: structured output repair, model fallback and circuit breaker; Jev degraded mode."""
-
 import json
 from types import SimpleNamespace
 
@@ -45,12 +43,12 @@ class FakeCompletions:
 def make(script) -> tuple[OpenAIGenerator, FakeCompletions]:
     gen = OpenAIGenerator(SETTINGS)
     fake = FakeCompletions(script)
-    gen._client = SimpleNamespace(chat=SimpleNamespace(completions=fake))  # type: ignore[assignment]
+    gen._client = SimpleNamespace(chat=SimpleNamespace(completions=fake))
     return gen, fake
 
 
 def down() -> APIConnectionError:
-    return APIConnectionError(request=SimpleNamespace())  # type: ignore[arg-type]
+    return APIConnectionError(request=SimpleNamespace())
 
 
 async def call(gen: OpenAIGenerator):
@@ -94,13 +92,13 @@ def test_breaker_opens_then_recovers():
     assert not b.is_open
     b.record_failure()
     assert b._opened_at is not None
-    assert not b.is_open  # zero cooldown: half-open immediately
+    assert not b.is_open
 
 
 async def test_jev_without_key_is_disabled_not_broken():
     jev = JevClient(Settings(ai_mode="live", typesafe_api_key=""))
     assert not jev.enabled
-    assert await jev.ask("state", SimpleNamespace(name="x", version="1", questions={"q": object()})) is None  # type: ignore[arg-type]
+    assert await jev.ask("state", SimpleNamespace(name="x", version="1", questions={"q": object()})) is None
 
 
 class _JevDown:
@@ -109,8 +107,6 @@ class _JevDown:
 
 
 class _JevCounting:
-    """Answers every battery the same way and counts how often it was asked."""
-
     def __init__(self) -> None:
         self.calls = 0
 
@@ -121,18 +117,18 @@ class _JevCounting:
 
 async def test_jev_failure_returns_none_and_trips_the_breaker():
     jev = JevClient(Settings(ai_mode="live", typesafe_api_key="k"))
-    jev._client = _JevDown()  # type: ignore[assignment]
+    jev._client = _JevDown()
     battery = SimpleNamespace(name="x", version="1", questions={"q": object()})
     for _ in range(5):
-        assert await jev.ask({"s": 1}, battery) is None  # type: ignore[arg-type]
+        assert await jev.ask({"s": 1}, battery) is None
     assert jev.breaker_open
 
 
 async def test_jev_answers_are_cached_by_state_and_battery_version():
     jev = JevClient(Settings(ai_mode="live", typesafe_api_key="k"))
     client = _JevCounting()
-    jev._client = client  # type: ignore[assignment]
+    jev._client = client
     battery = SimpleNamespace(name="x", version="1", questions={"q": object()})
-    a = await jev.ask({"s": 1}, battery)  # type: ignore[arg-type]
-    b = await jev.ask({"s": 1}, battery)  # type: ignore[arg-type]
+    a = await jev.ask({"s": 1}, battery)
+    b = await jev.ask({"s": 1}, battery)
     assert a is b and client.calls == 1 and a.noul("q") == 0.9

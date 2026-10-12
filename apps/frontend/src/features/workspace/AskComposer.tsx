@@ -33,7 +33,6 @@ function wording(s?: SuggestionOut): string {
   return String((s?.payload as { after?: string } | undefined)?.after ?? "");
 }
 
-/** The request shows up in the conversation straight away. */
 function onAsked({ instruction }: Ask): void {
   say({ role: NoteRole.User, text: instruction });
   useReview.setState({ asking: true });
@@ -57,7 +56,6 @@ function onAskFailed(error: unknown): void {
   say({ role: NoteRole.Assistant, tone: NoteTone.Error, text: `${presentError(error).title} The suggestion is unchanged.` });
 }
 
-/** Says what the box is for right now, or why it can't be used. */
 function placeholderFor(status: ReviewState["status"], mode: ReviewState["mode"], current?: SuggestionOut): string {
   if (status === SessionStatus.Queued || status === SessionStatus.Running) return "Suggestions are still coming in…";
   if (status === SessionStatus.Failed) return "Nothing to review yet";
@@ -71,8 +69,6 @@ interface AskComposerProps {
   sessionId: string;
 }
 
-/** Asks for a different wording of the suggestion under review. The request and the reply
- *  appear in the conversation, and the new wording replaces the old one on the resume. */
 export function AskComposer({ sessionId }: AskComposerProps) {
   const status = useReview((s) => s.status);
   const mode = useReview((s) => s.mode);

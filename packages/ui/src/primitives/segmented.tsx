@@ -9,7 +9,6 @@ export interface SegmentedProps<T extends string> {
   "aria-label"?: string;
 }
 
-/** The pill toggle: a cream track with a white active segment. */
 export function Segmented<T extends string>({ value, onChange, options, size = "md", className, ...aria }: SegmentedProps<T>) {
   return (
     <div role="radiogroup" className={cn("inline-flex items-center rounded-full bg-cream", size === "sm" ? "h-8 p-0.5" : "p-1", className)} {...aria}>

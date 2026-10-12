@@ -1,5 +1,3 @@
-"""Cloudflare R2 through its S3-compatible API. Private bucket; downloads via presigned URLs."""
-
 import anyio.to_thread
 import boto3
 from botocore.config import Config
@@ -40,8 +38,6 @@ class R2Storage:
 
     async def delete_prefix(self, prefix: str) -> None:
         await anyio.to_thread.run_sync(self._purge, prefix)
-
-    # boto3 is blocking, so each call below runs on a worker thread
 
     def _put(self, key: str, data: bytes, content_type: str) -> None:
         self._client.put_object(Bucket=self._bucket, Key=key, Body=data, ContentType=content_type)

@@ -8,7 +8,7 @@ export enum Theme {
   Dark = "dark",
 }
 
-export function setTheme(theme: Theme) {
+function setTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme === Theme.Dark ? Theme.Dark : "";
   try {
     localStorage.setItem("seam-theme", theme);

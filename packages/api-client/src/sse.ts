@@ -2,7 +2,6 @@ import { ApiException, UNKNOWN_FAILURE } from "./client";
 import { StreamEvent } from "./schema";
 import type { ChunkData, DoneData, ErrorData, ErrorEnvelope, JobData, LetterSavedData, ScoreData, StageData, SuggestionOut, WarningData } from "./types";
 
-/** What each event of a tailoring run carries. The server checks its output against the same shapes. */
 export interface TailorEventPayloads {
   [StreamEvent.Stage]: StageData;
   [StreamEvent.Jd]: JobData;
@@ -13,21 +12,17 @@ export interface TailorEventPayloads {
   [StreamEvent.Error]: ErrorData;
 }
 
-/** What each event of a streamed cover letter carries. */
 export interface LetterEventPayloads {
   [StreamEvent.Chunk]: ChunkData;
   [StreamEvent.Done]: LetterSavedData;
   [StreamEvent.Error]: ErrorData;
 }
 
-/** One optional handler per event, each receiving that event's payload. */
 export type EventHandlers<Payloads> = { [E in keyof Payloads]?: (data: Payloads[E]) => void };
 
 export interface ConnectionCallbacks {
   onReconnecting?: () => void;
   onOpen?: () => void;
-  /** The connection was refused or ended for good. EventSource hides the status, so the caller
-   *  should probe the API to find out why (an expired session, usually). */
   onClosed?: () => void;
 }
 
@@ -35,13 +30,10 @@ function eventNames<Payloads>(handlers: EventHandlers<Payloads>): StreamEvent[] 
   return Object.keys(handlers) as StreamEvent[];
 }
 
-/** An event that ends the run: the stream is done, whether it went well or not. */
 function isFinal(event: StreamEvent): boolean {
   return event === StreamEvent.Done || event === StreamEvent.Error;
 }
 
-/** EventSource wrapper. The browser resends Last-Event-ID on reconnect, so the server resumes
- *  exactly where the stream left off. Returns a close function. */
 export function openStream<Payloads>(url: string, handlers: EventHandlers<Payloads>, connection: ConnectionCallbacks = {}): () => void {
   const source = new EventSource(url, { withCredentials: true });
   source.onopen = () => connection.onOpen?.();
@@ -51,7 +43,6 @@ export function openStream<Payloads>(url: string, handlers: EventHandlers<Payloa
   };
   for (const name of eventNames(handlers)) {
     source.addEventListener(name, (e) => {
-      // a dropped connection also fires "error", but as a plain event with nothing to parse
       const raw = (e as MessageEvent<string>).data;
       if (typeof raw !== "string") return;
       (handlers[name as keyof Payloads] as ((data: unknown) => void) | undefined)?.(JSON.parse(raw));
@@ -70,7 +61,6 @@ function dispatchFrame<Payloads>(frame: string, handlers: EventHandlers<Payloads
   if (event && data) (handlers[event] as ((payload: unknown) => void) | undefined)?.(JSON.parse(data));
 }
 
-/** POST + SSE (EventSource only does GET), for streamed generations such as cover letters. */
 export async function postStream<Payloads extends { [StreamEvent.Error]: ErrorData }>(
   url: string,
   body: unknown,
