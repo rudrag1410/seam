@@ -68,11 +68,14 @@ Set `DATABASE_URL=postgresql+asyncpg://seam:seam@localhost:5432/seam` in `apps/b
 
 ## ☁️ Deploying
 
-The API and the web app deploy separately.
+Everything runs on Render's free plan from one Blueprint, [render.yaml](render.yaml): the `seam-api` Docker service, the `seam-web` Next.js service and the `seam-db` Postgres database, grouped in a project named `seam`.
 
-- **API (Render).** `render.yaml` defines the `seam-api` Docker service and its Postgres database. Apply it as a Blueprint, then set the values marked `sync: false`: `OPENAI_API_KEY`, `TYPESAFE_API_KEY`, `R2_*`, `APP_URL` and `CORS_ORIGINS`.
-- **Web (Vercel).** Import the repo with the root directory `apps/frontend` and set `NEXT_PUBLIC_API_URL` to the API's URL.
-- Set `APP_URL` and `CORS_ORIGINS` on the API to the Vercel URL. Cookies use `COOKIE_SECURE=true` and `COOKIE_SAMESITE=none` because the two live on different domains.
+1. Push the repo to GitHub, then in Render choose **New → Blueprint** and pick it.
+2. Fill the prompted values on `seam-api`: `OPENAI_API_KEY`, `TYPESAFE_API_KEY`, `R2_*`, `APP_URL` and `CORS_ORIGINS`. `JWT_SECRET`, `FIELD_ENCRYPTION_KEY` and `DATABASE_URL` are generated for you.
+3. Set `API_PROXY_URL` on `seam-web` to the `seam-api` URL and leave `NEXT_PUBLIC_API_URL` empty. The browser only talks to `seam-web`, which proxies `/v1/*` to the API, so login cookies stay on one domain. Both are read at build time, so redeploy `seam-web` after changing them.
+4. Set `APP_URL` and `CORS_ORIGINS` on `seam-api` to the `seam-web` URL, with no trailing slash.
+
+Cookies use `COOKIE_SECURE=true`. Free web services sleep when idle and free Postgres databases expire after 30 days.
 
 ## ⚙️ Configuration
 
