@@ -22,8 +22,6 @@ class Settings(BaseSettings):
     cookie_samesite: Literal["lax", "none", "strict"] = "lax"
     cookie_domain: str | None = None
 
-    ai_mode: Literal["live", "mock"] = "live"
-    mock_stream_delay_s: float = 0.1
     openai_api_key: str = ""
     llm_model_openai_fast: str = "gpt-5-mini"
     llm_model_openai_strong: str = "gpt-5"
@@ -74,11 +72,7 @@ class Settings(BaseSettings):
 
     @property
     def has_llm(self) -> bool:
-        return self.is_mock or bool(self.openai_api_key)
-
-    @property
-    def is_mock(self) -> bool:
-        return self.ai_mode == "mock"
+        return bool(self.openai_api_key)
 
 
 @lru_cache

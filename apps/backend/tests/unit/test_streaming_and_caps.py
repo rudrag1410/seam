@@ -62,7 +62,7 @@ def test_clip_caps_input_at_a_word_boundary():
 
 
 def test_output_caps_and_reasoning_effort_are_applied():
-    s = Settings(ai_mode="live", openai_api_key="k", llm_max_output_tokens=1000, llm_reasoning_effort="low")
+    s = Settings(openai_api_key="k", llm_max_output_tokens=1000, llm_reasoning_effort="low")
     gen = OpenAIGenerator(s)
     route = Route("m", None, 10, 4000)
     assert gen._limits(route, "gpt-5-mini")["max_completion_tokens"] == 1000
@@ -75,6 +75,6 @@ def test_output_caps_and_reasoning_effort_are_applied():
 
 
 def test_every_task_has_a_bounded_output_budget():
-    s = Settings(ai_mode="live")
+    s = Settings()
     for task in Task:
         assert 0 < route_for(task, s).max_output <= s.llm_max_output_tokens

@@ -5,7 +5,6 @@ from typing import Protocol, TypeVar, cast
 from pydantic import BaseModel
 
 from app.ai.gateway.jev_client import JevClient
-from app.ai.gateway.mock import MockGenerator
 from app.ai.gateway.openai_client import OpenAIGenerator
 from app.ai.gateway.router import Task
 from app.ai.gateway.usage import Recorder
@@ -41,9 +40,5 @@ class AIGateway:
 
 
 def build_gateway(settings: Settings, recorder: Recorder | None = None) -> AIGateway:
-    generator: Generator = (
-        MockGenerator(settings.mock_stream_delay_s)
-        if settings.is_mock
-        else cast(Generator, OpenAIGenerator(settings, recorder))
-    )
+    generator = cast(Generator, OpenAIGenerator(settings, recorder))
     return AIGateway(generate=generator, jev=JevClient(settings, recorder))

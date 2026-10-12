@@ -49,7 +49,7 @@ class JevClient:
 
     @property
     def enabled(self) -> bool:
-        return bool(self._settings.typesafe_api_key) and not self._settings.is_mock
+        return bool(self._settings.typesafe_api_key)
 
     @property
     def breaker_open(self) -> bool:

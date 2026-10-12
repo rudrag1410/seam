@@ -16,7 +16,7 @@ T = TypeVar("T", bound=BaseModel)
 _NICE = re.compile(r"preferred|nice to have|bonus|plus\b|good to have", re.I)
 
 
-def _mock_jd(text: str) -> dict:
+def _fake_jd(text: str) -> dict:
     lines = [ln.strip() for ln in text.split("\n") if ln.strip()]
     title = next((ln for ln in lines if len(ln) < 90), "")
     company_match = re.search(r"\bat\s+([A-Z][\w&.]+(?:\s[A-Z][\w&.]+)?)", title) or re.search(
@@ -74,7 +74,7 @@ def _overlap(text: str, keywords: list[str]) -> int:
     return sum(canonicalize(k) in have for k in keywords)
 
 
-def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
+def _fake_tailor(ctx: dict) -> ModelSuggestionBatch:
     section, nodes, jd_kw = ctx["section"], ctx["nodes"], ctx.get("keywords", [])
     out: list[ModelSuggestion] = []
     req_ids = [r["id"] for r in ctx.get("requirements", [])][:2]
@@ -131,7 +131,7 @@ def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
     return ModelSuggestionBatch(suggestions=out)
 
 
-class MockGenerator:
+class FakeGenerator:
     breaker_open = False
 
     def __init__(self, stream_delay_s: float = 0.1) -> None:
@@ -144,9 +144,9 @@ class MockGenerator:
         if task == Task.PARSE_STRUCTURE:
             return schema.model_validate(heuristic_parse(ctx["text"]).model_dump())
         if task == Task.JD_ANALYZE:
-            return schema.model_validate(_mock_jd(ctx["text"]))
+            return schema.model_validate(_fake_jd(ctx["text"]))
         if task in (Task.TAILOR_SECTION, Task.REGENERATE):
-            return schema.model_validate(_mock_tailor(ctx).model_dump())
+            return schema.model_validate(_fake_tailor(ctx).model_dump())
         if task == Task.INTERVIEW_PREP:
             qs = [
                 {
@@ -162,14 +162,14 @@ class MockGenerator:
     async def stream_objects(
         self, task: Task, *, system: str, user: str, schema: type[T], context: dict | None = None
     ) -> AsyncIterator[dict]:
-        for suggestion in _mock_tailor(context or {}).suggestions:
+        for suggestion in _fake_tailor(context or {}).suggestions:
             await asyncio.sleep(self._delay)
             yield suggestion.model_dump()
 
     async def vision_structured(
         self, task: Task, *, system: str, user: str, images: list[bytes], schema: type[T]
     ) -> T:
-        raise NotImplementedError("vision is unavailable in mock mode")
+        raise NotImplementedError("vision is unavailable in the fake generator")
 
     async def stream_text(
         self, task: Task, *, system: str, user: str, context: dict | None = None

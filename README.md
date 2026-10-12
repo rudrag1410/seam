@@ -37,14 +37,13 @@ pnpm dev
 
 Open http://localhost:3000, create an account and upload a resume. The API runs on http://localhost:8000 and creates its SQLite database on first start.
 
-`pnpm bootstrap` copies the two `.env.example` files and installs the API's Python dependencies. The default is `AI_MODE=mock`, a deterministic offline stand-in, so the whole product works without any key.
+`pnpm bootstrap` copies the two `.env.example` files and installs the API's Python dependencies. AI features need an `OPENAI_API_KEY` (see below).
 
-### With real AI
+### AI keys
 
 Edit `apps/backend/.env`:
 
 ```bash
-AI_MODE=live
 OPENAI_API_KEY=sk-...
 TYPESAFE_API_KEY=
 ```
@@ -67,14 +66,21 @@ Set `DATABASE_URL=postgresql+asyncpg://seam:seam@localhost:5432/seam` in `apps/b
 4. **Review.** Step through the suggestions, accept, reject or edit each one, or ask for a different wording.
 5. **Finalize** to save a version, then export it, write a cover letter or prepare for the interview.
 
+## ☁️ Deploying
+
+The API and the web app deploy separately.
+
+- **API (Render).** `render.yaml` defines the `seam-api` Docker service and its Postgres database. Apply it as a Blueprint, then set the values marked `sync: false`: `OPENAI_API_KEY`, `TYPESAFE_API_KEY`, `R2_*`, `APP_URL` and `CORS_ORIGINS`.
+- **Web (Vercel).** Import the repo with the root directory `apps/frontend` and set `NEXT_PUBLIC_API_URL` to the API's URL.
+- Set `APP_URL` and `CORS_ORIGINS` on the API to the Vercel URL. Cookies use `COOKIE_SECURE=true` and `COOKIE_SAMESITE=none` because the two live on different domains.
+
 ## ⚙️ Configuration
 
 Everything is optional. `pnpm bootstrap` creates the files below from the examples.
 
 | Variable                                                               | Default                               | Description                                                             |
 | ---------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------- |
-| `AI_MODE`                                                              | `mock`                                | `mock` runs offline. `live` calls OpenAI (and Jev when a key is set)    |
-| `OPENAI_API_KEY`                                                       |                                       | Required for `live`                                                     |
+| `OPENAI_API_KEY`                                                       |                                       | Required for AI features (tailoring, cover letters, interview prep)     |
 | `TYPESAFE_API_KEY`                                                     |                                       | Optional. Enables Jev for the checks that gate what you see             |
 | `LLM_MODEL_OPENAI_FAST` / `_STRONG` / `_VISION`                        | `gpt-5-mini` / `gpt-5` / `gpt-5-mini` | Model ids. Pin to whatever is current for your account                  |
 | `LLM_MAX_OUTPUT_TOKENS`                                                | `6000`                                | Ceiling on output per model call                                        |
@@ -115,7 +121,7 @@ packages/
 | `pnpm test`                         | Backend, frontend and shared-package tests                 |
 | `pnpm generate`                     | Regenerate `openapi.json` and the TypeScript client        |
 | `pnpm db:migrate`                   | Apply database migrations                                  |
-| `pnpm --filter @seam/backend evals` | Run the AI quality evals (needs `AI_MODE=live` and a key)  |
+| `pnpm --filter @seam/backend evals` | Run the AI quality evals (needs `OPENAI_API_KEY`)          |
 
 ## 🚢 Deploy
 

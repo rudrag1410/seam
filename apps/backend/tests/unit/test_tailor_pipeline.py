@@ -11,7 +11,7 @@ from app.schemas.jd import JDAnalysis, Requirement
 from app.schemas.suggestion import ModelSuggestion
 from tests.conftest import fixture_text
 
-SETTINGS = Settings(ai_mode="mock")
+SETTINGS = Settings(openai_api_key="sk-test")
 
 
 class ScriptedGenerator:

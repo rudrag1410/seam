@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
     maker = make_sessionmaker(engine)
     app.state.engine = engine
     app.state.sessionmaker = maker
-    app.state.ai = build_gateway(settings, make_db_recorder(maker))
+    app.state.ai = app.state.build_ai(settings, make_db_recorder(maker))
     app.state.storage = build_storage(settings)
     app.state.broker = TailorBroker()
     yield
@@ -68,7 +68,7 @@ class SeamAPI(FastAPI):
         return schema
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, build_ai=build_gateway) -> FastAPI:
     settings = settings or get_settings()
     app = SeamAPI(
         title="Seam API",
@@ -77,6 +77,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         responses={"default": {"model": ErrorEnvelope, "description": "The request failed."}},
     )
     app.state.settings = settings
+    app.state.build_ai = build_ai
     install_error_handlers(app)
     app.add_middleware(BaseHTTPMiddleware, dispatch=origin_check)
     app.add_middleware(

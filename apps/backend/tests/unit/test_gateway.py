@@ -12,9 +12,7 @@ from app.ai.gateway.router import Task
 from app.core.config import Settings
 from app.core.errors import AppError
 
-SETTINGS = Settings(
-    ai_mode="live", openai_api_key="sk-test", llm_model_openai_fast="fast", llm_model_openai_strong="strong"
-)
+SETTINGS = Settings(openai_api_key="sk-test", llm_model_openai_fast="fast", llm_model_openai_strong="strong")
 
 
 class Out(BaseModel):
@@ -96,7 +94,7 @@ def test_breaker_opens_then_recovers():
 
 
 async def test_jev_without_key_is_disabled_not_broken():
-    jev = JevClient(Settings(ai_mode="live", typesafe_api_key=""))
+    jev = JevClient(Settings(typesafe_api_key=""))
     assert not jev.enabled
     assert await jev.ask("state", SimpleNamespace(name="x", version="1", questions={"q": object()})) is None
 
@@ -116,7 +114,7 @@ class _JevCounting:
 
 
 async def test_jev_failure_returns_none_and_trips_the_breaker():
-    jev = JevClient(Settings(ai_mode="live", typesafe_api_key="k"))
+    jev = JevClient(Settings(typesafe_api_key="k"))
     jev._client = _JevDown()
     battery = SimpleNamespace(name="x", version="1", questions={"q": object()})
     for _ in range(5):
@@ -125,7 +123,7 @@ async def test_jev_failure_returns_none_and_trips_the_breaker():
 
 
 async def test_jev_answers_are_cached_by_state_and_battery_version():
-    jev = JevClient(Settings(ai_mode="live", typesafe_api_key="k"))
+    jev = JevClient(Settings(typesafe_api_key="k"))
     client = _JevCounting()
     jev._client = client
     battery = SimpleNamespace(name="x", version="1", questions={"q": object()})

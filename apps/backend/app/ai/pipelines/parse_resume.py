@@ -46,7 +46,7 @@ async def _vision(ai: AIGateway, settings: Settings, data: bytes) -> ParsedResum
 async def _structure(
     ai: AIGateway, settings: Settings, data: bytes, doc: ExtractedDocument, file: ValidatedFile
 ) -> tuple[ParsedResume, ParsePath]:
-    can_vision = file.kind is FileKind.PDF and not settings.is_mock and settings.has_llm
+    can_vision = file.kind is FileKind.PDF and settings.has_llm
     path = await choose_path(ai, doc.text, doc.page_count) if file.kind is FileKind.PDF else ParsePath.TEXT
 
     if path is ParsePath.VISION and not can_vision:

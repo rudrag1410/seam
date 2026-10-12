@@ -276,9 +276,7 @@ def _live_client(settings, **overrides):
 
     from app.main import create_app
 
-    live = settings.model_copy(
-        update={"ai_mode": "live", "openai_api_key": "", "typesafe_api_key": "", **overrides}
-    )
+    live = settings.model_copy(update={"openai_api_key": "", "typesafe_api_key": "", **overrides})
     return TestClient(create_app(live))
 
 

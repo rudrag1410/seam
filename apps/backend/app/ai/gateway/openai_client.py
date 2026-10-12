@@ -36,7 +36,7 @@ LLM_NOT_CONFIGURED = AppError(
     ErrorCode.LLM_NOT_CONFIGURED,
     "AI isn't set up on this server yet.",
     status=503,
-    hint="Add OPENAI_API_KEY to apps/backend/.env and restart the API. (AI_MODE=mock runs an offline demo.)",
+    hint="Add OPENAI_API_KEY to apps/backend/.env and restart the API.",
     retryable=False,
 )
 

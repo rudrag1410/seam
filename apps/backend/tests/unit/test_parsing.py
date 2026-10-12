@@ -8,7 +8,7 @@ from app.parsing.pdf import extract_pdf
 from app.parsing.validate import validate_upload
 from tests.conftest import fixture_text, text_to_pdf
 
-S = Settings(ai_mode="mock")
+S = Settings()
 
 
 def test_heuristic_parse_extracts_structure():

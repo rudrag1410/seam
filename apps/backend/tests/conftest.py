@@ -10,8 +10,11 @@ from reportlab.pdfgen import canvas
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from app.ai.gateway import AIGateway
+from app.ai.gateway.jev_client import JevClient
 from app.core.config import Settings
 from app.main import create_app
+from tests.fakes import FakeGenerator
 
 Settings.model_config["env_file"] = None
 for _name in Settings.model_fields:
@@ -69,7 +72,7 @@ def settings(tmp_path) -> Settings:
         _reset_postgres(Settings(database_url=pg).database_url)
     return Settings(
         app_env="test",
-        ai_mode="mock",
+        openai_api_key="sk-test",
         database_url=Settings(database_url=pg).database_url
         if pg
         else f"sqlite+aiosqlite:///{tmp_path}/test.db",
@@ -78,9 +81,13 @@ def settings(tmp_path) -> Settings:
     )
 
 
+def build_fake_ai(settings, recorder=None) -> AIGateway:
+    return AIGateway(generate=FakeGenerator(0.0), jev=JevClient(settings, recorder))
+
+
 @pytest.fixture
 def client(settings):
-    with TestClient(create_app(settings)) as c:
+    with TestClient(create_app(settings, build_ai=build_fake_ai)) as c:
         yield c
 
 

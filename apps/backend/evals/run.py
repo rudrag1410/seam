@@ -81,7 +81,7 @@ async def evaluate() -> int:
         print("\nNo pairs completed, so there is nothing to gate on.")
         for f in failures:
             print(f"  FAIL  {f}")
-        print("Set OPENAI_API_KEY for live evals, or AI_MODE=mock for the offline stand-in.")
+        print("Set OPENAI_API_KEY to run the evals.")
         return 1
 
     print(f"\n{'pair':44} {'sugg':>5} {'unflagged':>10} {'concision':>10} {'lift':>6} {'ttfs':>6}")
