@@ -1,0 +1,22 @@
+Senior Frontend Engineer at Razorpay
+
+About the role
+Join our checkout team to build the fastest, most reliable payment experience in India. This is a full-time, hybrid role based in Bengaluru. Salary range: INR 3,000,000 to 4,500,000 per year.
+
+Responsibilities
+- Own the performance of high-traffic checkout flows
+- Collaborate with design and backend engineers to ship new features
+- Mentor engineers and raise the quality bar across the frontend codebase
+
+Requirements
+- 4+ years of experience building production web applications with React and TypeScript
+- Strong understanding of web performance, including Core Web Vitals
+- Experience with Next.js and server-side rendering
+- Experience with automated testing (Jest, Cypress or Playwright)
+- Experience building or contributing to a design system with Storybook
+- Working knowledge of GraphQL APIs
+
+Nice to have
+- Experience with Kubernetes or AWS
+- Open-source contributions
+- Accessibility (WCAG) experience

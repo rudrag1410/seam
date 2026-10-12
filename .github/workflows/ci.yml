@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: astral-sh/setup-uv@v5
+        with: { enable-cache: true }
+      - run: pnpm install --frozen-lockfile
+      - run: uv sync --directory apps/backend --frozen
+
+      # The API contract is generated from the backend. Fail if someone changed the API
+      # without committing the regenerated spec and client.
+      - name: OpenAPI drift check
+        run: |
+          pnpm generate
+          git diff --exit-code apps/backend/openapi.json packages/api-client/src/schema.d.ts
+
+      - run: pnpm turbo run lint typecheck test
+      - run: pnpm --filter @seam/frontend build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }

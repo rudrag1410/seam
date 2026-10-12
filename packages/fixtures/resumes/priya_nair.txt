@@ -1,0 +1,24 @@
+PRIYA NAIR
+Pune, India | priya.nair@example.com | +91 91234 56789 | github.com/priyanair
+
+SUMMARY
+Backend engineer with 6 years building data-heavy services in Python.
+
+SKILLS
+Languages: Python, SQL, Go
+Frameworks: FastAPI, Django, Flask
+Infrastructure: AWS, Docker, PostgreSQL, Redis, Kafka
+
+EXPERIENCE
+Lumen Logistics — Senior Software Engineer    Jan 2021 – Present
+• Designed an event-driven shipment tracking service on Kafka that processes 4 million events per day
+• Cut p95 API latency from 820 ms to 190 ms by adding Redis caching and query indexes
+• Led migration of 14 services from EC2 to containers on AWS ECS with zero downtime
+• Introduced contract tests that caught 30 breaking API changes before release
+
+Paynest — Software Engineer    Aug 2017 – Dec 2020
+• Built reconciliation jobs in Python and SQL that matched 99.2% of transactions automatically
+• Implemented REST APIs in Django used by 3 internal teams
+
+EDUCATION
+B.E. in Information Technology — Pune Institute of Computer Technology    2013 – 2017

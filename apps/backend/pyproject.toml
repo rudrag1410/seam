@@ -1,0 +1,56 @@
+[project]
+name = "seam-backend"
+version = "0.1.0"
+description = "Seam API: resume parsing, grounded tailoring and export"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sqlalchemy[asyncio]>=2.0.36",
+  "aiosqlite>=0.20",
+  "asyncpg>=0.30",
+  "alembic>=1.14",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.6",
+  "email-validator>=2.2",
+  "argon2-cffi>=23.1",
+  "pyjwt>=2.9",
+  "cryptography>=43",
+  "python-multipart>=0.0.12",
+  "pymupdf>=1.24",
+  "python-docx>=1.1",
+  "reportlab>=4.2",
+  "jinja2>=3.1",
+  "openai>=1.54",
+  "typesafe-sdk",
+  "boto3>=1.35",
+  "httpx>=0.27",
+  "rapidfuzz>=3.10",
+  "pyyaml>=6.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "ruff>=0.8",
+  "pyright>=1.1.390",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]  # line length is the formatter's job
+
+[tool.pyright]
+include = ["app"]
+typeCheckingMode = "basic"
+venvPath = "."
+venv = ".venv"

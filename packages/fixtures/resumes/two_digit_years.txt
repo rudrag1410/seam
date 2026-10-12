@@ -1,0 +1,39 @@
+JANE DOE
+Full Stack Developer
+•  +91 9000000001   •  jane.doe@example.com   •  Pune, India   •  Linkedin   •  Github
+
+PROFESSIONAL SUMMARY
+Full Stack Developer with 4+ years building production TypeScript/Node.js systems, including LLM-powered agents.
+Founding engineer experience owning architecture end-to-end from system design through deployment.
+PROFESSIONAL EXPERIENCE
+Founding Engineer | Full Stack Engineer                                                                  Jan '24 - Present
+examplecorp.io                                                                                   Bengaluru (Remote)
+ • Architected scalable full-stack apps (ReactJS/TypeScript/NestJS), cutting feature dev time 30%
+ • Engineered job orchestration (1M+ events/day) + separate BullMQ queues for email/SMS delivery, with Redis caching under
+   high concurrency
+ • Delivered real-time messaging UI with sub-second updates, 99%+ delivery
+
+Tech Stack: NestJS, TypeScript, React, MongoDB, PostgreSQL, Redis, Docker
+Associate Software Engineer                                                                                               Jul '21 - Dec '23
+Acme Technology                                                                                                  Indore
+ • Delivered full-stack features across multiple client projects.
+ • Developed SEO automation tools, increasing organic traffic by 65% and improving lead-
+    acquisition efficiency
+ • Built high-performance data tables handling 100K+ records with server-side sorting
+
+Tech Stack: React, Next.js, TypeScript, Node.js
+PROJECTS
+Sample Assistant — github.com/janedoe/sample-agent
+
+Retrieval-augmented LLM agent for a technical standard, built solo
+ • Built a RAG pipeline (PDF ingestion → chunking → embeddings → vector store) to ground LLM responses
+ • Implemented LLM tool-calling with schema validation across two structured tools
+Tech Stack: Next.js, TypeScript, OpenAI API
+EDUCATION
+Bachelor of Engineering — Computer Science
+Example Institute of Technology, Pune, India                                                                           Pune, India
+KEY SKILLS
+
+  HTML    CSS     JavaScript     TypeScript     ReactJS    Node JS    Nest JS    MongoDB    WebSocket
+
+  REST API    Redux     Redis     AWS    BullMQ    OpenAI

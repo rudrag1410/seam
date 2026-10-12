@@ -1,0 +1,67 @@
+{
+  "name": "replace a bullet, reorder another, add a skill",
+  "document": {
+    "contact": { "name": "A", "links": [] },
+    "sections": [
+      { "id": "summary", "type": "summary", "text": "Old summary." },
+      {
+        "id": "skills",
+        "type": "skills",
+        "groups": [{ "id": "sk_1", "label": "Languages", "items": ["TypeScript"] }]
+      },
+      {
+        "id": "experience",
+        "type": "experience",
+        "items": [
+          {
+            "id": "exp_1",
+            "company": "Acme",
+            "title": "SDE",
+            "bullets": [
+              { "id": "exp_1.b1", "text": "First" },
+              { "id": "exp_1.b2", "text": "Second" },
+              { "id": "exp_1.b3", "text": "Third" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "ops": [
+    { "op": "rewrite_summary", "target": "summary", "payload": { "after": "New summary." } },
+    { "op": "replace_text", "target": "exp_1.b2", "payload": { "after": "Second, improved" } },
+    { "op": "reorder", "target": "exp_1", "payload": { "order": ["exp_1.b3", "exp_1.b1"] } },
+    { "op": "add_skill", "target": "sk_1", "payload": { "value": "Python" } },
+    { "op": "add_skill", "target": "sk_1", "payload": { "value": "typescript" } },
+    { "op": "insert_bullet", "target": "exp_1", "payload": { "after": "Added", "new_id": "exp_1.n1" } },
+    { "op": "remove_bullet", "target": "exp_1.b1", "payload": {} },
+    { "op": "replace_text", "target": "exp_1.b3", "payload": { "after": "ignored" }, "edited_text": "Edited by user" }
+  ],
+  "expected": {
+    "contact": { "name": "A", "links": [] },
+    "sections": [
+      { "id": "summary", "type": "summary", "text": "New summary." },
+      {
+        "id": "skills",
+        "type": "skills",
+        "groups": [{ "id": "sk_1", "label": "Languages", "items": ["TypeScript", "Python"] }]
+      },
+      {
+        "id": "experience",
+        "type": "experience",
+        "items": [
+          {
+            "id": "exp_1",
+            "company": "Acme",
+            "title": "SDE",
+            "bullets": [
+              { "id": "exp_1.b3", "text": "Edited by user" },
+              { "id": "exp_1.b2", "text": "Second, improved" },
+              { "id": "exp_1.n1", "text": "Added" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

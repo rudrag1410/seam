@@ -1,0 +1,21 @@
+Section to edit: {{ section_label }}
+Intensity: {{ intensity }}
+{% if instruction %}
+The candidate asked for this specific change: "{{ instruction }}". Apply it to the target node only.
+{% endif %}
+
+<analysis>
+{{ analysis_json }}
+</analysis>
+
+Requirement ids you may reference in `addresses`:
+{% for r in requirements %}
+- {{ r.id }}: {{ r.text }}{% if r.must %} (must-have){% endif %}
+
+{% endfor %}
+
+Resume nodes in this section (edit only these ids):
+{{ nodes_json }}
+
+Whole-resume context for evidence checks (read-only):
+{{ context_text }}

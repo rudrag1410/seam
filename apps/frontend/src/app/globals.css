@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@import "@seam/ui/styles/tokens.css";
+
+@source "../../../../packages/ui/src";

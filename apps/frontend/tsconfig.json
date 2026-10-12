@@ -1,0 +1,21 @@
+{
+  "extends": "@seam/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    ".next-e2e/types/**/*.ts",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "src",
+    ".next-build/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

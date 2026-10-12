@@ -1,0 +1,1 @@
+{ "extends": "@seam/tsconfig/library.json", "include": ["src"] }

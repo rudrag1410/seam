@@ -1,0 +1,24 @@
+name: LLM evals
+
+on:
+  pull_request:
+    paths:
+      - "apps/backend/app/ai/prompts/**"
+      - "apps/backend/app/ai/decisions/**"
+      - "apps/backend/app/ai/pipelines/**"
+      - "packages/fixtures/**"
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --frozen
+      - name: Run evals (live models when secrets are configured, offline mock otherwise)
+        working-directory: apps/backend
+        env:
+          AI_MODE: ${{ secrets.OPENAI_API_KEY && 'live' || 'mock' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+        run: uv run python -m evals.run

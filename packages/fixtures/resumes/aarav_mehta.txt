@@ -1,0 +1,29 @@
+AARAV MEHTA
+Bengaluru, India | aarav.mehta@example.com | +91 98765 43210 | github.com/aaravm | linkedin.com/in/aaravmehta
+
+SUMMARY
+Frontend engineer with 4 years building web applications for e-commerce and fintech teams.
+
+SKILLS
+Languages: JavaScript, TypeScript, HTML/CSS, Python
+Frameworks: React, Next.js, Redux, Node.js
+Tools: Git, Docker, Jest, Storybook
+
+EXPERIENCE
+Acme Commerce — SDE II    Apr 2022 – Present
+• Improved checkout page performance by moving rendering to Next.js server-side rendering, cutting LCP by 38%
+• Built reusable components for the internal design system used by 6 product teams
+• Wrote unit tests with Jest and React Testing Library, raising coverage from 41% to 78%
+• Mentored 2 junior engineers through code reviews and pairing sessions
+
+Finlytics — Software Engineer    Jul 2020 – Mar 2022
+• Developed dashboards in React and Redux that visualised portfolio data for 12,000 users
+• Reduced bundle size by 27% through code splitting and lazy loading
+• Integrated REST APIs written in Node.js and documented them for the frontend team
+
+PROJECTS
+Seatly — Open-source booking widget
+• Created a TypeScript booking widget with 300 GitHub stars and a Storybook documentation site
+
+EDUCATION
+B.Tech in Computer Science — Vellore Institute of Technology    2016 – 2020

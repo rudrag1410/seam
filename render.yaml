@@ -1,0 +1,27 @@
+# Render blueprint for the API. The frontend deploys to Vercel (see README, "Deployment").
+services:
+  - type: web
+    name: seam-api
+    runtime: docker
+    rootDir: apps/backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /readyz
+    envVars:
+      - { key: APP_ENV, value: production }
+      - { key: AI_MODE, value: live }
+      - { key: APP_URL, sync: false }          # https://<your-app>.vercel.app
+      - { key: CORS_ORIGINS, sync: false }     # same as APP_URL
+      - { key: DATABASE_URL, fromDatabase: { name: seam-db, property: connectionString } }
+      - { key: JWT_SECRET, generateValue: true }
+      - { key: FIELD_ENCRYPTION_KEY, generateValue: true }
+      - { key: COOKIE_SECURE, value: "true" }
+      - { key: COOKIE_SAMESITE, value: none }  # frontend and API are on different domains
+      - { key: OPENAI_API_KEY, sync: false }
+      - { key: TYPESAFE_API_KEY, sync: false } # optional: without it, decisions run in basic mode
+      - { key: R2_ENDPOINT, sync: false }      # optional: empty = local disk (ephemeral on Render)
+      - { key: R2_ACCESS_KEY_ID, sync: false }
+      - { key: R2_SECRET_ACCESS_KEY, sync: false }
+databases:
+  - name: seam-db
+    plan: free
+    databaseName: seam

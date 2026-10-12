@@ -1,0 +1,4513 @@
+{
+  "components": {
+    "schemas": {
+      "ActivityOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "entity_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Id"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "entity_type",
+          "entity_id",
+          "summary",
+          "created_at"
+        ],
+        "title": "ActivityOut",
+        "type": "object"
+      },
+      "ActivityPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "title": "ActivityPage",
+        "type": "object"
+      },
+      "AtsCheck": {
+        "properties": {
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "passed": {
+            "title": "Passed",
+            "type": "boolean"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "passed",
+          "weight",
+          "hint"
+        ],
+        "title": "AtsCheck",
+        "type": "object"
+      },
+      "AtsScore": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/AtsCheck"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "total",
+          "checks"
+        ],
+        "title": "AtsScore",
+        "type": "object"
+      },
+      "Body_upload_v1_resumes_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_v1_resumes_post",
+        "type": "object"
+      },
+      "Bullet": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ],
+        "title": "Bullet",
+        "type": "object"
+      },
+      "Contact-Input": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "links": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Links",
+            "type": "array"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "title": "Contact",
+        "type": "object"
+      },
+      "Contact-Output": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "links": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Links",
+            "type": "array"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "name": {
+            "default": "",
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "name",
+          "headline",
+          "email",
+          "phone",
+          "location",
+          "links"
+        ],
+        "title": "Contact",
+        "type": "object"
+      },
+      "CoverLetterIn": {
+        "properties": {
+          "include_notice_period": {
+            "default": false,
+            "title": "Include Notice Period",
+            "type": "boolean"
+          },
+          "length": {
+            "default": "standard",
+            "enum": [
+              "short",
+              "standard"
+            ],
+            "title": "Length",
+            "type": "string"
+          },
+          "tone": {
+            "default": "professional",
+            "enum": [
+              "professional",
+              "warm",
+              "direct"
+            ],
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "title": "CoverLetterIn",
+        "type": "object"
+      },
+      "CoverLetterOut": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "length": {
+            "title": "Length",
+            "type": "string"
+          },
+          "tone": {
+            "title": "Tone",
+            "type": "string"
+          },
+          "version_id": {
+            "title": "Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version_id",
+          "tone",
+          "length",
+          "body",
+          "created_at"
+        ],
+        "title": "CoverLetterOut",
+        "type": "object"
+      },
+      "DecisionIn": {
+        "properties": {
+          "edited_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited Text"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected",
+              "edited"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "DecisionIn",
+        "type": "object"
+      },
+      "DecisionsPatch": {
+        "properties": {
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionIn"
+            },
+            "title": "Decisions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "decisions"
+        ],
+        "title": "DecisionsPatch",
+        "type": "object"
+      },
+      "EducationItem-Input": {
+        "properties": {
+          "degree": {
+            "default": "",
+            "title": "Degree",
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "school": {
+            "title": "School",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          }
+        },
+        "required": [
+          "id",
+          "school"
+        ],
+        "title": "EducationItem",
+        "type": "object"
+      },
+      "EducationItem-Output": {
+        "properties": {
+          "degree": {
+            "default": "",
+            "title": "Degree",
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "school": {
+            "title": "School",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          }
+        },
+        "required": [
+          "id",
+          "school",
+          "degree",
+          "start",
+          "end",
+          "details"
+        ],
+        "title": "EducationItem",
+        "type": "object"
+      },
+      "EducationSection-Input": {
+        "properties": {
+          "id": {
+            "default": "education",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EducationItem-Input"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "type": {
+            "const": "education",
+            "default": "education",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "EducationSection",
+        "type": "object"
+      },
+      "EducationSection-Output": {
+        "properties": {
+          "id": {
+            "default": "education",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EducationItem-Output"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "type": {
+            "const": "education",
+            "default": "education",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "items"
+        ],
+        "title": "EducationSection",
+        "type": "object"
+      },
+      "ExperienceItem-Input": {
+        "properties": {
+          "bullets": {
+            "items": {
+              "$ref": "#/components/schemas/Bullet"
+            },
+            "title": "Bullets",
+            "type": "array"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company"
+        ],
+        "title": "ExperienceItem",
+        "type": "object"
+      },
+      "ExperienceItem-Output": {
+        "properties": {
+          "bullets": {
+            "items": {
+              "$ref": "#/components/schemas/Bullet"
+            },
+            "title": "Bullets",
+            "type": "array"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "title",
+          "location",
+          "start",
+          "end",
+          "bullets"
+        ],
+        "title": "ExperienceItem",
+        "type": "object"
+      },
+      "ExperienceSection-Input": {
+        "properties": {
+          "id": {
+            "default": "experience",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExperienceItem-Input"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "type": {
+            "const": "experience",
+            "default": "experience",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "ExperienceSection",
+        "type": "object"
+      },
+      "ExperienceSection-Output": {
+        "properties": {
+          "id": {
+            "default": "experience",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExperienceItem-Output"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "type": {
+            "const": "experience",
+            "default": "experience",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "items"
+        ],
+        "title": "ExperienceSection",
+        "type": "object"
+      },
+      "FinalizeOut": {
+        "properties": {
+          "version_id": {
+            "title": "Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version_id"
+        ],
+        "title": "FinalizeOut",
+        "type": "object"
+      },
+      "FitCheck": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FitItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "FitCheck",
+        "type": "object"
+      },
+      "FitItem": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "key": {
+            "enum": [
+              "work_mode",
+              "location",
+              "job_type",
+              "compensation",
+              "seniority"
+            ],
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "warn",
+              "unclear"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "status",
+          "detail"
+        ],
+        "title": "FitItem",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "InterviewPrep": {
+        "properties": {
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewQuestion"
+            },
+            "title": "Questions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "title": "InterviewPrep",
+        "type": "object"
+      },
+      "InterviewQuestion": {
+        "properties": {
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "talking_points": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Talking Points",
+            "type": "array"
+          },
+          "why": {
+            "title": "Why",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "why",
+          "talking_points"
+        ],
+        "title": "InterviewQuestion",
+        "type": "object"
+      },
+      "JDAnalysis": {
+        "properties": {
+          "company": {
+            "default": "",
+            "title": "Company",
+            "type": "string"
+          },
+          "employment_type": {
+            "default": "unspecified",
+            "enum": [
+              "full_time",
+              "contract",
+              "part_time",
+              "internship",
+              "freelance",
+              "unspecified"
+            ],
+            "title": "Employment Type",
+            "type": "string"
+          },
+          "facet_confidence": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Facet Confidence",
+            "type": "object"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Keywords",
+            "type": "array"
+          },
+          "location": {
+            "default": "",
+            "title": "Location",
+            "type": "string"
+          },
+          "must_haves": {
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
+            },
+            "title": "Must Haves",
+            "type": "array"
+          },
+          "nice_to_haves": {
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
+            },
+            "title": "Nice To Haves",
+            "type": "array"
+          },
+          "responsibilities": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Responsibilities",
+            "type": "array"
+          },
+          "salary_range": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SalaryRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "seniority": {
+            "default": "unspecified",
+            "enum": [
+              "junior",
+              "mid",
+              "senior",
+              "staff",
+              "lead",
+              "unspecified"
+            ],
+            "title": "Seniority",
+            "type": "string"
+          },
+          "title": {
+            "default": "",
+            "title": "Title",
+            "type": "string"
+          },
+          "work_mode": {
+            "default": "unspecified",
+            "enum": [
+              "remote",
+              "hybrid",
+              "onsite",
+              "unspecified"
+            ],
+            "title": "Work Mode",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "company",
+          "seniority",
+          "employment_type",
+          "work_mode",
+          "location",
+          "salary_range",
+          "must_haves",
+          "nice_to_haves",
+          "responsibilities",
+          "keywords",
+          "facet_confidence"
+        ],
+        "title": "JDAnalysis",
+        "type": "object"
+      },
+      "JDAnalyzeRequest": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "title": "JDAnalyzeRequest",
+        "type": "object"
+      },
+      "JDAnalyzeResponse": {
+        "properties": {
+          "analysis": {
+            "$ref": "#/components/schemas/JDAnalysis"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "degraded": {
+            "default": false,
+            "title": "Degraded",
+            "type": "boolean"
+          },
+          "fit": {
+            "$ref": "#/components/schemas/FitCheck"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "company",
+          "analysis",
+          "fit",
+          "warnings",
+          "degraded"
+        ],
+        "title": "JDAnalyzeResponse",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "MatchScore": {
+        "properties": {
+          "keyword_alignment": {
+            "title": "Keyword Alignment",
+            "type": "number"
+          },
+          "matched_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Matched Keywords",
+            "type": "array"
+          },
+          "missing_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Keywords",
+            "type": "array"
+          },
+          "must_have_coverage": {
+            "title": "Must Have Coverage",
+            "type": "number"
+          },
+          "nice_to_have_coverage": {
+            "title": "Nice To Have Coverage",
+            "type": "number"
+          },
+          "requirements": {
+            "items": {
+              "$ref": "#/components/schemas/RequirementCoverage"
+            },
+            "title": "Requirements",
+            "type": "array"
+          },
+          "section_completeness": {
+            "title": "Section Completeness",
+            "type": "number"
+          },
+          "seniority_fit": {
+            "title": "Seniority Fit",
+            "type": "number"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          }
+        },
+        "required": [
+          "total",
+          "must_have_coverage",
+          "nice_to_have_coverage",
+          "keyword_alignment",
+          "seniority_fit",
+          "section_completeness",
+          "requirements",
+          "missing_keywords",
+          "matched_keywords"
+        ],
+        "title": "MatchScore",
+        "type": "object"
+      },
+      "NodeChange": {
+        "properties": {
+          "after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "kind": {
+            "enum": [
+              "added",
+              "removed",
+              "changed",
+              "moved"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "node_id": {
+            "title": "Node Id",
+            "type": "string"
+          },
+          "section": {
+            "title": "Section",
+            "type": "string"
+          }
+        },
+        "required": [
+          "node_id",
+          "kind",
+          "section",
+          "before",
+          "after"
+        ],
+        "title": "NodeChange",
+        "type": "object"
+      },
+      "OtherSection-Input": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "const": "other",
+            "default": "other",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "OtherSection",
+        "type": "object"
+      },
+      "OtherSection-Output": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "const": "other",
+            "default": "other",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "lines"
+        ],
+        "title": "OtherSection",
+        "type": "object"
+      },
+      "PreferencesIO-Input": {
+        "properties": {
+          "avoid_tech": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Avoid Tech",
+            "type": "array"
+          },
+          "industries": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Industries",
+            "type": "array"
+          },
+          "job_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Job Types",
+            "type": "array"
+          },
+          "locations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
+          "open_to_relocation": {
+            "default": false,
+            "title": "Open To Relocation",
+            "type": "boolean"
+          },
+          "preferred_tech": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Preferred Tech",
+            "type": "array"
+          },
+          "seniority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seniority"
+          },
+          "target_roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Roles",
+            "type": "array"
+          },
+          "work_authorization": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Authorization"
+          },
+          "work_modes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Work Modes",
+            "type": "array"
+          }
+        },
+        "title": "PreferencesIO",
+        "type": "object"
+      },
+      "PreferencesIO-Output": {
+        "properties": {
+          "avoid_tech": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Avoid Tech",
+            "type": "array"
+          },
+          "industries": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Industries",
+            "type": "array"
+          },
+          "job_types": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Job Types",
+            "type": "array"
+          },
+          "locations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
+          "open_to_relocation": {
+            "default": false,
+            "title": "Open To Relocation",
+            "type": "boolean"
+          },
+          "preferred_tech": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Preferred Tech",
+            "type": "array"
+          },
+          "seniority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seniority"
+          },
+          "target_roles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Roles",
+            "type": "array"
+          },
+          "work_authorization": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Authorization"
+          },
+          "work_modes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Work Modes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "target_roles",
+          "seniority",
+          "job_types",
+          "work_modes",
+          "locations",
+          "open_to_relocation",
+          "industries",
+          "preferred_tech",
+          "avoid_tech",
+          "work_authorization"
+        ],
+        "title": "PreferencesIO",
+        "type": "object"
+      },
+      "ProfileIO-Input": {
+        "properties": {
+          "ctc_currency": {
+            "default": "INR",
+            "title": "Ctc Currency",
+            "type": "string"
+          },
+          "current_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Company"
+          },
+          "current_ctc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Ctc"
+          },
+          "current_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Title"
+          },
+          "expected_ctc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Ctc"
+          },
+          "full_name": {
+            "default": "",
+            "title": "Full Name",
+            "type": "string"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "links": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Links",
+            "type": "object"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "notice_period_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notice Period Days"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "years_experience": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years Experience"
+          }
+        },
+        "title": "ProfileIO",
+        "type": "object"
+      },
+      "ProfileIO-Output": {
+        "properties": {
+          "ctc_currency": {
+            "default": "INR",
+            "title": "Ctc Currency",
+            "type": "string"
+          },
+          "current_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Company"
+          },
+          "current_ctc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Ctc"
+          },
+          "current_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Title"
+          },
+          "expected_ctc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Ctc"
+          },
+          "full_name": {
+            "default": "",
+            "title": "Full Name",
+            "type": "string"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "links": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Links",
+            "type": "object"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "notice_period_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notice Period Days"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "years_experience": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years Experience"
+          }
+        },
+        "required": [
+          "full_name",
+          "phone",
+          "location",
+          "headline",
+          "current_title",
+          "current_company",
+          "years_experience",
+          "links",
+          "current_ctc",
+          "expected_ctc",
+          "ctc_currency",
+          "notice_period_days"
+        ],
+        "title": "ProfileIO",
+        "type": "object"
+      },
+      "ProjectItem-Input": {
+        "properties": {
+          "bullets": {
+            "items": {
+              "$ref": "#/components/schemas/Bullet"
+            },
+            "title": "Bullets",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ProjectItem",
+        "type": "object"
+      },
+      "ProjectItem-Output": {
+        "properties": {
+          "bullets": {
+            "items": {
+              "$ref": "#/components/schemas/Bullet"
+            },
+            "title": "Bullets",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subtitle",
+          "bullets"
+        ],
+        "title": "ProjectItem",
+        "type": "object"
+      },
+      "ProjectsSection-Input": {
+        "properties": {
+          "id": {
+            "default": "projects",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectItem-Input"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "type": {
+            "const": "projects",
+            "default": "projects",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "ProjectsSection",
+        "type": "object"
+      },
+      "ProjectsSection-Output": {
+        "properties": {
+          "id": {
+            "default": "projects",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectItem-Output"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "type": {
+            "const": "projects",
+            "default": "projects",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "items"
+        ],
+        "title": "ProjectsSection",
+        "type": "object"
+      },
+      "RegenerateIn": {
+        "properties": {
+          "instruction": {
+            "maxLength": 300,
+            "minLength": 2,
+            "title": "Instruction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "instruction"
+        ],
+        "title": "RegenerateIn",
+        "type": "object"
+      },
+      "Requirement": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Keywords",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "weight": {
+            "default": 1.0,
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "keywords",
+          "weight"
+        ],
+        "title": "Requirement",
+        "type": "object"
+      },
+      "RequirementCoverage": {
+        "properties": {
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "number"
+          },
+          "must_have": {
+            "title": "Must Have",
+            "type": "boolean"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "verdict": {
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text",
+          "must_have",
+          "level",
+          "confidence",
+          "verdict"
+        ],
+        "title": "RequirementCoverage",
+        "type": "object"
+      },
+      "Resume-Input": {
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/Contact-Input"
+          },
+          "sections": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "education": "#/components/schemas/EducationSection-Input",
+                  "experience": "#/components/schemas/ExperienceSection-Input",
+                  "other": "#/components/schemas/OtherSection-Input",
+                  "projects": "#/components/schemas/ProjectsSection-Input",
+                  "skills": "#/components/schemas/SkillsSection-Input",
+                  "summary": "#/components/schemas/SummarySection-Input"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/SummarySection-Input"
+                },
+                {
+                  "$ref": "#/components/schemas/SkillsSection-Input"
+                },
+                {
+                  "$ref": "#/components/schemas/ExperienceSection-Input"
+                },
+                {
+                  "$ref": "#/components/schemas/ProjectsSection-Input"
+                },
+                {
+                  "$ref": "#/components/schemas/EducationSection-Input"
+                },
+                {
+                  "$ref": "#/components/schemas/OtherSection-Input"
+                }
+              ]
+            },
+            "title": "Sections",
+            "type": "array"
+          }
+        },
+        "title": "Resume",
+        "type": "object"
+      },
+      "Resume-Output": {
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/Contact-Output"
+          },
+          "sections": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "education": "#/components/schemas/EducationSection-Output",
+                  "experience": "#/components/schemas/ExperienceSection-Output",
+                  "other": "#/components/schemas/OtherSection-Output",
+                  "projects": "#/components/schemas/ProjectsSection-Output",
+                  "skills": "#/components/schemas/SkillsSection-Output",
+                  "summary": "#/components/schemas/SummarySection-Output"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/SummarySection-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/SkillsSection-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/ExperienceSection-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/ProjectsSection-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/EducationSection-Output"
+                },
+                {
+                  "$ref": "#/components/schemas/OtherSection-Output"
+                }
+              ]
+            },
+            "title": "Sections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "contact",
+          "sections"
+        ],
+        "title": "Resume",
+        "type": "object"
+      },
+      "ResumeOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Resume-Output"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "parse_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Path"
+          },
+          "prefill": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "default": {},
+            "title": "Prefill",
+            "type": "object"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "size_bytes",
+          "page_count",
+          "parse_path",
+          "document",
+          "created_at",
+          "prefill"
+        ],
+        "title": "ResumeOut",
+        "type": "object"
+      },
+      "SalaryRange": {
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "period": {
+            "default": "year",
+            "enum": [
+              "year",
+              "month"
+            ],
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "min",
+          "max",
+          "currency",
+          "period"
+        ],
+        "title": "SalaryRange",
+        "type": "object"
+      },
+      "SessionListItem": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decided_count": {
+            "title": "Decided Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "jd_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Company"
+          },
+          "jd_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Title"
+          },
+          "match_after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match After"
+          },
+          "match_before": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Before"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "suggestion_count": {
+            "title": "Suggestion Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "jd_title",
+          "jd_company",
+          "suggestion_count",
+          "decided_count",
+          "match_before",
+          "match_after",
+          "created_at"
+        ],
+        "title": "SessionListItem",
+        "type": "object"
+      },
+      "SignupRequest": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "full_name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "full_name"
+        ],
+        "title": "SignupRequest",
+        "type": "object"
+      },
+      "SkillGroup-Input": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "SkillGroup",
+        "type": "object"
+      },
+      "SkillGroup-Output": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "items"
+        ],
+        "title": "SkillGroup",
+        "type": "object"
+      },
+      "SkillsSection-Input": {
+        "properties": {
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/SkillGroup-Input"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "id": {
+            "default": "skills",
+            "title": "Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "skills",
+            "default": "skills",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "SkillsSection",
+        "type": "object"
+      },
+      "SkillsSection-Output": {
+        "properties": {
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/SkillGroup-Output"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "id": {
+            "default": "skills",
+            "title": "Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "skills",
+            "default": "skills",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "groups"
+        ],
+        "title": "SkillsSection",
+        "type": "object"
+      },
+      "SuggestionOut": {
+        "properties": {
+          "addresses": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Addresses",
+            "type": "array"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "checks": {
+            "additionalProperties": true,
+            "title": "Checks",
+            "type": "object"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "edited_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited Text"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "flag_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag Reason"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "replace_text",
+              "reorder",
+              "insert_bullet",
+              "remove_bullet",
+              "add_skill",
+              "remove_skill",
+              "rewrite_summary"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "requires_confirmation": {
+            "default": false,
+            "title": "Requires Confirmation",
+            "type": "boolean"
+          },
+          "score_delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score Delta"
+          },
+          "section": {
+            "title": "Section",
+            "type": "string"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          },
+          "status": {
+            "default": "pending",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected",
+              "edited"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "seq",
+          "section",
+          "op",
+          "target",
+          "payload",
+          "before",
+          "rationale",
+          "addresses",
+          "evidence",
+          "confidence",
+          "requires_confirmation",
+          "flag_reason",
+          "score_delta",
+          "checks",
+          "status",
+          "edited_text"
+        ],
+        "title": "SuggestionOut",
+        "type": "object"
+      },
+      "SummarySection-Input": {
+        "properties": {
+          "id": {
+            "default": "summary",
+            "title": "Id",
+            "type": "string"
+          },
+          "text": {
+            "default": "",
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "const": "summary",
+            "default": "summary",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "title": "SummarySection",
+        "type": "object"
+      },
+      "SummarySection-Output": {
+        "properties": {
+          "id": {
+            "default": "summary",
+            "title": "Id",
+            "type": "string"
+          },
+          "text": {
+            "default": "",
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "const": "summary",
+            "default": "summary",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "text"
+        ],
+        "title": "SummarySection",
+        "type": "object"
+      },
+      "TailorCreate": {
+        "description": "Start a session from the job description text (or a link to it), or from one already analysed.",
+        "properties": {
+          "base_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Version Id"
+          },
+          "intensity": {
+            "default": "balanced",
+            "enum": [
+              "light",
+              "balanced",
+              "bold"
+            ],
+            "title": "Intensity",
+            "type": "string"
+          },
+          "jd_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Id"
+          },
+          "jd_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Text"
+          },
+          "jd_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Url"
+          },
+          "resume_id": {
+            "title": "Resume Id",
+            "type": "string"
+          },
+          "sections": {
+            "items": {
+              "enum": [
+                "summary",
+                "skills",
+                "experience",
+                "projects"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Sections",
+            "type": "array"
+          }
+        },
+        "required": [
+          "resume_id"
+        ],
+        "title": "TailorCreate",
+        "type": "object"
+      },
+      "TailorCreated": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "TailorCreated",
+        "type": "object"
+      },
+      "TailorSessionOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "degraded": {
+            "title": "Degraded",
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "fit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FitCheck"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "intensity": {
+            "title": "Intensity",
+            "type": "string"
+          },
+          "jd": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JDAnalysis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "jd_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Company"
+          },
+          "jd_id": {
+            "title": "Jd Id",
+            "type": "string"
+          },
+          "jd_text": {
+            "default": "",
+            "title": "Jd Text",
+            "type": "string"
+          },
+          "jd_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Title"
+          },
+          "jd_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Url"
+          },
+          "resume": {
+            "$ref": "#/components/schemas/Resume-Output"
+          },
+          "resume_id": {
+            "title": "Resume Id",
+            "type": "string"
+          },
+          "score_after": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score_before": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sections": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sections",
+            "type": "array"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionOut"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Id"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "intensity",
+          "sections",
+          "degraded",
+          "error_code",
+          "error_message",
+          "resume_id",
+          "jd_id",
+          "jd_title",
+          "jd_company",
+          "jd_text",
+          "jd_url",
+          "jd",
+          "fit",
+          "resume",
+          "suggestions",
+          "score_before",
+          "score_after",
+          "version_id",
+          "created_at"
+        ],
+        "title": "TailorSessionOut",
+        "type": "object"
+      },
+      "UserOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "has_resume": {
+            "title": "Has Resume",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "onboarded": {
+            "title": "Onboarded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "full_name",
+          "onboarded",
+          "has_resume"
+        ],
+        "title": "UserOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VersionCompare": {
+        "properties": {
+          "a": {
+            "$ref": "#/components/schemas/VersionDetail"
+          },
+          "ats_delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats Delta"
+          },
+          "b": {
+            "$ref": "#/components/schemas/VersionDetail"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/NodeChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "match_delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Delta"
+          }
+        },
+        "required": [
+          "a",
+          "b",
+          "changes",
+          "match_delta",
+          "ats_delta"
+        ],
+        "title": "VersionCompare",
+        "type": "object"
+      },
+      "VersionDetail": {
+        "properties": {
+          "ats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AtsScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ats_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats Score"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Resume-Output"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "jd_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Company"
+          },
+          "jd_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Title"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "match_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Score"
+          },
+          "parent_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Version Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "parent_version_id",
+          "session_id",
+          "jd_title",
+          "jd_company",
+          "match_score",
+          "ats_score",
+          "created_at",
+          "document",
+          "ats",
+          "match"
+        ],
+        "title": "VersionDetail",
+        "type": "object"
+      },
+      "VersionOut": {
+        "properties": {
+          "ats_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats Score"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "jd_company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Company"
+          },
+          "jd_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jd Title"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "match_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Score"
+          },
+          "parent_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Version Id"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "parent_version_id",
+          "session_id",
+          "jd_title",
+          "jd_company",
+          "match_score",
+          "ats_score",
+          "created_at"
+        ],
+        "title": "VersionOut",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Seam API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Healthz Healthz Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthz",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/readyz": {
+      "get": {
+        "operationId": "readyz_readyz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Readyz Readyz Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Readyz",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/activity": {
+      "get": {
+        "operationId": "feed_v1_activity_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Feed",
+        "tags": [
+          "activity"
+        ]
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "login_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Login V1 Auth Login Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "logout_v1_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "refresh_v1_auth_refresh_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Refresh V1 Auth Refresh Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Refresh",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/signup": {
+      "post": {
+        "operationId": "signup_v1_auth_signup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Signup V1 Auth Signup Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signup",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/jobs/analyze": {
+      "post": {
+        "operationId": "analyze_v1_jobs_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JDAnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JDAnalyzeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/v1/me": {
+      "delete": {
+        "description": "Deletes the user and, by cascade, every row; purges the user's stored files.",
+        "operationId": "delete_me_v1_me_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Delete Me",
+        "tags": [
+          "me"
+        ]
+      },
+      "get": {
+        "operationId": "me_v1_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/v1/me/onboarding/complete": {
+      "post": {
+        "operationId": "complete_onboarding_v1_me_onboarding_complete_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Complete Onboarding",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/v1/me/preferences": {
+      "get": {
+        "operationId": "get_preferences_v1_me_preferences_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesIO-Output"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Preferences",
+        "tags": [
+          "me"
+        ]
+      },
+      "put": {
+        "operationId": "put_preferences_v1_me_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesIO-Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesIO-Output"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Preferences",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/v1/me/profile": {
+      "get": {
+        "operationId": "get_profile_v1_me_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileIO-Output"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Profile",
+        "tags": [
+          "me"
+        ]
+      },
+      "put": {
+        "operationId": "put_profile_v1_me_profile_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileIO-Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileIO-Output"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Profile",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/v1/resumes": {
+      "post": {
+        "operationId": "upload_v1_resumes_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_v1_resumes_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload",
+        "tags": [
+          "resumes"
+        ]
+      }
+    },
+    "/v1/resumes/primary": {
+      "get": {
+        "operationId": "primary_v1_resumes_primary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Primary",
+        "tags": [
+          "resumes"
+        ]
+      }
+    },
+    "/v1/resumes/{resume_id}": {
+      "get": {
+        "operationId": "get_one_v1_resumes__resume_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resume_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Resume Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get One",
+        "tags": [
+          "resumes"
+        ]
+      },
+      "put": {
+        "operationId": "update_v1_resumes__resume_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resume_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Resume Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Resume-Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update",
+        "tags": [
+          "resumes"
+        ]
+      }
+    },
+    "/v1/tailor-sessions": {
+      "get": {
+        "operationId": "list_all_v1_tailor_sessions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionListItem"
+                  },
+                  "title": "Response List All V1 Tailor Sessions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List All",
+        "tags": [
+          "tailor"
+        ]
+      },
+      "post": {
+        "operationId": "create_v1_tailor_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TailorCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TailorCreated"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create",
+        "tags": [
+          "tailor"
+        ]
+      }
+    },
+    "/v1/tailor-sessions/{session_id}": {
+      "get": {
+        "operationId": "get_one_v1_tailor_sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TailorSessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get One",
+        "tags": [
+          "tailor"
+        ]
+      }
+    },
+    "/v1/tailor-sessions/{session_id}/finalize": {
+      "post": {
+        "operationId": "finalize_v1_tailor_sessions__session_id__finalize_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinalizeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Finalize",
+        "tags": [
+          "tailor"
+        ]
+      }
+    },
+    "/v1/tailor-sessions/{session_id}/stream": {
+      "get": {
+        "operationId": "stream_v1_tailor_sessions__session_id__stream_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "last-event-id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Stream",
+        "tags": [
+          "tailor"
+        ]
+      }
+    },
+    "/v1/tailor-sessions/{session_id}/suggestions": {
+      "patch": {
+        "operationId": "patch_decisions_v1_tailor_sessions__session_id__suggestions_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionsPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Decisions",
+        "tags": [
+          "tailor"
+        ]
+      }
+    },
+    "/v1/tailor-sessions/{session_id}/suggestions/{suggestion_id}/regenerate": {
+      "post": {
+        "operationId": "regenerate_v1_tailor_sessions__session_id__suggestions__suggestion_id__regenerate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Suggestion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegenerateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Regenerate",
+        "tags": [
+          "tailor"
+        ]
+      }
+    },
+    "/v1/versions": {
+      "get": {
+        "operationId": "list_versions_v1_versions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VersionOut"
+                  },
+                  "title": "Response List Versions V1 Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Versions",
+        "tags": [
+          "versions"
+        ]
+      }
+    },
+    "/v1/versions/{a}/compare/{b}": {
+      "get": {
+        "operationId": "compare_v1_versions__a__compare__b__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "a",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "A",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "b",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "B",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionCompare"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare",
+        "tags": [
+          "versions"
+        ]
+      }
+    },
+    "/v1/versions/{version_id}": {
+      "get": {
+        "operationId": "get_one_v1_versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get One",
+        "tags": [
+          "versions"
+        ]
+      }
+    },
+    "/v1/versions/{version_id}/cover-letter": {
+      "post": {
+        "operationId": "cover_letter_v1_versions__version_id__cover_letter_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoverLetterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cover Letter",
+        "tags": [
+          "versions"
+        ]
+      }
+    },
+    "/v1/versions/{version_id}/cover-letters": {
+      "get": {
+        "operationId": "list_cover_letters_v1_versions__version_id__cover_letters_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CoverLetterOut"
+                  },
+                  "title": "Response List Cover Letters V1 Versions  Version Id  Cover Letters Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Cover Letters",
+        "tags": [
+          "versions"
+        ]
+      }
+    },
+    "/v1/versions/{version_id}/export": {
+      "get": {
+        "operationId": "export_v1_versions__version_id__export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "pdf",
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "template",
+            "required": false,
+            "schema": {
+              "default": "classic",
+              "title": "Template",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export",
+        "tags": [
+          "versions"
+        ]
+      }
+    },
+    "/v1/versions/{version_id}/interview-prep": {
+      "post": {
+        "operationId": "prep_v1_versions__version_id__interview_prep_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewPrep"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prep",
+        "tags": [
+          "versions"
+        ]
+      }
+    }
+  }
+}

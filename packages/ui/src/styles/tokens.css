@@ -1,0 +1,190 @@
+/* Seam design tokens. Warm white canvas, near-black ink, cream panels, hairline borders and
+   pill controls, with a tight-tracked serif for display type. */
+
+:root {
+  /* surfaces */
+  --bg: #ffffff;
+  --panel: #f9f9f6;
+  --cream: #f2f2eb;
+  --line: #ebe9e1;
+  --line-strong: rgba(16, 15, 15, 0.14);
+
+  /* text */
+  --ink: #100f0f;
+  --ink-soft: rgba(16, 15, 15, 0.72);
+  --ink-muted: rgba(16, 15, 15, 0.56);
+  --on-ink: #f9f9f6;
+
+  /* accents, used sparingly */
+  --green: #27d271;
+  --yellow: #ffd862;
+  --orange: #ff8042;
+  --blue: #88a5ff;
+
+  /* diff semantics */
+  --ins-bg: rgba(39, 210, 113, 0.16);
+  --ins-line: #1fae5b;
+  --del-bg: rgba(255, 128, 66, 0.14);
+  --del-line: #d9581f;
+  --warn-bg: rgba(255, 216, 98, 0.4);
+  --warn-ink: #6b4e00;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --shadow-pop: 0 10px 30px -12px rgba(16, 15, 15, 0.22), 0 0 0 1px var(--line);
+}
+
+:root[data-theme="dark"] {
+  --bg: #100f0f;
+  --panel: #171615;
+  --cream: #1f1e1c;
+  --line: #2a2926;
+  --line-strong: rgba(249, 249, 246, 0.16);
+  --ink: #f9f9f6;
+  --ink-soft: rgba(249, 249, 246, 0.78);
+  --ink-muted: rgba(249, 249, 246, 0.56);
+  --on-ink: #100f0f;
+  --ins-bg: rgba(39, 210, 113, 0.18);
+  --ins-line: #3fe188;
+  --del-bg: rgba(255, 128, 66, 0.16);
+  --del-line: #ff9b66;
+  --warn-bg: rgba(255, 216, 98, 0.16);
+  --warn-ink: #ffd862;
+  --shadow-pop: 0 10px 30px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--line);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-cream: var(--cream);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-on-ink: var(--on-ink);
+  --color-green: var(--green);
+  --color-yellow: var(--yellow);
+  --color-orange: var(--orange);
+  --color-blue: var(--blue);
+  --color-ins: var(--ins-bg);
+  --color-ins-line: var(--ins-line);
+  --color-del: var(--del-bg);
+  --color-del-line: var(--del-line);
+  --color-warn: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    background: var(--bg);
+    /* keep the page width constant whether or not a scrollbar is showing */
+    scrollbar-gutter: stable;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--yellow);
+    color: #100f0f;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@keyframes seam-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes seam-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes seam-stitch {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* a thread being sewn: stitches appear left to right, hold, then the pass starts again */
+@keyframes seam-sew {
+  0% { clip-path: inset(0 100% 0 0); opacity: 1; }
+  65%, 85% { clip-path: inset(0 0 0 0); opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; }
+}
+@keyframes seam-turn {
+  to { transform: rotate(360deg); }
+}
+
+@layer utilities {
+  .animate-fade-in { animation: seam-fade 0.2s var(--ease-out) both; }
+  .animate-rise { animation: seam-rise 0.3s var(--ease-out) both; }
+  /* a dashed line that "sews" itself left to right */
+  .splash-stitch {
+    display: block;
+    width: 112px;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 11px);
+    animation: seam-stitch 1s var(--ease-out) 0.15s both;
+  }
+  /* the working indicators: a line of stitches being sewn, and a stitched ring that turns */
+  .stitch-sew {
+    display: block;
+    height: 2px;
+    border-radius: 1px;
+    background: repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px);
+    animation: seam-sew 1.5s var(--ease-out) infinite;
+  }
+  .stitch-ring {
+    transform-origin: center;
+    animation: seam-turn 2.4s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .splash-stitch,
+    .stitch-sew,
+    .stitch-ring { animation: none !important; }
+  }
+
+  .font-display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+}

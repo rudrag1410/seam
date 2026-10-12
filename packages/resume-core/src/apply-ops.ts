@@ -1,0 +1,73 @@
+import type { Op, Resume } from "./ast";
+
+type Item = { id: string; bullets?: { id: string; text: string }[] };
+
+function eachItem(doc: Resume): Item[] {
+  return doc.sections.flatMap((s) => ("items" in s ? (s.items as Item[]) : []));
+}
+
+function findBullet(doc: Resume, id: string) {
+  for (const item of eachItem(doc)) {
+    const i = item.bullets?.findIndex((b) => b.id === id) ?? -1;
+    if (i >= 0 && item.bullets) return { bullets: item.bullets, index: i };
+  }
+  return null;
+}
+
+function textFor(op: Op): string {
+  return op.edited_text ? op.edited_text : String(op.payload.after ?? "");
+}
+
+function applyOne(doc: Resume, op: Op): void {
+  const { target, payload } = op;
+  switch (op.op) {
+    case "replace_text":
+    case "rewrite_summary": {
+      const section = doc.sections.find((s) => s.id === target);
+      if (section?.type === "summary") {
+        section.text = textFor(op);
+        return;
+      }
+      const found = findBullet(doc, target);
+      if (found) found.bullets[found.index]!.text = textFor(op);
+      return;
+    }
+    case "reorder": {
+      const item = eachItem(doc).find((i) => i.id === target);
+      if (!item?.bullets) return;
+      const byId = new Map(item.bullets.map((b) => [b.id, b]));
+      const order = payload.order as string[];
+      const ordered = order.flatMap((id) => (byId.has(id) ? [byId.get(id)!] : []));
+      const listed = new Set(ordered.map((b) => b.id));
+      item.bullets = [...ordered, ...item.bullets.filter((b) => !listed.has(b.id))];
+      return;
+    }
+    case "insert_bullet": {
+      const item = eachItem(doc).find((i) => i.id === target);
+      item?.bullets?.push({ id: String(payload.new_id), text: textFor(op) });
+      return;
+    }
+    case "remove_bullet": {
+      const found = findBullet(doc, target);
+      if (found) found.bullets.splice(found.index, 1);
+      return;
+    }
+    case "add_skill":
+    case "remove_skill": {
+      const group = doc.sections.flatMap((s) => (s.type === "skills" ? s.groups : [])).find((g) => g.id === target);
+      if (!group) return;
+      const value = (op.edited_text || String(payload.value ?? "")).trim();
+      const at = group.items.findIndex((x) => x.toLowerCase() === value.toLowerCase());
+      if (op.op === "add_skill" && at < 0) group.items.push(value);
+      if (op.op === "remove_skill" && at >= 0) group.items.splice(at, 1);
+    }
+  }
+}
+
+/** Returns a new document with `ops` applied in order. Never mutates the input.
+ *  Mirrors apps/backend/app/ai/ops/apply_ops.py; both run packages/fixtures/apply-ops. */
+export function applyOps(document: Resume, ops: Op[]): Resume {
+  const doc = structuredClone(document);
+  for (const op of ops) applyOne(doc, op);
+  return doc;
+}

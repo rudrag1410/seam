@@ -1,0 +1,18 @@
+Backend Engineer, Platform at Orbit
+
+Orbit builds payments infrastructure for marketplaces. This is a full-time, remote role. We hire for impact, not titles.
+
+Responsibilities
+- Design and operate high-throughput services that move money safely
+- Partner with product to turn ambiguous problems into reliable systems
+
+Requirements
+- 5+ years of experience building backend services in Python
+- Strong SQL and PostgreSQL skills, including query optimisation
+- Experience with event-driven systems such as Kafka or RabbitMQ
+- Experience running services on AWS with Docker or Kubernetes
+- A habit of writing automated tests and contract tests
+
+Nice to have
+- Experience with Go
+- Experience with GraphQL
