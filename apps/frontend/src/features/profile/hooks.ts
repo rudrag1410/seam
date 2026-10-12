@@ -9,7 +9,8 @@ export function useSaveProfile() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (patch: Partial<Profile>) => {
-      const current = qc.getQueryData<Profile>(keys.profile) ?? (await unwrap(api.GET("/v1/me/profile")));
+      const current =
+        qc.getQueryData<Profile>(keys.profile) ?? (await unwrap(api.GET("/v1/me/profile")));
       return unwrap(api.PUT("/v1/me/profile", { body: { ...current, ...patch } }));
     },
     onSuccess: (data) => qc.setQueryData(keys.profile, data),

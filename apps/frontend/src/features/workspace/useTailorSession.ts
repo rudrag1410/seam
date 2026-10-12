@@ -13,10 +13,21 @@ import { api, unwrap } from "@/lib/api";
 import { presentError } from "@/lib/errors";
 import { keys, usePrimaryResume } from "@/lib/queries";
 import type { JobDraft } from "./JobComposer";
-import { NEW_RUN_PATH, createBody, isRunning, retryBody, runFromDraft, runFromSession, sessionPath, showAddress } from "./run";
+import {
+  NEW_RUN_PATH,
+  createBody,
+  isRunning,
+  retryBody,
+  runFromDraft,
+  runFromSession,
+  sessionPath,
+  showAddress,
+} from "./run";
 
 function fetchSession(id: string) {
-  return unwrap(api.GET("/v1/tailor-sessions/{session_id}", { params: { path: { session_id: id } } }));
+  return unwrap(
+    api.GET("/v1/tailor-sessions/{session_id}", { params: { path: { session_id: id } } }),
+  );
 }
 
 function fetchVersion(id: string) {
@@ -29,14 +40,19 @@ function createSession(body: TailorCreate) {
 
 async function finalizeSession(id: string) {
   await flushDecisions(id);
-  return unwrap(api.POST("/v1/tailor-sessions/{session_id}/finalize", { params: { path: { session_id: id } } }));
+  return unwrap(
+    api.POST("/v1/tailor-sessions/{session_id}/finalize", { params: { path: { session_id: id } } }),
+  );
 }
 
 function reportError(error: unknown): void {
   toast.error(presentError(error).title);
 }
 
-export function useTailorSession(initialSessionId: string | undefined, baseVersionId: string | null) {
+export function useTailorSession(
+  initialSessionId: string | undefined,
+  baseVersionId: string | null,
+) {
   const router = useRouter();
   const path = usePathname();
   const qc = useQueryClient();
@@ -100,7 +116,19 @@ export function useTailorSession(initialSessionId: string | undefined, baseVersi
   });
 
   const baseResume = (baseVersionId ? baseVersion.data?.document : primary.data?.document) ?? null;
-  return { sessionId, setSessionId, fault, setFault, primary, query, create, finalize, baseResume, loadingResume: primary.isPending || baseVersion.isPending, baseVersionId };
+  return {
+    sessionId,
+    setSessionId,
+    fault,
+    setFault,
+    primary,
+    query,
+    create,
+    finalize,
+    baseResume,
+    loadingResume: primary.isPending || baseVersion.isPending,
+    baseVersionId,
+  };
 }
 
 export type TailorSession = ReturnType<typeof useTailorSession>;

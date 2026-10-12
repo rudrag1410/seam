@@ -40,7 +40,11 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
 
   const started = status !== null;
   const composing = !session.sessionId && !started;
-  const reviewing = started && status !== SessionStatus.Finalized && status !== SessionStatus.Failed && mode === ViewMode.Suggestions;
+  const reviewing =
+    started &&
+    status !== SessionStatus.Finalized &&
+    status !== SessionStatus.Failed &&
+    mode === ViewMode.Suggestions;
   const [draft, setDraft] = useJobDraft(composing, !!session.sessionId);
 
   useReviewKeys(status === SessionStatus.Ready);
@@ -67,7 +71,10 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
 
       <div className="relative flex min-h-0 flex-1 flex-col [--thread-w:460px] lg:grid lg:grid-cols-[var(--thread-w)_1fr] lg:grid-rows-[minmax(0,1fr)_auto]">
         <ResizeHandle resizer={resizer} />
-        <div data-thread className="scroll-thin border-line lg:col-start-1 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto lg:border-r">
+        <div
+          data-thread
+          className="scroll-thin border-line lg:col-start-1 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto lg:border-r"
+        >
           <Thread
             intro={<Intro composing={composing} branching={!!baseVersionId} />}
             retrying={session.create.isPending}
@@ -79,18 +86,30 @@ export function TailorWorkspace({ initialSessionId, baseVersionId = null }: Tail
           />
         </div>
 
-        <Paper resume={resume ?? session.baseResume} loading={session.loadingResume} started={started} reviewing={reviewing} scroller={paper} />
+        <Paper
+          resume={resume ?? session.baseResume}
+          loading={session.loadingResume}
+          started={started}
+          reviewing={reviewing}
+          scroller={paper}
+        />
 
         <div className="sticky bottom-0 z-10 border-t border-line bg-bg px-4 py-3 sm:px-5 lg:static lg:col-start-1 lg:row-start-2 lg:border-r">
           <div className="mx-auto w-full max-w-[600px] space-y-3">
             {composing ? (
               <>
-                {!!session.fault && !problem && <ErrorState error={session.fault} onRetry={() => startRun(session, draft)} />}
+                {!!session.fault && !problem && (
+                  <ErrorState error={session.fault} onRetry={() => startRun(session, draft)} />
+                )}
                 <JobComposer
                   draft={draft}
                   sending={session.create.isPending}
                   error={problem}
-                  disabledReason={!session.primary.data && !session.primary.isPending ? "Upload your resume first." : undefined}
+                  disabledReason={
+                    !session.primary.data && !session.primary.isPending
+                      ? "Upload your resume first."
+                      : undefined
+                  }
                   onSend={() => startRun(session, draft)}
                   onChange={(patch) => {
                     session.setFault(null);

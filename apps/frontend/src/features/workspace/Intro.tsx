@@ -47,8 +47,9 @@ export function Intro({ composing, branching }: IntroProps) {
       <Say>
         {first ? `Hi ${first}. ` : ""}
         {branching ? "You're branching from an earlier version. " : ""}
-        Paste the job description for the role you want. I&apos;ll read it, score your resume against it, and suggest edits line by line. Nothing
-        on your resume changes until you accept it.
+        Paste the job description for the role you want. I&apos;ll read it, score your resume
+        against it, and suggest edits line by line. Nothing on your resume changes until you accept
+        it.
       </Say>
       {composing && <ResumeInUse />}
     </>

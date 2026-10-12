@@ -33,10 +33,27 @@ export function buttonClass(variant: Variant = "primary", size: Size = "md", ext
   );
 }
 
-export function Button({ variant, size, loading, className, children, disabled, ref, ...props }: ButtonProps) {
+export function Button({
+  variant,
+  size,
+  loading,
+  className,
+  children,
+  disabled,
+  ref,
+  ...props
+}: ButtonProps) {
   return (
-    <button ref={ref} className={buttonClass(variant, size, className)} disabled={disabled || loading} aria-busy={loading || undefined} {...props}>
-      <span className={cn("inline-flex items-center justify-center gap-2", loading && "invisible")}>{children}</span>
+    <button
+      ref={ref}
+      className={buttonClass(variant, size, className)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      <span className={cn("inline-flex items-center justify-center gap-2", loading && "invisible")}>
+        {children}
+      </span>
       {loading && <Loader2 className="absolute size-4 animate-spin" aria-hidden />}
     </button>
   );

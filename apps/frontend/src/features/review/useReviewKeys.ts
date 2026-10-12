@@ -41,7 +41,8 @@ function onReviewKey(e: KeyboardEvent): void {
     case "r":
       return decide(current.id, Decision.Rejected);
     case "e":
-      if (current.op !== OpName.Reorder && current.op !== OpName.RemoveBullet) useReview.setState({ editing: current.id });
+      if (current.op !== OpName.Reorder && current.op !== OpName.RemoveBullet)
+        useReview.setState({ editing: current.id });
   }
 }
 

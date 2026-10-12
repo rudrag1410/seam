@@ -78,7 +78,12 @@ interface EducationView {
 export type SectionView =
   | { id: string; type: SectionKind.Summary; label: string; node: BulletView }
   | { id: string; type: SectionKind.Skills; label: string; groups: SkillGroupView[] }
-  | { id: string; type: SectionKind.Experience | SectionKind.Projects; label: string; items: ItemView[] }
+  | {
+      id: string;
+      type: SectionKind.Experience | SectionKind.Projects;
+      label: string;
+      items: ItemView[];
+    }
   | { id: string; type: SectionKind.Education; label: string; items: EducationView[] }
   | { id: string; type: SectionKind.Other; label: string; lines: string[] };
 
@@ -107,7 +112,9 @@ interface Scope {
 
 function live(s: SuggestionOut, mode: ViewMode): boolean {
   if (mode === ViewMode.Suggestions) return s.status !== Decision.Rejected;
-  return mode === ViewMode.Clean && (s.status === Decision.Accepted || s.status === Decision.Edited);
+  return (
+    mode === ViewMode.Clean && (s.status === Decision.Accepted || s.status === Decision.Edited)
+  );
 }
 
 function scopeFor(suggestions: SuggestionOut[], mode: ViewMode): Scope {
@@ -126,11 +133,15 @@ function ofKind(scope: Scope, op: string, target: string): SuggestionOut[] {
 }
 
 function after(s: SuggestionOut): string {
-  return s.status === Decision.Edited && s.edited_text ? s.edited_text : String((s.payload as { after?: string }).after ?? "");
+  return s.status === Decision.Edited && s.edited_text
+    ? s.edited_text
+    : String((s.payload as { after?: string }).after ?? "");
 }
 
 function skillValue(s: SuggestionOut): string {
-  return s.status === Decision.Edited && s.edited_text ? s.edited_text : String((s.payload as { value: string }).value);
+  return s.status === Decision.Edited && s.edited_text
+    ? s.edited_text
+    : String((s.payload as { value: string }).value);
 }
 
 function addedState(scope: Scope, s: SuggestionOut): NodeState {
@@ -151,12 +162,33 @@ function dateRange(start?: string | null, end?: string | null): string {
 
 function textNode(scope: Scope, id: string, original: string, ...ops: string[]): BulletView {
   const s = forTarget(scope, id, ...ops);
-  if (!s) return { id, text: original, runs: null, state: NodeState.Plain, suggestionIds: [], flagged: false };
+  if (!s)
+    return {
+      id,
+      text: original,
+      runs: null,
+      state: NodeState.Plain,
+      suggestionIds: [],
+      flagged: false,
+    };
   const base = { id, suggestionId: s.id, suggestionIds: [s.id], flagged: s.requires_confirmation };
   if (s.status === Decision.Pending && scope.mode === ViewMode.Suggestions) {
-    return { ...base, text: after(s), runs: wordDiff(original, after(s)), state: NodeState.Changed };
+    return {
+      ...base,
+      text: after(s),
+      runs: wordDiff(original, after(s)),
+      state: NodeState.Changed,
+    };
   }
-  return { ...base, text: after(s), runs: null, state: s.status === Decision.Pending || scope.mode === ViewMode.Clean ? NodeState.Plain : NodeState.Settled };
+  return {
+    ...base,
+    text: after(s),
+    runs: null,
+    state:
+      s.status === Decision.Pending || scope.mode === ViewMode.Clean
+        ? NodeState.Plain
+        : NodeState.Settled,
+  };
 }
 
 function bulletOrder(item: BulletOwner, reorder: SuggestionOut | undefined): string[] {
@@ -167,12 +199,23 @@ function bulletOrder(item: BulletOwner, reorder: SuggestionOut | undefined): str
   return [...order.filter((id) => ids.includes(id)), ...ids.filter((id) => !listed.has(id))];
 }
 
-function bulletView(scope: Scope, item: BulletOwner, id: string, position: number, reorder: SuggestionOut | undefined): BulletView | null {
+function bulletView(
+  scope: Scope,
+  item: BulletOwner,
+  id: string,
+  position: number,
+  reorder: SuggestionOut | undefined,
+): BulletView | null {
   const original = item.bullets.find((b) => b.id === id)!.text;
   const removal = forTarget(scope, id, OpName.RemoveBullet);
   if (removal && removal.status !== Decision.Pending) return null;
   const view: BulletView = removal
-    ? { ...textNode(scope, id, original), state: NodeState.Removed, suggestionId: removal.id, suggestionIds: [removal.id] }
+    ? {
+        ...textNode(scope, id, original),
+        state: NodeState.Removed,
+        suggestionId: removal.id,
+        suggestionIds: [removal.id],
+      }
     : textNode(scope, id, original, OpName.ReplaceText);
   const from = item.bullets.findIndex((b) => b.id === id);
   if (reorder && from !== position && scope.mode === ViewMode.Suggestions) {
@@ -185,27 +228,50 @@ function bulletView(scope: Scope, item: BulletOwner, id: string, position: numbe
 
 function insertedBullet(scope: Scope, s: SuggestionOut): BulletView {
   return {
-    id: (s.payload as { new_id: string }).new_id, text: after(s), runs: null, flagged: s.requires_confirmation,
-    state: addedState(scope, s), suggestionId: s.id, suggestionIds: [s.id],
+    id: (s.payload as { new_id: string }).new_id,
+    text: after(s),
+    runs: null,
+    flagged: s.requires_confirmation,
+    state: addedState(scope, s),
+    suggestionId: s.id,
+    suggestionIds: [s.id],
   };
 }
 
-function itemView(scope: Scope, item: BulletOwner, title: string, subtitle: string, dates: string): ItemView {
+function itemView(
+  scope: Scope,
+  item: BulletOwner,
+  title: string,
+  subtitle: string,
+  dates: string,
+): ItemView {
   const reorder = forTarget(scope, item.id, OpName.Reorder);
   const bullets: BulletView[] = [];
   for (const [position, id] of bulletOrder(item, reorder).entries()) {
     const view = bulletView(scope, item, id, position, reorder);
     if (view) bullets.push(view);
   }
-  for (const s of ofKind(scope, OpName.InsertBullet, item.id)) bullets.push(insertedBullet(scope, s));
+  for (const s of ofKind(scope, OpName.InsertBullet, item.id))
+    bullets.push(insertedBullet(scope, s));
   return {
-    id: item.id, title, subtitle, dates, bullets,
-    reorderId: scope.mode === ViewMode.Suggestions ? reorder?.id : undefined, reorderPending: reorder?.status === Decision.Pending,
+    id: item.id,
+    title,
+    subtitle,
+    dates,
+    bullets,
+    reorderId: scope.mode === ViewMode.Suggestions ? reorder?.id : undefined,
+    reorderPending: reorder?.status === Decision.Pending,
   };
 }
 
 function experienceItem(scope: Scope, i: ExperienceItem): ItemView {
-  return itemView(scope, i, i.title || i.company, i.title ? i.company : "", dateRange(i.start, i.end));
+  return itemView(
+    scope,
+    i,
+    i.title || i.company,
+    i.title ? i.company : "",
+    dateRange(i.start, i.end),
+  );
 }
 
 function projectItem(scope: Scope, i: ProjectItem): ItemView {
@@ -213,22 +279,41 @@ function projectItem(scope: Scope, i: ProjectItem): ItemView {
 }
 
 function educationItem(i: EducationItem): EducationView {
-  return { id: i.id, title: i.degree || i.school, subtitle: i.degree ? i.school : "", dates: dateRange(i.start, i.end), details: i.details };
+  return {
+    id: i.id,
+    title: i.degree || i.school,
+    subtitle: i.degree ? i.school : "",
+    dates: dateRange(i.start, i.end),
+    details: i.details,
+  };
 }
 
 function skillGroup(scope: Scope, group: SkillGroup): SkillGroupView {
   const chips: SkillChip[] = [];
   const removed = new Map<string, SuggestionOut>();
-  for (const s of ofKind(scope, OpName.RemoveSkill, group.id)) removed.set(skillValue(s).toLowerCase(), s);
+  for (const s of ofKind(scope, OpName.RemoveSkill, group.id))
+    removed.set(skillValue(s).toLowerCase(), s);
   for (const item of group.items) {
     const removal = removed.get(item.toLowerCase());
     if (removal && removal.status !== Decision.Pending) continue;
-    chips.push({ key: item, value: item, state: removal ? NodeState.Removed : NodeState.Plain, suggestionId: removal?.id, flagged: false });
+    chips.push({
+      key: item,
+      value: item,
+      state: removal ? NodeState.Removed : NodeState.Plain,
+      suggestionId: removal?.id,
+      flagged: false,
+    });
   }
   for (const s of ofKind(scope, OpName.AddSkill, group.id)) {
     const value = skillValue(s);
     if (group.items.some((i) => i.toLowerCase() === value.toLowerCase())) continue;
-    chips.push({ key: `add:${s.id}`, value, flagged: s.requires_confirmation, suggestionId: s.id, state: addedState(scope, s) });
+    chips.push({
+      key: `add:${s.id}`,
+      value,
+      flagged: s.requires_confirmation,
+      suggestionId: s.id,
+      state: addedState(scope, s),
+    });
   }
   return { id: group.id, label: group.label, chips };
 }
@@ -236,21 +321,50 @@ function skillGroup(scope: Scope, group: SkillGroup): SkillGroupView {
 function sectionView(scope: Scope, sec: Section): SectionView {
   switch (sec.type) {
     case "summary":
-      return { id: sec.id, type: SectionKind.Summary, label: LABELS[SectionKind.Summary], node: textNode(scope, sec.id, sec.text, OpName.RewriteSummary, OpName.ReplaceText) };
+      return {
+        id: sec.id,
+        type: SectionKind.Summary,
+        label: LABELS[SectionKind.Summary],
+        node: textNode(scope, sec.id, sec.text, OpName.RewriteSummary, OpName.ReplaceText),
+      };
     case "skills":
-      return { id: sec.id, type: SectionKind.Skills, label: LABELS[SectionKind.Skills], groups: sec.groups.map((g) => skillGroup(scope, g)) };
+      return {
+        id: sec.id,
+        type: SectionKind.Skills,
+        label: LABELS[SectionKind.Skills],
+        groups: sec.groups.map((g) => skillGroup(scope, g)),
+      };
     case "experience":
-      return { id: sec.id, type: SectionKind.Experience, label: LABELS[SectionKind.Experience], items: sec.items.map((i) => experienceItem(scope, i)) };
+      return {
+        id: sec.id,
+        type: SectionKind.Experience,
+        label: LABELS[SectionKind.Experience],
+        items: sec.items.map((i) => experienceItem(scope, i)),
+      };
     case "projects":
-      return { id: sec.id, type: SectionKind.Projects, label: LABELS[SectionKind.Projects], items: sec.items.map((i) => projectItem(scope, i)) };
+      return {
+        id: sec.id,
+        type: SectionKind.Projects,
+        label: LABELS[SectionKind.Projects],
+        items: sec.items.map((i) => projectItem(scope, i)),
+      };
     case "education":
-      return { id: sec.id, type: SectionKind.Education, label: LABELS[SectionKind.Education], items: sec.items.map(educationItem) };
+      return {
+        id: sec.id,
+        type: SectionKind.Education,
+        label: LABELS[SectionKind.Education],
+        items: sec.items.map(educationItem),
+      };
     default:
       return { id: sec.id, type: SectionKind.Other, label: sec.title, lines: sec.lines };
   }
 }
 
-export function buildView(resume: Resume, suggestions: SuggestionOut[], mode: ViewMode): SectionView[] {
+export function buildView(
+  resume: Resume,
+  suggestions: SuggestionOut[],
+  mode: ViewMode,
+): SectionView[] {
   const scope = scopeFor(suggestions, mode);
   return resume.sections.map((sec) => sectionView(scope, sec));
 }

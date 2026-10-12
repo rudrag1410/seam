@@ -1,4 +1,10 @@
-import { ApiError, ApiException, ClientErrorCode, ErrorCode, JOB_TEXT_CODES } from "@seam/api-client";
+import {
+  type ApiError,
+  ApiException,
+  ClientErrorCode,
+  ErrorCode,
+  JOB_TEXT_CODES,
+} from "@seam/api-client";
 
 export interface Presentable {
   title: string;
@@ -11,7 +17,10 @@ const COPY: Partial<Record<ApiError["code"], Partial<Presentable>>> = {
   [ErrorCode.FileTooLarge]: { hint: "Export a smaller copy and try again." },
   [ErrorCode.PdfPasswordProtected]: { hint: "Export an unlocked copy and upload that." },
   [ErrorCode.JdNotAJd]: { hint: "Paste the job posting you want to tailor for." },
-  [ErrorCode.LlmUnavailable]: { hint: "Your inputs are saved. Try again in a minute.", retryable: true },
+  [ErrorCode.LlmUnavailable]: {
+    hint: "Your inputs are saved. Try again in a minute.",
+    retryable: true,
+  },
   [ClientErrorCode.Network]: { hint: "Check your connection and try again.", retryable: true },
   [ErrorCode.InvalidCredentials]: { hint: "Check your email and password." },
 };

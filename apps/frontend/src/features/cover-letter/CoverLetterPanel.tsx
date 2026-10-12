@@ -1,6 +1,16 @@
 "use client";
 
-import { type CoverLetterOut, ErrorCode, type ErrorData, type EventHandlers, LetterLength, type LetterEventPayloads, StreamEvent, Tone, postStream } from "@seam/api-client";
+import {
+  type CoverLetterOut,
+  ErrorCode,
+  type ErrorData,
+  type EventHandlers,
+  LetterLength,
+  type LetterEventPayloads,
+  StreamEvent,
+  Tone,
+  postStream,
+} from "@seam/api-client";
 import { Button, Checkbox, Segmented, Textarea } from "@seam/ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Download, Sparkles } from "lucide-react";
@@ -46,9 +56,19 @@ function letterHandlers(handlers: LetterHandlers): EventHandlers<LetterEventPayl
   };
 }
 
-async function writeLetter(versionId: string, options: LetterOptions, signal: AbortSignal, handlers: LetterHandlers): Promise<void> {
+async function writeLetter(
+  versionId: string,
+  options: LetterOptions,
+  signal: AbortSignal,
+  handlers: LetterHandlers,
+): Promise<void> {
   try {
-    await postStream(`${API_URL}/v1/versions/${versionId}/cover-letter`, options, letterHandlers(handlers), signal);
+    await postStream(
+      `${API_URL}/v1/versions/${versionId}/cover-letter`,
+      options,
+      letterHandlers(handlers),
+      signal,
+    );
   } catch {
     toast.error("Couldn't generate the cover letter. Try again.");
   }
@@ -65,23 +85,36 @@ export function CoverLetterPanel({ versionId }: CoverLetterPanelProps) {
   const [notice, setNotice] = useState(false);
   const [text, setText] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const streamingRef = useRef(false);
+  streamingRef.current = streaming;
   const abort = useRef<AbortController | null>(null);
 
   const saved = useQuery({
     queryKey: ["cover-letters", versionId],
-    queryFn: () => unwrap(api.GET("/v1/versions/{version_id}/cover-letters", { params: { path: { version_id: versionId } } })),
+    queryFn: () =>
+      unwrap(
+        api.GET("/v1/versions/{version_id}/cover-letters", {
+          params: { path: { version_id: versionId } },
+        }),
+      ),
   });
   const latest: CoverLetterOut | undefined = saved.data?.[0];
-  useEffect(() => { if (latest && !text && !streaming) setText(latest.body); }, [latest]);
+  useEffect(() => {
+    if (latest && !streamingRef.current) setText((t) => t || latest.body);
+  }, [latest]);
   useEffect(() => () => abort.current?.abort(), []);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <Segmented size="sm" aria-label="Tone" value={tone} onChange={setTone}
-          options={TONES} />
-        <Segmented size="sm" aria-label="Length" value={length} onChange={setLength}
-          options={LENGTHS} />
+        <Segmented size="sm" aria-label="Tone" value={tone} onChange={setTone} options={TONES} />
+        <Segmented
+          size="sm"
+          aria-label="Length"
+          value={length}
+          onChange={setLength}
+          options={LENGTHS}
+        />
       </div>
       <Checkbox checked={notice} onChange={setNotice} label="Mention my notice period" />
       <Button
@@ -91,19 +124,46 @@ export function CoverLetterPanel({ versionId }: CoverLetterPanelProps) {
           abort.current = new AbortController();
           setText("");
           setStreaming(true);
-          await writeLetter(versionId, { tone, length, include_notice_period: notice }, abort.current.signal, {
-            onText: (chunk) => setText((t) => t + chunk),
-            onSaved: () => qc.invalidateQueries({ queryKey: ["cover-letters", versionId] }),
-          });
+          await writeLetter(
+            versionId,
+            { tone, length, include_notice_period: notice },
+            abort.current.signal,
+            {
+              onText: (chunk) => setText((t) => t + chunk),
+              onSaved: () => qc.invalidateQueries({ queryKey: ["cover-letters", versionId] }),
+            },
+          );
           setStreaming(false);
         }}
-      ><Sparkles className="size-4" /> {text ? "Regenerate" : "Write cover letter"}</Button>
+      >
+        <Sparkles className="size-4" /> {text ? "Regenerate" : "Write cover letter"}
+      </Button>
       {(text || streaming) && (
         <>
-          <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={14} aria-label="Cover letter" className="font-serif text-[14px] leading-relaxed" />
+          <Textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={14}
+            aria-label="Cover letter"
+            className="font-serif text-[14px] leading-relaxed"
+          />
           <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => navigator.clipboard.writeText(text).then(() => toast.success("Copied"))}><Copy className="size-3.5" /> Copy</Button>
-            <Button size="sm" variant="secondary" onClick={() => downloadText(text, "cover-letter.txt")}><Download className="size-3.5" /> Download</Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() =>
+                navigator.clipboard.writeText(text).then(() => toast.success("Copied"))
+              }
+            >
+              <Copy className="size-3.5" /> Copy
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => downloadText(text, "cover-letter.txt")}
+            >
+              <Download className="size-3.5" /> Download
+            </Button>
           </div>
         </>
       )}

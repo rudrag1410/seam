@@ -1,4 +1,7 @@
-export function listen<K extends keyof WindowEventMap>(type: K, handler: (event: WindowEventMap[K]) => void): () => void;
+export function listen<K extends keyof WindowEventMap>(
+  type: K,
+  handler: (event: WindowEventMap[K]) => void,
+): () => void;
 export function listen(type: string, handler: (event: Event) => void): () => void;
 export function listen(type: string, handler: (event: never) => void): () => void {
   window.addEventListener(type, handler as EventListener);

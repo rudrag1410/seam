@@ -1,6 +1,17 @@
 import { ApiException, UNKNOWN_FAILURE } from "./client";
 import { StreamEvent } from "./schema";
-import type { ChunkData, DoneData, ErrorData, ErrorEnvelope, JobData, LetterSavedData, ScoreData, StageData, SuggestionOut, WarningData } from "./types";
+import type {
+  ChunkData,
+  DoneData,
+  ErrorData,
+  ErrorEnvelope,
+  JobData,
+  LetterSavedData,
+  ScoreData,
+  StageData,
+  SuggestionOut,
+  WarningData,
+} from "./types";
 
 export interface TailorEventPayloads {
   [StreamEvent.Stage]: StageData;
@@ -34,7 +45,11 @@ function isFinal(event: StreamEvent): boolean {
   return event === StreamEvent.Done || event === StreamEvent.Error;
 }
 
-export function openStream<Payloads>(url: string, handlers: EventHandlers<Payloads>, connection: ConnectionCallbacks = {}): () => void {
+export function openStream<Payloads>(
+  url: string,
+  handlers: EventHandlers<Payloads>,
+  connection: ConnectionCallbacks = {},
+): () => void {
   const source = new EventSource(url, { withCredentials: true });
   source.onopen = () => connection.onOpen?.();
   source.onerror = () => {
@@ -45,7 +60,9 @@ export function openStream<Payloads>(url: string, handlers: EventHandlers<Payloa
     source.addEventListener(name, (e) => {
       const raw = (e as MessageEvent<string>).data;
       if (typeof raw !== "string") return;
-      (handlers[name as keyof Payloads] as ((data: unknown) => void) | undefined)?.(JSON.parse(raw));
+      (handlers[name as keyof Payloads] as ((data: unknown) => void) | undefined)?.(
+        JSON.parse(raw),
+      );
       if (isFinal(name)) source.close();
     });
   }
@@ -58,7 +75,8 @@ const FRAME_DATA = /^data: (.+)$/m;
 function dispatchFrame<Payloads>(frame: string, handlers: EventHandlers<Payloads>): void {
   const event = FRAME_EVENT.exec(frame)?.[1] as keyof Payloads | undefined;
   const data = FRAME_DATA.exec(frame)?.[1];
-  if (event && data) (handlers[event] as ((payload: unknown) => void) | undefined)?.(JSON.parse(data));
+  if (event && data)
+    (handlers[event] as ((payload: unknown) => void) | undefined)?.(JSON.parse(data));
 }
 
 export async function postStream<Payloads extends { [StreamEvent.Error]: ErrorData }>(

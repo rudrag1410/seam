@@ -9,7 +9,10 @@ function program(): ts.Program {
   const configPath = join(APP, "tsconfig.json");
   const config = ts.readConfigFile(configPath, ts.sys.readFile);
   const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, dirname(configPath));
-  return ts.createProgram({ rootNames: parsed.fileNames, options: { ...parsed.options, noEmit: true } });
+  return ts.createProgram({
+    rootNames: parsed.fileNames,
+    options: { ...parsed.options, noEmit: true },
+  });
 }
 
 function isEnumType(type: ts.Type): boolean {
@@ -17,7 +20,9 @@ function isEnumType(type: ts.Type): boolean {
   return kinds.length > 0 && kinds.every((t) => (t.flags & ts.TypeFlags.EnumLike) !== 0);
 }
 
-function isStringLiteral(node: ts.Node): node is ts.StringLiteral | ts.NoSubstitutionTemplateLiteral {
+function isStringLiteral(
+  node: ts.Node,
+): node is ts.StringLiteral | ts.NoSubstitutionTemplateLiteral {
   return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node);
 }
 
@@ -41,14 +46,18 @@ function report(scan: Scan, node: ts.Node, text: string): void {
 
 function checkComparison(scan: Scan, node: ts.BinaryExpression): void {
   if (!COMPARISONS.has(node.operatorToken.kind)) return;
-  const [lit, other] = isStringLiteral(node.left) ? [node.left, node.right] : [node.right, node.left];
-  if (isStringLiteral(lit) && isEnumType(scan.checker.getTypeAtLocation(other))) report(scan, lit, lit.text);
+  const [lit, other] = isStringLiteral(node.left)
+    ? [node.left, node.right]
+    : [node.right, node.left];
+  if (isStringLiteral(lit) && isEnumType(scan.checker.getTypeAtLocation(other)))
+    report(scan, lit, lit.text);
 }
 
 function checkCase(scan: Scan, node: ts.CaseClause): void {
   if (!isStringLiteral(node.expression)) return;
   const switched = (node.parent.parent as ts.SwitchStatement).expression;
-  if (isEnumType(scan.checker.getTypeAtLocation(switched))) report(scan, node.expression, node.expression.text);
+  if (isEnumType(scan.checker.getTypeAtLocation(switched)))
+    report(scan, node.expression, node.expression.text);
 }
 
 function checkArguments(scan: Scan, node: ts.CallExpression): void {
@@ -56,7 +65,8 @@ function checkArguments(scan: Scan, node: ts.CallExpression): void {
   for (const [i, arg] of node.arguments.entries()) {
     const param = signature?.parameters[Math.min(i, signature.parameters.length - 1)];
     if (!param || !isStringLiteral(arg)) continue;
-    if (isEnumType(scan.checker.getTypeOfSymbolAtLocation(param, node))) report(scan, arg, arg.text);
+    if (isEnumType(scan.checker.getTypeOfSymbolAtLocation(param, node)))
+      report(scan, arg, arg.text);
   }
 }
 

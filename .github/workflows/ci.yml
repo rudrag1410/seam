@@ -24,6 +24,7 @@ jobs:
         with: { enable-cache: true }
       - run: pnpm install --frozen-lockfile
       - run: uv sync --directory apps/backend --frozen
+      - run: pnpm format:check
       - name: OpenAPI drift check
         run: |
           pnpm generate

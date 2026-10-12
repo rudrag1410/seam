@@ -15,12 +15,16 @@ export interface JobDraft {
   intensity: Intensity;
 }
 
-const tool = "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
-const toolShrink = "inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
+const tool =
+  "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
+const toolShrink =
+  "inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
 
 function jobReady(d: JobDraft): boolean {
   const n = d.text.trim().length;
-  const job = d.byUrl ? /^https?:\/\/\S+\.\S+/.test(d.url.trim()) : n >= MIN_JD_CHARS && n <= MAX_JD_CHARS;
+  const job = d.byUrl
+    ? /^https?:\/\/\S+\.\S+/.test(d.url.trim())
+    : n >= MIN_JD_CHARS && n <= MAX_JD_CHARS;
   return job && d.sections.length > 0;
 }
 
@@ -33,7 +37,14 @@ interface JobComposerProps {
   error?: string | null;
 }
 
-export function JobComposer({ draft, onChange, onSend, sending, disabledReason, error }: JobComposerProps) {
+export function JobComposer({
+  draft,
+  onChange,
+  onSend,
+  sending,
+  disabledReason,
+  error,
+}: JobComposerProps) {
   const area = useRef<HTMLTextAreaElement>(null);
   const n = draft.text.trim().length;
   const problem = draft.byUrl ? null : jdProblem(n);
@@ -46,11 +57,19 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
     el.style.height = `${Math.min(el.scrollHeight, 260)}px`;
   }, [draft.text, draft.byUrl]);
 
-  const hint = error ?? disabledReason ?? (draft.sections.length === 0 ? "Pick at least one section to tailor." : problem);
+  const hint =
+    error ??
+    disabledReason ??
+    (draft.sections.length === 0 ? "Pick at least one section to tailor." : problem);
 
   return (
     <div>
-      <div className={cn("rounded-[22px] border border-line-strong bg-bg transition-colors focus-within:border-ink", error && "border-del-line")}>
+      <div
+        className={cn(
+          "rounded-[22px] border border-line-strong bg-bg transition-colors focus-within:border-ink",
+          error && "border-del-line",
+        )}
+      >
         {draft.byUrl ? (
           <input
             type="url"
@@ -82,15 +101,26 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
         )}
         <div className="flex items-center gap-1 p-1.5">
           <button type="button" onClick={() => onChange({ byUrl: !draft.byUrl })} className={tool}>
-            {draft.byUrl ? <Type className="size-3.5" aria-hidden /> : <Link2 className="size-3.5" aria-hidden />}
+            {draft.byUrl ? (
+              <Type className="size-3.5" aria-hidden />
+            ) : (
+              <Link2 className="size-3.5" aria-hidden />
+            )}
             {draft.byUrl ? "Paste text" : "Use a link"}
           </button>
           <Popover>
             <PopoverTrigger className={toolShrink} aria-label="What to tailor">
               <SlidersHorizontal className="size-3.5 shrink-0" aria-hidden />
-              <span className="truncate">{draft.sections.length} {draft.sections.length === 1 ? "section" : "sections"} · {INTENSITY_LABEL[draft.intensity]}</span>
+              <span className="truncate">
+                {draft.sections.length} {draft.sections.length === 1 ? "section" : "sections"} ·{" "}
+                {INTENSITY_LABEL[draft.intensity]}
+              </span>
             </PopoverTrigger>
-            <PopoverContent side="top" align="start" className="w-[min(420px,calc(100vw-32px))] p-5">
+            <PopoverContent
+              side="top"
+              align="start"
+              className="w-[min(420px,calc(100vw-32px))] p-5"
+            >
               <ScopePicker
                 sections={draft.sections}
                 onSections={(sections) => onChange({ sections })}
@@ -101,7 +131,12 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
           </Popover>
           <span className="min-w-0 flex-1" />
           {!draft.byUrl && n > 0 && (
-            <span className={cn("tabular mr-1 hidden shrink-0 text-[12px] text-ink-muted sm:inline", n > MAX_JD_CHARS && "inline text-del-line")}>
+            <span
+              className={cn(
+                "tabular mr-1 hidden shrink-0 text-[12px] text-ink-muted sm:inline",
+                n > MAX_JD_CHARS && "inline text-del-line",
+              )}
+            >
               {n.toLocaleString()} / {MAX_JD_CHARS.toLocaleString()}
             </span>
           )}
@@ -117,7 +152,13 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
           </button>
         </div>
       </div>
-      <p role={error ? "alert" : undefined} className={cn("mt-2 h-5 truncate px-2 text-[12.5px] text-ink-muted", (error || n > MAX_JD_CHARS) && "text-del-line")}>
+      <p
+        role={error ? "alert" : undefined}
+        className={cn(
+          "mt-2 h-5 truncate px-2 text-[12.5px] text-ink-muted",
+          (error || n > MAX_JD_CHARS) && "text-del-line",
+        )}
+      >
         {hint ?? "Nothing runs until you send it."}
       </p>
     </div>

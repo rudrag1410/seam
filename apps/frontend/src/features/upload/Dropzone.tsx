@@ -21,7 +21,8 @@ const TYPES = {
 
 function clientError(file: File): string | null {
   const ext = file.name.split(".").pop()?.toLowerCase();
-  if (ext !== "pdf" && ext !== "docx") return `That's a .${ext ?? "unknown"} file. Upload a PDF or DOCX.`;
+  if (ext !== "pdf" && ext !== "docx")
+    return `That's a .${ext ?? "unknown"} file. Upload a PDF or DOCX.`;
   if (file.size > MAX_BYTES) return `That file is ${formatBytes(file.size)}. The limit is 5 MB.`;
   if (file.size === 0) return "That file is empty.";
   return null;
@@ -32,9 +33,17 @@ async function uploadResume(file: File): Promise<ResumeOut> {
   form.append("file", file);
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/v1/resumes`, { method: "POST", body: form, credentials: "include" });
+    res = await fetch(`${API_URL}/v1/resumes`, {
+      method: "POST",
+      body: form,
+      credentials: "include",
+    });
   } catch {
-    throw new ApiException(0, { code: ClientErrorCode.Network, message: "We couldn't reach the server.", retryable: true });
+    throw new ApiException(0, {
+      code: ClientErrorCode.Network,
+      message: "We couldn't reach the server.",
+      retryable: true,
+    });
   }
   const body = await res.json();
   if (res.status === 401) handleUnauthorized();
@@ -45,11 +54,15 @@ async function uploadResume(file: File): Promise<ResumeOut> {
 function summarize(resume: ResumeOut) {
   const roles = resume.document.sections.find((s) => s.type === "experience");
   const skills = resume.document.sections.find((s) => s.type === "skills");
-  const bullets = roles && "items" in roles ? roles.items.reduce((n, i) => n + ("bullets" in i ? i.bullets.length : 0), 0) : 0;
+  const bullets =
+    roles && "items" in roles
+      ? roles.items.reduce((n, i) => n + ("bullets" in i ? i.bullets.length : 0), 0)
+      : 0;
   return {
     roles: roles && "items" in roles ? roles.items.length : 0,
     bullets,
-    skills: skills && "groups" in skills ? skills.groups.reduce((n, g) => n + g.items.length, 0) : 0,
+    skills:
+      skills && "groups" in skills ? skills.groups.reduce((n, g) => n + g.items.length, 0) : 0,
   };
 }
 
@@ -77,7 +90,10 @@ function Stat({ value, noun }: StatProps) {
 
 export function ResumeCard({ resume, action }: ResumeCardProps) {
   const s = summarize(resume);
-  const meta = [resume.size_bytes != null && formatBytes(resume.size_bytes), resume.page_count != null && plural(resume.page_count, "page")].filter(Boolean);
+  const meta = [
+    resume.size_bytes != null && formatBytes(resume.size_bytes),
+    resume.page_count != null && plural(resume.page_count, "page"),
+  ].filter(Boolean);
   return (
     <div className="rounded-[16px] border border-line bg-panel p-4">
       <div className="flex items-center gap-3.5">
@@ -115,7 +131,8 @@ export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
   const mutation = useMutation({
     mutationFn: async (file: File) => {
       const problem = clientError(file);
-      if (problem) throw new ApiException(0, { code: ClientErrorCode.Validation, message: problem });
+      if (problem)
+        throw new ApiException(0, { code: ClientErrorCode.Validation, message: problem });
       return uploadResume(file);
     },
     onSuccess: (resume) => {
@@ -157,7 +174,9 @@ export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
         ) : (
           <>
             <UploadCloud className="size-6 text-ink-muted" aria-hidden />
-            <p className="font-medium">{isDragActive ? "Drop it here" : "Drag your resume here, or click to browse"}</p>
+            <p className="font-medium">
+              {isDragActive ? "Drop it here" : "Drag your resume here, or click to browse"}
+            </p>
             <p className="text-sm text-ink-muted">PDF or DOCX, up to 5 MB.</p>
           </>
         )}
@@ -166,4 +185,3 @@ export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
     </div>
   );
 }
-

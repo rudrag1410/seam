@@ -26,7 +26,11 @@ const SIGN_UP = "/sign-up";
 
 function authenticate(mode: AuthMode, v: Values) {
   return mode === AuthMode.SignUp
-    ? unwrap(api.POST("/v1/auth/signup", { body: { email: v.email, password: v.password, full_name: v.full_name! } }))
+    ? unwrap(
+        api.POST("/v1/auth/signup", {
+          body: { email: v.email, password: v.password, full_name: v.full_name! },
+        }),
+      )
     : unwrap(api.POST("/v1/auth/login", { body: { email: v.email, password: v.password } }));
 }
 
@@ -63,7 +67,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       className="flex flex-col gap-4"
       onSubmit={handleSubmit(async (v) => {
         setError(null);
-        if (signUp && !v.full_name) return setFieldError("full_name", { message: "Enter your name" });
+        if (signUp && !v.full_name)
+          return setFieldError("full_name", { message: "Enter your name" });
         try {
           await authenticate(mode, v);
           qc.clear();
@@ -81,11 +86,22 @@ export function AuthForm({ mode }: AuthFormProps) {
       )}
       {signUp && (
         <Field label="Full name" error={errors.full_name?.message} htmlFor="full_name">
-          <Input id="full_name" autoComplete="name" aria-invalid={!!errors.full_name} {...register("full_name")} />
+          <Input
+            id="full_name"
+            autoComplete="name"
+            aria-invalid={!!errors.full_name}
+            {...register("full_name")}
+          />
         </Field>
       )}
       <Field label="Email" error={errors.email?.message} htmlFor="email">
-        <Input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} {...register("email")} />
+        <Input
+          id="email"
+          type="email"
+          autoComplete="email"
+          aria-invalid={!!errors.email}
+          {...register("email")}
+        />
       </Field>
       <Field
         label="Password"
@@ -107,7 +123,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       </Button>
       <p className="text-center text-sm text-ink-muted">
         {signUp ? "Already have an account?" : "New to Seam?"}{" "}
-        <Link href={signUp ? SIGN_IN : SIGN_UP} className="font-medium text-ink underline underline-offset-4">
+        <Link
+          href={signUp ? SIGN_IN : SIGN_UP}
+          className="font-medium text-ink underline underline-offset-4"
+        >
           {signUp ? "Log in" : "Sign up"}
         </Link>
       </p>

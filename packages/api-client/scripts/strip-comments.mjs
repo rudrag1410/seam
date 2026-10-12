@@ -1,10 +1,18 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import ts from "typescript";
 
-const COMMENT_KINDS = new Set([ts.SyntaxKind.SingleLineCommentTrivia, ts.SyntaxKind.MultiLineCommentTrivia]);
+const COMMENT_KINDS = new Set([
+  ts.SyntaxKind.SingleLineCommentTrivia,
+  ts.SyntaxKind.MultiLineCommentTrivia,
+]);
 
 function commentRanges(text) {
-  const scanner = ts.createScanner(ts.ScriptTarget.Latest, false, ts.LanguageVariant.Standard, text);
+  const scanner = ts.createScanner(
+    ts.ScriptTarget.Latest,
+    false,
+    ts.LanguageVariant.Standard,
+    text,
+  );
   const ranges = [];
   for (let kind = scanner.scan(); kind !== ts.SyntaxKind.EndOfFileToken; kind = scanner.scan()) {
     if (COMMENT_KINDS.has(kind)) ranges.push([scanner.getTokenStart(), scanner.getTokenEnd()]);

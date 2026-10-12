@@ -30,6 +30,7 @@ export function wordDiff(before: string, after: string): DiffRun[] {
   const diffs = dmp.diff_main(a, b);
   dmp.diff_cleanupSemantic(diffs);
   const runs: DiffRun[] = [];
-  for (const [op, text] of diffs) runs.push({ kind: KINDS[String(op) as keyof typeof KINDS], text: decode(text, tokens) });
+  for (const [op, text] of diffs)
+    runs.push({ kind: KINDS[String(op) as keyof typeof KINDS], text: decode(text, tokens) });
   return runs;
 }

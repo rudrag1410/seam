@@ -54,7 +54,8 @@ export function AppShell({ children }: AppShellProps) {
     if (me.data || me.isError) markAppReady();
   }, [me.data, me.isError]);
 
-  if (!me.data && me.isError && !isSessionEnded(me.error)) return <ShellError error={me.error} onRetry={() => me.refetch()} />;
+  if (!me.data && me.isError && !isSessionEnded(me.error))
+    return <ShellError error={me.error} onRetry={() => me.refetch()} />;
   if (!me.data?.onboarded) return <ShellSkeleton />;
 
   return (
@@ -64,15 +65,30 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
       <div className="flex h-[57px] items-center justify-between border-b border-line bg-panel px-4 lg:hidden">
         <Logo href={LANDING} />
-        <button type="button" aria-label="Open menu" onClick={() => setDrawer(true)} className="grid size-9 place-items-center rounded-full hover:bg-cream">
+        <button
+          type="button"
+          aria-label="Open menu"
+          onClick={() => setDrawer(true)}
+          className="grid size-9 place-items-center rounded-full hover:bg-cream"
+        >
           <Menu className="size-5" />
         </button>
       </div>
       {drawer && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal aria-label="Menu">
-          <button type="button" aria-label="Close menu" className="absolute inset-0 bg-ink/30" onClick={() => setDrawer(false)} />
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="absolute inset-0 bg-ink/30"
+            onClick={() => setDrawer(false)}
+          />
           <div className="absolute inset-y-0 left-0 w-[290px] bg-panel shadow-xl">
-            <button type="button" aria-label="Close" onClick={() => setDrawer(false)} className="absolute top-3 right-3 grid size-8 place-items-center rounded-full hover:bg-cream">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setDrawer(false)}
+              className="absolute top-3 right-3 grid size-8 place-items-center rounded-full hover:bg-cream"
+            >
               <X className="size-4" />
             </button>
             <Sidebar name={me.data.full_name} onNavigate={() => setDrawer(false)} />

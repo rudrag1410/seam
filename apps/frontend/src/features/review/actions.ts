@@ -1,4 +1,12 @@
-import { Decision, ErrorCode, type Resume, type SectionName, SessionStatus, type SuggestionOut, type TailorSessionOut } from "@seam/api-client";
+import {
+  Decision,
+  ErrorCode,
+  type Resume,
+  type SectionName,
+  SessionStatus,
+  type SuggestionOut,
+  type TailorSessionOut,
+} from "@seam/api-client";
 import { ViewMode, sortSuggestions } from "../resume-canvas/view-model";
 import { type Note, type ReviewState, type Snapshot, initialState, useReview } from "./store";
 
@@ -14,23 +22,34 @@ function withDecision(s: SuggestionOut, status: Decision, editedText?: string): 
 
 function nextPending(suggestions: SuggestionOut[], id: string): SuggestionOut | undefined {
   const at = suggestions.findIndex((s) => s.id === id);
-  return [...suggestions.slice(at + 1), ...suggestions.slice(0, at)].find((s) => s.status === Decision.Pending);
+  return [...suggestions.slice(at + 1), ...suggestions.slice(0, at)].find(
+    (s) => s.status === Decision.Pending,
+  );
 }
 
 function errorOf(session: TailorSessionOut): ReviewState["error"] {
   if (session.status !== SessionStatus.Failed) return null;
-  return { code: session.error_code ?? ErrorCode.TailorFailed, message: session.error_message ?? "Generation failed.", retryable: true };
+  return {
+    code: session.error_code ?? ErrorCode.TailorFailed,
+    message: session.error_message ?? "Generation failed.",
+    retryable: true,
+  };
 }
 
 function keepUnsaved(cur: ReviewState, incoming: SuggestionOut): SuggestionOut {
   const local = cur.suggestions.find((x) => x.id === incoming.id);
-  return local && cur.dirty.has(incoming.id) ? { ...incoming, status: local.status, edited_text: local.edited_text } : incoming;
+  return local && cur.dirty.has(incoming.id)
+    ? { ...incoming, status: local.status, edited_text: local.edited_text }
+    : incoming;
 }
 
 function hydrated(cur: ReviewState, session: TailorSessionOut): Change {
   const same = cur.sessionId === session.id;
   const base = same ? cur : initialState();
-  const suggestions = sortSuggestions(session.resume, same ? session.suggestions.map((x) => keepUnsaved(cur, x)) : session.suggestions);
+  const suggestions = sortSuggestions(
+    session.resume,
+    same ? session.suggestions.map((x) => keepUnsaved(cur, x)) : session.suggestions,
+  );
   return {
     ...base,
     sessionId: session.id,
@@ -38,7 +57,9 @@ function hydrated(cur: ReviewState, session: TailorSessionOut): Change {
     resume: session.resume,
     jd: session.jd,
     fit: session.fit ?? null,
-    title: [session.jd?.title || session.jd_title, session.jd?.company || session.jd_company].filter(Boolean).join(" · "),
+    title: [session.jd?.title || session.jd_title, session.jd?.company || session.jd_company]
+      .filter(Boolean)
+      .join(" · "),
     jdText: session.jd_text,
     jdUrl: session.jd_url,
     sections: session.sections,
@@ -47,16 +68,25 @@ function hydrated(cur: ReviewState, session: TailorSessionOut): Change {
     scoreProjected: session.score_after,
     degraded: session.degraded,
     error: errorOf(session),
-    cursor: same ? cur.cursor : (suggestions.find((x) => x.status === Decision.Pending)?.id ?? null),
-    mode: same ? cur.mode : session.status === SessionStatus.Finalized ? ViewMode.Clean : ViewMode.Suggestions,
+    cursor: same
+      ? cur.cursor
+      : (suggestions.find((x) => x.status === Decision.Pending)?.id ?? null),
+    mode: same
+      ? cur.mode
+      : session.status === SessionStatus.Finalized
+        ? ViewMode.Clean
+        : ViewMode.Suggestions,
   };
 }
 
 function decided(cur: ReviewState, id: string, status: Decision, editedText?: string): Change {
   const target = cur.suggestions.find((s) => s.id === id);
   if (!target) return {};
-  if (status === Decision.Accepted && target.requires_confirmation && cur.confirming !== id) return { confirming: id };
-  const suggestions = cur.suggestions.map((s) => (s.id === id ? withDecision(s, status, editedText) : s));
+  if (status === Decision.Accepted && target.requires_confirmation && cur.confirming !== id)
+    return { confirming: id };
+  const suggestions = cur.suggestions.map((s) =>
+    s.id === id ? withDecision(s, status, editedText) : s,
+  );
   return {
     suggestions,
     dirty: new Set(cur.dirty).add(id),
@@ -74,12 +104,18 @@ function undone(cur: ReviewState): Change {
     history: cur.history.slice(0, -1),
     dirty: new Set(cur.dirty).add(last.id),
     cursor: last.id,
-    suggestions: cur.suggestions.map((s) => (s.id === last.id ? { ...s, status: last.status, edited_text: last.edited_text } : s)),
+    suggestions: cur.suggestions.map((s) =>
+      s.id === last.id ? { ...s, status: last.status, edited_text: last.edited_text } : s,
+    ),
   };
 }
 
 function isSafeToAccept(s: SuggestionOut, section: string | null): boolean {
-  return s.status === Decision.Pending && !s.requires_confirmation && (section === null || s.section === section);
+  return (
+    s.status === Decision.Pending &&
+    !s.requires_confirmation &&
+    (section === null || s.section === section)
+  );
 }
 
 function acceptedInBulk(cur: ReviewState, section: string | null): Change {
@@ -87,7 +123,9 @@ function acceptedInBulk(cur: ReviewState, section: string | null): Change {
   if (!chosen.length) return {};
   const ids = new Set(chosen.map((s) => s.id));
   return {
-    suggestions: cur.suggestions.map((s) => (ids.has(s.id) ? withDecision(s, Decision.Accepted) : s)),
+    suggestions: cur.suggestions.map((s) =>
+      ids.has(s.id) ? withDecision(s, Decision.Accepted) : s,
+    ),
     dirty: new Set([...cur.dirty, ...ids]),
     history: [...cur.history, ...chosen.map(snapshot)],
   };
@@ -103,7 +141,10 @@ function moved(cur: ReviewState, delta: 1 | -1): Change {
 
 function added(cur: ReviewState, s: SuggestionOut): Change {
   if (cur.suggestions.some((x) => x.id === s.id)) return {};
-  return { suggestions: sortSuggestions(cur.resume, [...cur.suggestions, s]), cursor: cur.cursor ?? s.id };
+  return {
+    suggestions: sortSuggestions(cur.resume, [...cur.suggestions, s]),
+    cursor: cur.cursor ?? s.id,
+  };
 }
 
 function cleaned(cur: ReviewState, ids: string[]): Change {
@@ -116,7 +157,12 @@ export function reset(): void {
   useReview.setState(initialState());
 }
 
-export function begin(run: { resume: Resume; jdText: string; jdUrl: string | null; sections: SectionName[] }): void {
+export function begin(run: {
+  resume: Resume;
+  jdText: string;
+  jdUrl: string | null;
+  sections: SectionName[];
+}): void {
   useReview.setState({ ...initialState(), status: SessionStatus.Queued, ...run });
 }
 

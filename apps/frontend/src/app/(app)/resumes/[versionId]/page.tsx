@@ -59,12 +59,21 @@ export default function VersionPage() {
   const [tab, setTab] = useState<Tab>(Tab.Export);
   const q = useQuery({
     queryKey: keys.version(versionId),
-    queryFn: () => unwrap(api.GET("/v1/versions/{version_id}", { params: { path: { version_id: versionId } } })),
+    queryFn: () =>
+      unwrap(api.GET("/v1/versions/{version_id}", { params: { path: { version_id: versionId } } })),
   });
   usePageTitle(q.data?.label);
-  const view = useMemo(() => (q.data ? buildView(q.data.document, [], ViewMode.Original) : []), [q.data]);
+  const view = useMemo(
+    () => (q.data ? buildView(q.data.document, [], ViewMode.Original) : []),
+    [q.data],
+  );
 
-  if (q.isError) return <div className="mx-auto max-w-xl p-8"><ErrorState error={q.error} onRetry={() => q.refetch()} /></div>;
+  if (q.isError)
+    return (
+      <div className="mx-auto max-w-xl p-8">
+        <ErrorState error={q.error} onRetry={() => q.refetch()} />
+      </div>
+    );
   if (!q.data) return <VersionSkeleton />;
   const v = q.data;
 
@@ -72,13 +81,24 @@ export default function VersionPage() {
     <div className="grid min-h-dvh lg:grid-cols-[1fr_380px]">
       <div className="min-w-0 bg-cream/40 px-3 py-6 sm:px-8">
         <div className="mx-auto mb-4 flex max-w-[794px] items-center gap-3">
-          <Link href="/resumes" aria-label="Back to resumes" className="grid size-8 place-items-center rounded-full text-ink-muted hover:bg-bg hover:text-ink"><ArrowLeft className="size-4" /></Link>
-          <h1 className="min-w-0 flex-1 truncate text-[15px] font-medium tracking-[-0.01em]">{v.label}</h1>
+          <Link
+            href="/resumes"
+            aria-label="Back to resumes"
+            className="grid size-8 place-items-center rounded-full text-ink-muted hover:bg-bg hover:text-ink"
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
+          <h1 className="min-w-0 flex-1 truncate text-[15px] font-medium tracking-[-0.01em]">
+            {v.label}
+          </h1>
         </div>
         <ResumeCanvas contact={v.document.contact} view={view} />
       </div>
 
-      <aside className="border-t border-line bg-bg lg:sticky lg:top-0 lg:h-dvh lg:overflow-auto lg:border-t-0 lg:border-l" aria-label="Version tools">
+      <aside
+        className="border-t border-line bg-bg lg:sticky lg:top-0 lg:h-dvh lg:overflow-auto lg:border-t-0 lg:border-l"
+        aria-label="Version tools"
+      >
         <div className="space-y-8 p-6">
           <div className="flex items-center gap-6">
             <div className="text-center">
@@ -90,7 +110,9 @@ export default function VersionPage() {
               <p className="mt-1 text-xs text-ink-muted">ATS estimate</p>
             </div>
             <div className="ml-auto flex flex-col items-end gap-2">
-              <Link href={`/tailor/new?base=${v.id}`} className={buttonClass("secondary", "sm")}><GitBranch className="size-3.5" /> Branch</Link>
+              <Link href={`/tailor/new?base=${v.id}`} className={buttonClass("secondary", "sm")}>
+                <GitBranch className="size-3.5" /> Branch
+              </Link>
             </div>
           </div>
 
@@ -98,17 +120,28 @@ export default function VersionPage() {
             <ul className="space-y-2">
               {v.ats.checks.map((c) => (
                 <li key={c.key} className="text-[13px]">
-                  <span className={c.passed ? "text-ins-line" : "text-del-line"} aria-hidden>{c.passed ? "✓" : "✗"}</span>{" "}
-                  <span className="sr-only">{c.passed ? "Passed:" : "Needs work:"}</span>{c.label}
-                  {!c.passed && c.hint && <p className="mt-0.5 pl-5 text-xs text-ink-muted">{c.hint}</p>}
+                  <span className={c.passed ? "text-ins-line" : "text-del-line"} aria-hidden>
+                    {c.passed ? "✓" : "✗"}
+                  </span>{" "}
+                  <span className="sr-only">{c.passed ? "Passed:" : "Needs work:"}</span>
+                  {c.label}
+                  {!c.passed && c.hint && (
+                    <p className="mt-0.5 pl-5 text-xs text-ink-muted">{c.hint}</p>
+                  )}
                 </li>
               ))}
             </ul>
           )}
 
           <div>
-            <Segmented size="sm" aria-label="Tools" className="mb-5" value={tab} onChange={setTab}
-              options={TAB_OPTIONS} />
+            <Segmented
+              size="sm"
+              aria-label="Tools"
+              className="mb-5"
+              value={tab}
+              onChange={setTab}
+              options={TAB_OPTIONS}
+            />
             {tab === Tab.Export && <ExportPanel versionId={v.id} />}
             {tab === Tab.Letter && <CoverLetterPanel versionId={v.id} />}
             {tab === Tab.Prep && <InterviewPrepPanel versionId={v.id} />}

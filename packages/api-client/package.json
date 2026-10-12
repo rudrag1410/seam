@@ -8,7 +8,7 @@
   "scripts": {
     "generate": "openapi-typescript ../../apps/backend/openapi.json --enum --conditional-enums --dedupe-enums -o src/schema.ts && node scripts/strip-comments.mjs src/schema.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "lint": "tsc -p tsconfig.json"
+    "lint": "eslint ."
   },
   "dependencies": {
     "openapi-fetch": "^0.13.0"

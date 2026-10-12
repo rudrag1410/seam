@@ -13,7 +13,11 @@ export function middleware(req: NextRequest) {
     url.searchParams.set("next", `${pathname}${req.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
-  if (signedIn && AUTH_PAGES.includes(pathname) && req.nextUrl.searchParams.get("reason") !== "expired") {
+  if (
+    signedIn &&
+    AUTH_PAGES.includes(pathname) &&
+    req.nextUrl.searchParams.get("reason") !== "expired"
+  ) {
     return NextResponse.redirect(new URL(LANDING, req.url));
   }
   return NextResponse.next();

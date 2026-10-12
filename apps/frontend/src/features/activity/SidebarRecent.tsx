@@ -68,8 +68,20 @@ function ChatRow({ chat, active, onNavigate, onDelete }: ChatRowProps) {
   const title = titleOf(chat);
   return (
     <div className={cn("group relative rounded-lg hover:bg-cream", active && "bg-cream")}>
-      <Link href={chatPath(chat.id)} onClick={onNavigate} aria-current={active ? "page" : undefined} className="block px-3 py-1.5 pr-9">
-        <span className={cn("block truncate text-[13px] group-hover:text-ink", active ? "text-ink" : "text-ink-soft")}>{title}</span>
+      <Link
+        href={chatPath(chat.id)}
+        onClick={onNavigate}
+        aria-current={active ? "page" : undefined}
+        className="block px-3 py-1.5 pr-9"
+      >
+        <span
+          className={cn(
+            "block truncate text-[13px] group-hover:text-ink",
+            active ? "text-ink" : "text-ink-soft",
+          )}
+        >
+          {title}
+        </span>
         <span className="text-[11px] text-ink-muted">
           {timeAgo(chat.created_at)} · {progressOf(chat)}
         </span>
@@ -93,7 +105,9 @@ function fetchChats() {
 }
 
 function removeChat(id: string) {
-  return unwrap(api.DELETE("/v1/tailor-sessions/{session_id}", { params: { path: { session_id: id } } }));
+  return unwrap(
+    api.DELETE("/v1/tailor-sessions/{session_id}", { params: { path: { session_id: id } } }),
+  );
 }
 
 interface SidebarRecentProps {
@@ -123,14 +137,27 @@ export function SidebarRecent({ onNavigate }: SidebarRecentProps) {
   if (!data?.length) return null;
   return (
     <div>
-      <p className="px-3 pb-1.5 text-[11px] font-medium tracking-wide text-ink-muted uppercase">Chats</p>
+      <p className="px-3 pb-1.5 text-[11px] font-medium tracking-wide text-ink-muted uppercase">
+        Chats
+      </p>
       <ul className="space-y-0.5">
         {data.map((chat) => (
           <li key={chat.id}>
             {confirming === chat.id ? (
-              <ConfirmDelete title={titleOf(chat)} note="Saved resume versions are kept." busy={remove.isPending} onConfirm={() => remove.mutate(chat.id)} onCancel={() => setConfirming(null)} />
+              <ConfirmDelete
+                title={titleOf(chat)}
+                note="Saved resume versions are kept."
+                busy={remove.isPending}
+                onConfirm={() => remove.mutate(chat.id)}
+                onCancel={() => setConfirming(null)}
+              />
             ) : (
-              <ChatRow chat={chat} active={path === chatPath(chat.id)} onNavigate={onNavigate} onDelete={() => setConfirming(chat.id)} />
+              <ChatRow
+                chat={chat}
+                active={path === chatPath(chat.id)}
+                onNavigate={onNavigate}
+                onDelete={() => setConfirming(chat.id)}
+              />
             )}
           </li>
         ))}

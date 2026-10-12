@@ -1,4 +1,3 @@
-
 const PUBLIC_PATHS = ["/", "/sign-in", "/sign-up"];
 
 let leaving = false;

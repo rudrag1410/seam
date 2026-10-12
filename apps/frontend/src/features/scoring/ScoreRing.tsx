@@ -59,15 +59,34 @@ export function ScoreRing({ value, size = 96, stroke = 7, label, className }: Sc
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <div className={cn("relative grid place-items-center", className)} style={{ width: size, height: size }} role="img" aria-label={`${label ?? "Score"}: ${Math.round(value)} out of 100`}>
+    <div
+      className={cn("relative grid place-items-center", className)}
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${label ?? "Score"}: ${Math.round(value)} out of 100`}
+    >
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--cream)" strokeWidth={stroke} />
         <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ink)" strokeWidth={stroke} strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(100, shown) / 100)}
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--cream)"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--ink)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - Math.min(100, shown) / 100)}
         />
       </svg>
-      <span className="font-display absolute text-[30px] tabular">{Math.round(shown)}</span>
+      <span className="font-display tabular absolute text-[30px]">{Math.round(shown)}</span>
     </div>
   );
 }

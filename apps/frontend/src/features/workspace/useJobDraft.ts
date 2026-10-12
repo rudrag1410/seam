@@ -5,7 +5,10 @@ import { clearDraft, loadDraft, saveDraft } from "../jd/draft";
 import type { JobDraft } from "./JobComposer";
 import { EMPTY_DRAFT } from "./run";
 
-export function useJobDraft(composing: boolean, used: boolean): [JobDraft, Dispatch<SetStateAction<JobDraft>>] {
+export function useJobDraft(
+  composing: boolean,
+  used: boolean,
+): [JobDraft, Dispatch<SetStateAction<JobDraft>>] {
   const [draft, setDraft] = useState<JobDraft>(EMPTY_DRAFT);
   const restored = useRef(false);
 
@@ -15,7 +18,8 @@ export function useJobDraft(composing: boolean, used: boolean): [JobDraft, Dispa
     restored.current = true;
   }, []);
   useEffect(() => {
-    if (restored.current && composing) saveDraft({ text: draft.text, url: draft.url, byUrl: draft.byUrl });
+    if (restored.current && composing)
+      saveDraft({ text: draft.text, url: draft.url, byUrl: draft.byUrl });
   }, [draft.text, draft.url, draft.byUrl, composing]);
   useEffect(() => {
     if (!used) return;

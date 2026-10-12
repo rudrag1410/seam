@@ -60,7 +60,12 @@ export function Sidebar({ name, onNavigate }: SidebarProps) {
         </span>
         <span className="min-w-0 flex-1 truncate text-sm font-medium">{name}</span>
         <ThemeToggle />
-        <button type="button" onClick={signOut} aria-label="Sign out" className="grid size-8 place-items-center rounded-full text-ink-muted hover:bg-cream hover:text-ink">
+        <button
+          type="button"
+          onClick={signOut}
+          aria-label="Sign out"
+          className="grid size-8 place-items-center rounded-full text-ink-muted hover:bg-cream hover:text-ink"
+        >
           <LogOut className="size-4" />
         </button>
       </div>

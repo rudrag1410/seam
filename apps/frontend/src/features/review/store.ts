@@ -1,4 +1,15 @@
-import { type ClientErrorCode, Decision, type ErrorCode, type FitCheck, type JDAnalysis, type MatchScore, type Resume, SectionName, type SessionStatus, type SuggestionOut } from "@seam/api-client";
+import {
+  type ClientErrorCode,
+  Decision,
+  type ErrorCode,
+  type FitCheck,
+  type JDAnalysis,
+  type MatchScore,
+  type Resume,
+  type SectionName,
+  type SessionStatus,
+  type SuggestionOut,
+} from "@seam/api-client";
 import { create } from "zustand";
 import { ViewMode } from "../resume-canvas/view-model";
 
@@ -60,11 +71,33 @@ export interface ReviewState {
 
 export function initialState(): ReviewState {
   return {
-    sessionId: null, status: null, resume: null, jd: null, fit: null, title: "", jdText: "", jdUrl: null,
-    sections: [], tasks: {}, tasksDone: {}, notes: [], asking: false, suggestions: [],
-    scoreBefore: null, scoreProjected: null, degraded: false, warnings: [], error: null,
-    reconnecting: false, mode: ViewMode.Suggestions, cursor: null, confirming: null,
-    editing: null, activeReq: null, history: [], dirty: new Set<string>(),
+    sessionId: null,
+    status: null,
+    resume: null,
+    jd: null,
+    fit: null,
+    title: "",
+    jdText: "",
+    jdUrl: null,
+    sections: [],
+    tasks: {},
+    tasksDone: {},
+    notes: [],
+    asking: false,
+    suggestions: [],
+    scoreBefore: null,
+    scoreProjected: null,
+    degraded: false,
+    warnings: [],
+    error: null,
+    reconnecting: false,
+    mode: ViewMode.Suggestions,
+    cursor: null,
+    confirming: null,
+    editing: null,
+    activeReq: null,
+    history: [],
+    dirty: new Set<string>(),
   };
 }
 
@@ -75,5 +108,9 @@ export function pendingCount(s: ReviewState): number {
 }
 
 export function acceptedIds(suggestions: SuggestionOut[]): Set<string> {
-  return new Set(suggestions.filter((x) => x.status === Decision.Accepted || x.status === Decision.Edited).map((x) => x.id));
+  return new Set(
+    suggestions
+      .filter((x) => x.status === Decision.Accepted || x.status === Decision.Edited)
+      .map((x) => x.id),
+  );
 }

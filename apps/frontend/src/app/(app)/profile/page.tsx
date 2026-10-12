@@ -37,7 +37,10 @@ export default function ProfilePage() {
   const qc = useQueryClient();
   const remove = useMutation({
     mutationFn: () => unwrap(api.DELETE("/v1/me")),
-    onSuccess: () => { qc.clear(); router.replace("/"); },
+    onSuccess: () => {
+      qc.clear();
+      router.replace("/");
+    },
     onError: (e) => toast.error(presentError(e).title),
   });
 
@@ -46,28 +49,71 @@ export default function ProfilePage() {
       <PageHeader title="Profile" />
       <Section title="Master resume" body="Every tailored resume is a view of this one.">
         {resume.data && !replacing ? (
-          <ResumeCard resume={resume.data} action={<Button variant="secondary" size="sm" onClick={() => setReplacing(true)}>Replace</Button>} />
+          <ResumeCard
+            resume={resume.data}
+            action={
+              <Button variant="secondary" size="sm" onClick={() => setReplacing(true)}>
+                Replace
+              </Button>
+            }
+          />
         ) : (
-          <Dropzone compact onUploaded={() => { setReplacing(false); toast.success("Resume updated"); }} />
+          <Dropzone
+            compact
+            onUploaded={() => {
+              setReplacing(false);
+              toast.success("Resume updated");
+            }}
+          />
         )}
       </Section>
       <Section title="About you">
-        {profile.data ? <AboutForm profile={profile.data} prefill={resume.data?.prefill} submitLabel="Save details" onSaved={() => toast.success("Details saved")} /> : <Skeleton className="h-[672px]" />}
+        {profile.data ? (
+          <AboutForm
+            profile={profile.data}
+            prefill={resume.data?.prefill}
+            submitLabel="Save details"
+            onSaved={() => toast.success("Details saved")}
+          />
+        ) : (
+          <Skeleton className="h-[672px]" />
+        )}
       </Section>
       <Section title="Compensation">
-        {profile.data ? <CompensationForm profile={profile.data} submitLabel="Save compensation" onSaved={() => toast.success("Compensation saved")} /> : <Skeleton className="h-[279px]" />}
+        {profile.data ? (
+          <CompensationForm
+            profile={profile.data}
+            submitLabel="Save compensation"
+            onSaved={() => toast.success("Compensation saved")}
+          />
+        ) : (
+          <Skeleton className="h-[279px]" />
+        )}
       </Section>
-      <Section title="What you're looking for" body="Each job is checked against this, and mismatches are flagged on the fit check.">
+      <Section
+        title="What you're looking for"
+        body="Each job is checked against this, and mismatches are flagged on the fit check."
+      >
         {prefs.data ? (
-          <PreferencesForm preferences={prefs.data} submitLabel="Save preferences" onSaved={() => toast.success("Preferences saved")} />
+          <PreferencesForm
+            preferences={prefs.data}
+            submitLabel="Save preferences"
+            onSaved={() => toast.success("Preferences saved")}
+          />
         ) : (
           <Skeleton className="h-[926px]" />
         )}
       </Section>
-      <Section title="Delete my data" body="Removes your account, resumes, versions and exported files. This can't be undone.">
+      <Section
+        title="Delete my data"
+        body="Removes your account, resumes, versions and exported files. This can't be undone."
+      >
         <Button
-          variant="outline" loading={remove.isPending}
-          onClick={() => { if (confirm("Delete your account and all data? This can't be undone.")) remove.mutate(); }}
+          variant="outline"
+          loading={remove.isPending}
+          onClick={() => {
+            if (confirm("Delete your account and all data? This can't be undone.")) remove.mutate();
+          }}
         >
           Delete everything
         </Button>

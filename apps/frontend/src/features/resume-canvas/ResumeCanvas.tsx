@@ -5,7 +5,13 @@ import { StitchLine, cn } from "@seam/ui";
 import { MotionConfig, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { InlineDiff } from "./InlineDiff";
-import { type BulletView, NodeState, SectionKind, type SectionView, type SkillChip } from "./view-model";
+import {
+  type BulletView,
+  NodeState,
+  SectionKind,
+  type SectionView,
+  type SkillChip,
+} from "./view-model";
 
 interface CanvasProps {
   contact: Resume["contact"];
@@ -52,7 +58,8 @@ function Node({ node, inList = false, cursor, highlight, onSelect }: NodeProps) 
   const active = !!cursor && node.suggestionIds.includes(cursor);
   const highlighted = !!node.suggestionId && !!highlight?.has(node.suggestionId);
   const actionable = !!primary && !!onSelect;
-  const flaggedPending = node.flagged && node.state !== NodeState.Settled && node.state !== NodeState.Plain;
+  const flaggedPending =
+    node.flagged && node.state !== NodeState.Settled && node.state !== NodeState.Plain;
   return (
     <div
       role={actionable ? "button" : undefined}
@@ -85,9 +92,15 @@ function Node({ node, inList = false, cursor, highlight, onSelect }: NodeProps) 
       />
       {node.runs ? <InlineDiff runs={node.runs} /> : node.text}
       {node.state === NodeState.Moved && node.movedFrom && (
-        <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ink-muted">↑ MOVED FROM {node.movedFrom}</span>
+        <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ink-muted">
+          ↑ MOVED FROM {node.movedFrom}
+        </span>
       )}
-      {node.state === NodeState.Inserted && <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ins-line">NEW</span>}
+      {node.state === NodeState.Inserted && (
+        <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ins-line">
+          NEW
+        </span>
+      )}
     </div>
   );
 }
@@ -111,7 +124,10 @@ function Chip({ chip, active, onSelect }: ChipProps) {
         "rounded-full border px-2.5 py-0.5 text-[12.5px] leading-5 transition-colors",
         chip.state === NodeState.Plain && "border-transparent bg-cream/70",
         chip.state === NodeState.Settled && "border-ins-line/40 bg-ins",
-        chip.state === NodeState.Inserted && (chip.flagged ? "border-dashed border-yellow bg-warn" : "border-dashed border-ins-line bg-ins"),
+        chip.state === NodeState.Inserted &&
+          (chip.flagged
+            ? "border-dashed border-yellow bg-warn"
+            : "border-dashed border-ins-line bg-ins"),
         chip.state === NodeState.Removed && "border-transparent bg-del line-through",
         active && "ring-2 ring-ink/40",
         actionable && "cursor-pointer",
@@ -132,16 +148,22 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
         style={{ colorScheme: "light", ["--ink" as string]: "#100f0f" }}
       >
         <header className="mb-5 text-center">
-          <h1 className="font-serif text-[26px] leading-tight font-medium tracking-[-0.01em]">{contact.name}</h1>
+          <h1 className="font-serif text-[26px] leading-tight font-medium tracking-[-0.01em]">
+            {contact.name}
+          </h1>
           <p className="mt-1 text-[12px] text-[#5b5853]">
-            {[contact.email, contact.phone, contact.location, ...contact.links].filter(Boolean).join("  |  ")}
+            {[contact.email, contact.phone, contact.location, ...contact.links]
+              .filter(Boolean)
+              .join("  |  ")}
           </p>
         </header>
 
         {view.map((sec) => (
           <section key={sec.id} aria-label={sec.label}>
             <Heading busy={!!busy?.has(sec.type)}>{sec.label}</Heading>
-            {sec.type === SectionKind.Summary && <Node node={sec.node} cursor={cursor} highlight={highlight} onSelect={onSelect} />}
+            {sec.type === SectionKind.Summary && (
+              <Node node={sec.node} cursor={cursor} highlight={highlight} onSelect={onSelect} />
+            )}
 
             {sec.type === SectionKind.Skills && (
               <div className="space-y-2">
@@ -149,7 +171,12 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
                   <div key={g.id} className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
                     <span className="font-semibold">{g.label}:</span>
                     {g.chips.map((c) => (
-                      <Chip key={c.key} chip={c} active={!!c.suggestionId && cursor === c.suggestionId} onSelect={onSelect} />
+                      <Chip
+                        key={c.key}
+                        chip={c}
+                        active={!!c.suggestionId && cursor === c.suggestionId}
+                        onSelect={onSelect}
+                      />
                     ))}
                   </div>
                 ))}
@@ -165,7 +192,9 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
                         <span className="font-semibold">{item.title}</span>
                         {item.subtitle && <span> — {item.subtitle}</span>}
                       </p>
-                      {item.dates && <span className="text-[12px] text-[#5b5853] tabular">{item.dates}</span>}
+                      {item.dates && (
+                        <span className="tabular text-[12px] text-[#5b5853]">{item.dates}</span>
+                      )}
                     </div>
                     {item.reorderId && (
                       <button
@@ -190,7 +219,13 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
                           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                           className="list-disc marker:text-[#5b5853]"
                         >
-                          <Node node={b} inList cursor={cursor} highlight={highlight} onSelect={onSelect} />
+                          <Node
+                            node={b}
+                            inList
+                            cursor={cursor}
+                            highlight={highlight}
+                            onSelect={onSelect}
+                          />
                         </motion.li>
                       ))}
                     </ul>
@@ -208,7 +243,9 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
                       {i.subtitle && <span> — {i.subtitle}</span>}
                       {i.details && <span className="text-[#5b5853]"> · {i.details}</span>}
                     </p>
-                    {i.dates && <span className="text-[12px] text-[#5b5853] tabular">{i.dates}</span>}
+                    {i.dates && (
+                      <span className="tabular text-[12px] text-[#5b5853]">{i.dates}</span>
+                    )}
                   </div>
                 ))}
               </div>

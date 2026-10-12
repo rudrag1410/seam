@@ -31,10 +31,23 @@ export interface Step {
 
 type RunState = Pick<
   ReviewState,
-  "status" | "jd" | "title" | "scoreBefore" | "scoreProjected" | "suggestions" | "sections" | "tasks" | "tasksDone"
+  | "status"
+  | "jd"
+  | "title"
+  | "scoreBefore"
+  | "scoreProjected"
+  | "suggestions"
+  | "sections"
+  | "tasks"
+  | "tasksDone"
 >;
 
-const SECTION_ORDER = [SectionName.Summary, SectionName.Skills, SectionName.Experience, SectionName.Projects];
+const SECTION_ORDER = [
+  SectionName.Summary,
+  SectionName.Skills,
+  SectionName.Experience,
+  SectionName.Projects,
+];
 export const SECTION_LABEL: Record<SectionName, string> = {
   [SectionName.Summary]: "Summary",
   [SectionName.Skills]: "Skills",
@@ -63,10 +76,18 @@ function sectionParts(s: RunState, writing: StepState): StepPart[] {
   const planned = Object.keys(s.tasks).length > 0;
   const parts: StepPart[] = [];
   for (const section of SECTION_ORDER) {
-    const listed = planned ? (s.tasks[section] ?? 0) > 0 : s.sections.includes(section) || counts.has(section);
+    const listed = planned
+      ? (s.tasks[section] ?? 0) > 0
+      : s.sections.includes(section) || counts.has(section);
     if (!listed) continue;
-    const complete = isFinished(s) || (planned && (s.tasksDone[section] ?? 0) >= (s.tasks[section] ?? 0));
-    parts.push({ key: section, label: SECTION_LABEL[section], count: counts.get(section) ?? 0, state: complete ? StepState.Done : writing });
+    const complete =
+      isFinished(s) || (planned && (s.tasksDone[section] ?? 0) >= (s.tasks[section] ?? 0));
+    parts.push({
+      key: section,
+      label: SECTION_LABEL[section],
+      count: counts.get(section) ?? 0,
+      state: complete ? StepState.Done : writing,
+    });
   }
   return parts;
 }
@@ -98,16 +119,25 @@ export function buildSteps(s: RunState): Step[] {
       key: StepKey.Score,
       title: "Score your resume against it",
       state: scoring,
-      summary: s.scoreBefore ? `${Math.round(s.scoreBefore.total)} out of 100 before any changes` : undefined,
+      summary: s.scoreBefore
+        ? `${Math.round(s.scoreBefore.total)} out of 100 before any changes`
+        : undefined,
     },
-    { key: StepKey.Write, title: "Write suggestions", state: writing, summary: writeSummary(s), parts: sectionParts(s, writing) },
+    {
+      key: StepKey.Write,
+      title: "Write suggestions",
+      state: writing,
+      summary: writeSummary(s),
+      parts: sectionParts(s, writing),
+    },
   ];
 }
 
 export function closingMessage(s: RunState): string | null {
   if (!isFinished(s)) return null;
   const total = s.suggestions.length;
-  if (total === 0) return "Your resume already reads well for this role, so I have no changes to suggest.";
+  if (total === 0)
+    return "Your resume already reads well for this role, so I have no changes to suggest.";
 
   const role = s.jd?.title || "this role";
   const where = s.jd?.company ? `${s.jd.company}'s ${role} role` : role;
@@ -115,15 +145,20 @@ export function closingMessage(s: RunState): string | null {
 
   const before = s.scoreBefore ? Math.round(s.scoreBefore.total) : null;
   const best = s.scoreProjected ? Math.round(s.scoreProjected.total) : null;
-  if (before != null && best != null && best > before) out.push(`Your match is ${before} now and could reach ${best} if you accept them all.`);
+  if (before != null && best != null && best > before)
+    out.push(`Your match is ${before} now and could reach ${best} if you accept them all.`);
   else if (before != null) out.push(`Your match is ${before} out of 100.`);
 
-  const gaps = (s.scoreBefore?.requirements ?? []).filter((r) => r.must_have && r.verdict === Verdict.Missing);
+  const gaps = (s.scoreBefore?.requirements ?? []).filter(
+    (r) => r.must_have && r.verdict === Verdict.Missing,
+  );
   if (gaps.length > 0) out.push(`The main gap: ${gaps[0]!.text.replace(/\.$/, "")}.`);
 
   const flagged = s.suggestions.filter((x) => x.requires_confirmation).length;
   if (flagged > 0) {
-    out.push(`${flagged === 1 ? "One adds" : `${flagged} add`} something your resume doesn't state, so accept ${flagged === 1 ? "it" : "those"} only if true.`);
+    out.push(
+      `${flagged === 1 ? "One adds" : `${flagged} add`} something your resume doesn't state, so accept ${flagged === 1 ? "it" : "those"} only if true.`,
+    );
   }
   return out.join(" ");
 }

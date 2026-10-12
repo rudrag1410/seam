@@ -24,5 +24,11 @@ interface PageBodyProps {
 }
 
 export function PageBody({ children, wide = false }: PageBodyProps) {
-  return <div className={`mx-auto px-4 py-8 sm:px-8 sm:py-12 ${wide ? "max-w-[1180px]" : "max-w-[860px]"}`}>{children}</div>;
+  return (
+    <div
+      className={`mx-auto px-4 py-8 sm:px-8 sm:py-12 ${wide ? "max-w-[1180px]" : "max-w-[860px]"}`}
+    >
+      {children}
+    </div>
+  );
 }

@@ -25,7 +25,8 @@ const DECIDED: Record<Decision, string> = {
 };
 
 const canEdit = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.RemoveBullet;
-export const canReword = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.AddSkill && s.op !== OpName.RemoveSkill;
+export const canReword = (s: SuggestionOut) =>
+  s.op !== OpName.Reorder && s.op !== OpName.AddSkill && s.op !== OpName.RemoveSkill;
 
 function startEdit(id: string): void {
   useReview.setState({ editing: id });
@@ -50,16 +51,31 @@ interface StepperProps {
 }
 
 function Stepper({ index, total }: StepperProps) {
-  const arrow = "grid size-7 place-items-center rounded-full border border-line text-ink-soft hover:border-line-strong hover:text-ink disabled:opacity-40";
+  const arrow =
+    "grid size-7 place-items-center rounded-full border border-line text-ink-soft hover:border-line-strong hover:text-ink disabled:opacity-40";
   return (
     <div className="flex items-center gap-1.5">
       <span className="tabular mr-1 text-[12px] text-ink-muted">
         {index + 1} of {total}
       </span>
-      <button type="button" aria-label="Previous suggestion (K)" title="Previous (K)" disabled={total < 2} onClick={() => move(-1)} className={arrow}>
+      <button
+        type="button"
+        aria-label="Previous suggestion (K)"
+        title="Previous (K)"
+        disabled={total < 2}
+        onClick={() => move(-1)}
+        className={arrow}
+      >
         <ChevronLeft className="size-4" />
       </button>
-      <button type="button" aria-label="Next suggestion (J)" title="Next (J)" disabled={total < 2} onClick={() => move(1)} className={arrow}>
+      <button
+        type="button"
+        aria-label="Next suggestion (J)"
+        title="Next (J)"
+        disabled={total < 2}
+        onClick={() => move(1)}
+        className={arrow}
+      >
         <ChevronRight className="size-4" />
       </button>
     </div>
@@ -91,7 +107,10 @@ function EditBox({ suggestion: s }: EditBoxProps) {
       />
       <div className="mt-2.5 flex items-center gap-2">
         <Button size="sm" onClick={() => saveEdit(s.id, text)}>
-          Save edit <Kbd className="hidden border-transparent bg-white/15 text-inherit sm:inline-flex">⌘↵</Kbd>
+          Save edit{" "}
+          <Kbd className="hidden border-transparent bg-white/15 text-inherit sm:inline-flex">
+            ⌘↵
+          </Kbd>
         </Button>
         <Button size="sm" variant="ghost" onClick={cancelEdit}>
           Cancel
@@ -126,7 +145,11 @@ export function ReviewDock() {
   const isConfirming = confirming === s.id;
 
   return (
-    <section id="review-dock" aria-label="Suggestion under review" className="rounded-[18px] border border-line bg-bg p-3.5 text-[13px]">
+    <section
+      id="review-dock"
+      aria-label="Suggestion under review"
+      className="rounded-[18px] border border-line bg-bg p-3.5 text-[13px]"
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-medium">{OP_LABEL[s.op]}</span>
@@ -137,7 +160,11 @@ export function ReviewDock() {
             </Badge>
           )}
           {unsure && <Badge tone="yellow">Check this</Badge>}
-          {decided && <Badge tone={s.status === Decision.Rejected ? "orange" : "ink"}>{DECIDED[s.status]}</Badge>}
+          {decided && (
+            <Badge tone={s.status === Decision.Rejected ? "orange" : "ink"}>
+              {DECIDED[s.status]}
+            </Badge>
+          )}
         </div>
         <Stepper index={index} total={suggestions.length} />
       </div>
@@ -147,14 +174,18 @@ export function ReviewDock() {
       ) : (
         <>
           {suggestedText(s) && (
-            <p className="mt-2 line-clamp-4 rounded-[10px] bg-ins px-3 py-2 leading-relaxed lg:hidden">{suggestedText(s)}</p>
+            <p className="mt-2 line-clamp-4 rounded-[10px] bg-ins px-3 py-2 leading-relaxed lg:hidden">
+              {suggestedText(s)}
+            </p>
           )}
           {s.rationale && <p className="mt-2 leading-relaxed text-ink-soft">{s.rationale}</p>}
           {reqs.length > 0 && (
             <p className="mt-2 line-clamp-2 hidden text-[12px] leading-snug sm:[display:-webkit-box]">
               <span className="text-ink-muted">Addresses: </span>
               <span className="text-ink-soft">{reqs[0]}</span>
-              {reqs.length > 1 && <span className="text-ink-muted"> (+{reqs.length - 1} more)</span>}
+              {reqs.length > 1 && (
+                <span className="text-ink-muted"> (+{reqs.length - 1} more)</span>
+              )}
             </p>
           )}
           {s.requires_confirmation && (
@@ -170,13 +201,25 @@ export function ReviewDock() {
               </Button>
             ) : (
               <>
-                <Button size="sm" variant="secondary" onClick={() => decide(s.id, Decision.Rejected)}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => decide(s.id, Decision.Rejected)}
+                >
                   <X className="size-3.5" /> Reject <Kbd className="hidden sm:inline-flex">R</Kbd>
                 </Button>
-                <Button size="sm" onClick={() => decide(s.id, Decision.Accepted)} className={cn(isConfirming && "bg-ins-line text-bg")}>
+                <Button
+                  size="sm"
+                  onClick={() => decide(s.id, Decision.Accepted)}
+                  className={cn(isConfirming && "bg-ins-line text-bg")}
+                >
                   <Check className="size-3.5" />
                   {isConfirming ? "Yes, this is true" : "Accept"}
-                  {!isConfirming && <Kbd className="hidden border-transparent bg-white/15 text-inherit sm:inline-flex">A</Kbd>}
+                  {!isConfirming && (
+                    <Kbd className="hidden border-transparent bg-white/15 text-inherit sm:inline-flex">
+                      A
+                    </Kbd>
+                  )}
                 </Button>
               </>
             )}

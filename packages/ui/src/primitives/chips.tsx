@@ -17,13 +17,7 @@ interface TagInputProps {
   id?: string;
 }
 
-export function TagInput({
-  value,
-  onChange,
-  placeholder,
-  suggestions = [],
-  id,
-}: TagInputProps) {
+export function TagInput({ value, onChange, placeholder, suggestions = [], id }: TagInputProps) {
   const [draft, setDraft] = useState("");
 
   const remaining = suggestions.filter((s) => !value.includes(s)).slice(0, 6);
@@ -32,9 +26,17 @@ export function TagInput({
     <div>
       <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-[12px] border border-line-strong bg-bg px-2.5 py-1.5 focus-within:border-ink">
         {value.map((v) => (
-          <span key={v} className="inline-flex items-center gap-1 rounded-full bg-cream py-1 pr-1.5 pl-3 text-[13px]">
+          <span
+            key={v}
+            className="inline-flex items-center gap-1 rounded-full bg-cream py-1 pr-1.5 pl-3 text-[13px]"
+          >
             {v}
-            <button type="button" onClick={() => onChange(value.filter((x) => x !== v))} aria-label={`Remove ${v}`} className="grid size-4 place-items-center rounded-full hover:bg-line">
+            <button
+              type="button"
+              onClick={() => onChange(value.filter((x) => x !== v))}
+              aria-label={`Remove ${v}`}
+              className="grid size-4 place-items-center rounded-full hover:bg-line"
+            >
               <X className="size-3" />
             </button>
           </span>
@@ -48,7 +50,8 @@ export function TagInput({
               e.preventDefault();
               onChange(withTag(value, draft));
               setDraft("");
-            } else if (e.key === "Backspace" && !draft && value.length) onChange(value.slice(0, -1));
+            } else if (e.key === "Backspace" && !draft && value.length)
+              onChange(value.slice(0, -1));
           }}
           onBlur={() => {
             onChange(withTag(value, draft));
@@ -61,7 +64,12 @@ export function TagInput({
       {remaining.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {remaining.map((s) => (
-            <button key={s} type="button" onClick={() => onChange(withTag(value, s))} className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-muted hover:border-ink hover:text-ink">
+            <button
+              key={s}
+              type="button"
+              onClick={() => onChange(withTag(value, s))}
+              className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-muted hover:border-ink hover:text-ink"
+            >
               + {s}
             </button>
           ))}
@@ -93,10 +101,22 @@ export function ChipSelect<T extends string>({
             key={o.value}
             type="button"
             aria-pressed={on}
-            onClick={() => onChange(single ? (on ? [] : [o.value]) : on ? value.filter((v) => v !== o.value) : [...value, o.value])}
+            onClick={() =>
+              onChange(
+                single
+                  ? on
+                    ? []
+                    : [o.value]
+                  : on
+                    ? value.filter((v) => v !== o.value)
+                    : [...value, o.value],
+              )
+            }
             className={cn(
               "rounded-full border px-4 py-1.5 text-sm transition-colors",
-              on ? "border-ink bg-ink text-on-ink" : "border-line-strong text-ink-soft hover:border-ink hover:text-ink",
+              on
+                ? "border-ink bg-ink text-on-ink"
+                : "border-line-strong text-ink-soft hover:border-ink hover:text-ink",
             )}
           >
             {o.label}

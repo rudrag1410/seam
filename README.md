@@ -71,23 +71,23 @@ Set `DATABASE_URL=postgresql+asyncpg://seam:seam@localhost:5432/seam` in `apps/b
 
 Everything is optional. `pnpm bootstrap` creates the files below from the examples.
 
-| Variable                                                                 | Default                       | Description                                                             |
-| ------------------------------------------------------------------------ | ----------------------------- | ----------------------------------------------------------------------- |
-| `AI_MODE`                                                                | `mock`                        | `mock` runs offline. `live` calls OpenAI (and Jev when a key is set)    |
-| `OPENAI_API_KEY`                                                         |                               | Required for `live`                                                     |
-| `TYPESAFE_API_KEY`                                                       |                               | Optional. Enables Jev for the checks that gate what you see             |
-| `LLM_MODEL_OPENAI_FAST` / `_STRONG` / `_VISION`                          | `gpt-5-mini` / `gpt-5` / `gpt-5-mini` | Model ids. Pin to whatever is current for your account  |
-| `LLM_MAX_OUTPUT_TOKENS`                                                  | `6000`                        | Ceiling on output per model call                                        |
-| `LLM_MAX_JD_TOKENS`                                                      | `4000`                        | Longer job descriptions are rejected                                    |
-| `LLM_MAX_RESUME_TOKENS`                                                  | `8000`                        | Resume text sent to a model is clipped to this                          |
-| `LLM_REASONING_EFFORT`                                                   | `low`                         | Thinking effort for reasoning models. Lower is faster                   |
-| `DATABASE_URL`                                                           | SQLite in `apps/backend/data` | Any SQLAlchemy async URL. Use Postgres in production                    |
-| `JWT_SECRET`, `FIELD_ENCRYPTION_KEY`                                     | `change-me`                   | Set both to long random values anywhere that isn't your laptop          |
-| `APP_URL`, `CORS_ORIGINS`                                                | `http://localhost:3000`       | Where the web app is served                                             |
-| `COOKIE_SECURE`, `COOKIE_SAMESITE`                                       | `false`, `lax`                | Use `true` and `none` when the web app and API are on different domains |
-| `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`  |                               | Cloudflare R2 for uploads and exports. Empty uses local disk            |
-| `MAX_UPLOAD_MB`, `MAX_PAGES`                                             | `5`, `6`                      | Upload limits                                                           |
-| `NEXT_PUBLIC_API_URL`                                                    | `http://localhost:8000`       | Web app setting, in `apps/frontend/.env.local`                          |
+| Variable                                                               | Default                               | Description                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------- |
+| `AI_MODE`                                                              | `mock`                                | `mock` runs offline. `live` calls OpenAI (and Jev when a key is set)    |
+| `OPENAI_API_KEY`                                                       |                                       | Required for `live`                                                     |
+| `TYPESAFE_API_KEY`                                                     |                                       | Optional. Enables Jev for the checks that gate what you see             |
+| `LLM_MODEL_OPENAI_FAST` / `_STRONG` / `_VISION`                        | `gpt-5-mini` / `gpt-5` / `gpt-5-mini` | Model ids. Pin to whatever is current for your account                  |
+| `LLM_MAX_OUTPUT_TOKENS`                                                | `6000`                                | Ceiling on output per model call                                        |
+| `LLM_MAX_JD_TOKENS`                                                    | `4000`                                | Longer job descriptions are rejected                                    |
+| `LLM_MAX_RESUME_TOKENS`                                                | `8000`                                | Resume text sent to a model is clipped to this                          |
+| `LLM_REASONING_EFFORT`                                                 | `low`                                 | Thinking effort for reasoning models. Lower is faster                   |
+| `DATABASE_URL`                                                         | SQLite in `apps/backend/data`         | Any SQLAlchemy async URL. Use Postgres in production                    |
+| `JWT_SECRET`, `FIELD_ENCRYPTION_KEY`                                   | `change-me`                           | Set both to long random values anywhere that isn't your laptop          |
+| `APP_URL`, `CORS_ORIGINS`                                              | `http://localhost:3000`               | Where the web app is served                                             |
+| `COOKIE_SECURE`, `COOKIE_SAMESITE`                                     | `false`, `lax`                        | Use `true` and `none` when the web app and API are on different domains |
+| `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` |                                       | Cloudflare R2 for uploads and exports. Empty uses local disk            |
+| `MAX_UPLOAD_MB`, `MAX_PAGES`                                           | `5`, `6`                              | Upload limits                                                           |
+| `NEXT_PUBLIC_API_URL`                                                  | `http://localhost:8000`               | Web app setting, in `apps/frontend/.env.local`                          |
 
 ## 🧰 Stack
 

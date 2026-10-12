@@ -2,7 +2,7 @@
 
 import { cn } from "@seam/ui";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { whenAppReady } from "@/lib/ready";
 
 const APP_ROUTE = /^\/(tailor|resumes|activity|profile|preferences)(\/|$)/;
@@ -20,6 +20,7 @@ enum SplashPhase {
 export function Splash() {
   const path = usePathname();
   const [phase, setPhase] = useState<SplashPhase>(SplashPhase.Show);
+  const initialPath = useRef(path);
 
   useEffect(() => {
     const started = performance.now();
@@ -31,7 +32,7 @@ export function Splash() {
     const min = seen ? MIN_REPEAT_MS : MIN_FIRST_MS;
 
     const fonts = document.fonts?.ready ?? Promise.resolve();
-    const app = APP_ROUTE.test(path) ? whenAppReady() : Promise.resolve();
+    const app = APP_ROUTE.test(initialPath.current) ? whenAppReady() : Promise.resolve();
     const cap = new Promise<void>((r) => setTimeout(r, MAX_MS));
 
     let cancelled = false;

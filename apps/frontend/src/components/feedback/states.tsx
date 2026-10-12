@@ -27,7 +27,10 @@ interface ErrorStateProps {
 export function ErrorState({ error, onRetry }: ErrorStateProps) {
   const e = presentError(error);
   return (
-    <div role="alert" className="flex items-start gap-3 rounded-[16px] border border-line bg-del/60 p-4">
+    <div
+      role="alert"
+      className="flex items-start gap-3 rounded-[16px] border border-line bg-del/60 p-4"
+    >
       <AlertCircle className="mt-0.5 size-4 shrink-0 text-del-line" aria-hidden />
       <div className="flex-1 text-sm">
         <p className="font-medium">{e.title}</p>

@@ -4,53 +4,29 @@
   "ui": "stream",
   "tasks": {
     "@seam/backend#openapi": {
-      "inputs": [
-        "app/**/*.py",
-        "pyproject.toml",
-        "uv.lock"
-      ],
-      "outputs": [
-        "openapi.json"
-      ]
+      "inputs": ["app/**/*.py", "pyproject.toml", "uv.lock"],
+      "outputs": ["openapi.json"]
     },
     "generate": {
-      "dependsOn": [
-        "@seam/backend#openapi"
-      ],
-      "outputs": [
-        "src/schema.ts"
-      ]
+      "dependsOn": ["@seam/backend#openapi"],
+      "outputs": ["src/schema.ts"]
     },
     "build": {
-      "dependsOn": [
-        "^build",
-        "@seam/api-client#generate"
-      ],
-      "env": [
-        "NEXT_PUBLIC_API_URL"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**"
-      ]
+      "dependsOn": ["^build", "@seam/api-client#generate"],
+      "env": ["NEXT_PUBLIC_API_URL"],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {
-      "dependsOn": [
-        "@seam/api-client#generate"
-      ],
+      "dependsOn": ["@seam/api-client#generate"],
       "cache": false,
       "persistent": true
     },
     "lint": {},
     "typecheck": {
-      "dependsOn": [
-        "@seam/api-client#generate"
-      ]
+      "dependsOn": ["@seam/api-client#generate"]
     },
     "test": {
-      "dependsOn": [
-        "@seam/api-client#generate"
-      ]
+      "dependsOn": ["@seam/api-client#generate"]
     }
   }
 }

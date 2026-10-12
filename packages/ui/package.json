@@ -9,14 +9,20 @@
     ".": "./src/index.ts",
     "./styles/tokens.css": "./src/styles/tokens.css"
   },
-  "scripts": { "typecheck": "tsc -p tsconfig.json", "lint": "tsc -p tsconfig.json" },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint ."
+  },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.468.0",
     "tailwind-merge": "^2.5.0"
   },
-  "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
   "devDependencies": {
     "@seam/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",

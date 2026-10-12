@@ -46,26 +46,47 @@ export function CommandPalette() {
     >
       <div className="flex items-center gap-3 border-b border-line px-4">
         <Search className="size-4 text-ink-muted" aria-hidden />
-        <Command.Input placeholder="Search actions…" className="h-12 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-muted" />
+        <Command.Input
+          placeholder="Search actions…"
+          className="h-12 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-muted"
+        />
         <Kbd>esc</Kbd>
       </div>
       <Command.List className="scroll-thin max-h-[320px] overflow-auto p-2">
-        <Command.Empty className="px-3 py-8 text-center text-sm text-ink-muted">Nothing found.</Command.Empty>
-        <Command.Group heading="Go to" className="text-xs text-ink-muted [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5">
+        <Command.Empty className="px-3 py-8 text-center text-sm text-ink-muted">
+          Nothing found.
+        </Command.Empty>
+        <Command.Group
+          heading="Go to"
+          className="text-xs text-ink-muted [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5"
+        >
           {NAV.map(({ href, label, icon: Icon }) => (
-            <Command.Item key={href} value={label} onSelect={() => closeThen(setOpen, () => router.push(href))}
-              className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink data-[selected=true]:bg-cream">
+            <Command.Item
+              key={href}
+              value={label}
+              onSelect={() => closeThen(setOpen, () => router.push(href))}
+              className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink data-[selected=true]:bg-cream"
+            >
               <Icon className="size-4 text-ink-muted" aria-hidden /> {label}
             </Command.Item>
           ))}
         </Command.Group>
-        <Command.Group heading="Preferences" className="text-xs text-ink-muted [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5">
-          <Command.Item value="Switch theme" onSelect={() => closeThen(setOpen, toggle)}
-            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink data-[selected=true]:bg-cream">
+        <Command.Group
+          heading="Preferences"
+          className="text-xs text-ink-muted [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5"
+        >
+          <Command.Item
+            value="Switch theme"
+            onSelect={() => closeThen(setOpen, toggle)}
+            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink data-[selected=true]:bg-cream"
+          >
             <Moon className="size-4 text-ink-muted" aria-hidden /> Switch theme
           </Command.Item>
-          <Command.Item value="Sign out" onSelect={() => closeThen(setOpen, signOut)}
-            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink data-[selected=true]:bg-cream">
+          <Command.Item
+            value="Sign out"
+            onSelect={() => closeThen(setOpen, signOut)}
+            className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink data-[selected=true]:bg-cream"
+          >
             <LogOut className="size-4 text-ink-muted" aria-hidden /> Sign out
           </Command.Item>
         </Command.Group>

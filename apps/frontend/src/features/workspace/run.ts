@@ -1,4 +1,11 @@
-import { Intensity, type Resume, SectionName, SessionStatus, type TailorCreate, type TailorSessionOut } from "@seam/api-client";
+import {
+  Intensity,
+  type Resume,
+  SectionName,
+  SessionStatus,
+  type TailorCreate,
+  type TailorSessionOut,
+} from "@seam/api-client";
 import { ApiException } from "@/lib/api";
 import { isJobTextCode } from "@/lib/errors";
 import { LANDING } from "@/lib/routes";
@@ -31,7 +38,11 @@ export function runFromDraft(draft: JobDraft, resume: Resume) {
   };
 }
 
-export function createBody(draft: JobDraft, resumeId: string, baseVersionId: string | null): TailorCreate {
+export function createBody(
+  draft: JobDraft,
+  resumeId: string,
+  baseVersionId: string | null,
+): TailorCreate {
   return {
     resume_id: resumeId,
     ...(draft.byUrl ? { jd_url: draft.url.trim() } : { jd_text: draft.text.trim() }),
@@ -42,14 +53,22 @@ export function createBody(draft: JobDraft, resumeId: string, baseVersionId: str
 }
 
 export function retryBody(prev: TailorSessionOut): TailorCreate {
-  return { resume_id: prev.resume_id, jd_id: prev.jd_id, sections: prev.sections, intensity: prev.intensity };
+  return {
+    resume_id: prev.resume_id,
+    jd_id: prev.jd_id,
+    sections: prev.sections,
+    intensity: prev.intensity,
+  };
 }
 
 export function runFromSession(prev: TailorSessionOut) {
   return { resume: prev.resume, jdText: prev.jd_text, jdUrl: prev.jd_url, sections: prev.sections };
 }
 
-export function draftFromRun(run: Pick<ReviewState, "jdText" | "jdUrl" | "sections">, draft: JobDraft): JobDraft {
+export function draftFromRun(
+  run: Pick<ReviewState, "jdText" | "jdUrl" | "sections">,
+  draft: JobDraft,
+): JobDraft {
   return {
     ...draft,
     text: run.jdText,

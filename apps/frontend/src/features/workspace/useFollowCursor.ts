@@ -14,7 +14,11 @@ function reveal(paper: HTMLElement | null, cursor: string): void {
   if (r.top < top || r.bottom > bottom) el.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
-export function useFollowCursor(paper: RefObject<HTMLElement | null>, cursor: string | null, enabled: boolean): void {
+export function useFollowCursor(
+  paper: RefObject<HTMLElement | null>,
+  cursor: string | null,
+  enabled: boolean,
+): void {
   const last = useRef<string | null>(null);
   useEffect(() => {
     const first = last.current === null;

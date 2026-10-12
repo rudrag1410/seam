@@ -26,7 +26,10 @@ function onStage(data: StageData): void {
     useReview.setState({ status: SessionStatus.Running, tasks: data.tasks, tasksDone: {} });
   } else if (data.section) {
     const done = useReview.getState().tasksDone;
-    useReview.setState({ status: SessionStatus.Running, tasksDone: { ...done, [data.section]: (done[data.section] ?? 0) + 1 } });
+    useReview.setState({
+      status: SessionStatus.Running,
+      tasksDone: { ...done, [data.section]: (done[data.section] ?? 0) + 1 },
+    });
   } else {
     useReview.setState({ status: SessionStatus.Running });
   }
@@ -41,7 +44,10 @@ function onJob(data: JobData): void {
 }
 
 function onScore(data: ScoreData): void {
-  useReview.setState({ scoreBefore: data.before, ...(data.projected ? { scoreProjected: data.projected } : {}) });
+  useReview.setState({
+    scoreBefore: data.before,
+    ...(data.projected ? { scoreProjected: data.projected } : {}),
+  });
 }
 
 function onSuggestion(data: SuggestionOut): void {
@@ -54,11 +60,17 @@ function onWarning(data: WarningData): void {
 }
 
 function onDone(data: DoneData): void {
-  useReview.setState({ status: SessionStatus.Ready, degraded: useReview.getState().degraded || data.degraded });
+  useReview.setState({
+    status: SessionStatus.Ready,
+    degraded: useReview.getState().degraded || data.degraded,
+  });
 }
 
 function onError(data: ErrorData): void {
-  useReview.setState({ status: SessionStatus.Failed, error: { code: data.code, message: data.message, retryable: data.retryable } });
+  useReview.setState({
+    status: SessionStatus.Failed,
+    error: { code: data.code, message: data.message, retryable: data.retryable },
+  });
 }
 
 const HANDLERS: EventHandlers<TailorEventPayloads> = {
@@ -84,7 +96,11 @@ function onClosed(): void {
 }
 
 function follow(sessionId: string): () => void {
-  return openStream(`${API_URL}/v1/tailor-sessions/${sessionId}/stream`, HANDLERS, { onOpen, onReconnecting, onClosed });
+  return openStream(`${API_URL}/v1/tailor-sessions/${sessionId}/stream`, HANDLERS, {
+    onOpen,
+    onReconnecting,
+    onClosed,
+  });
 }
 
 export function useTailorStream(sessionId: string | null, active: boolean) {

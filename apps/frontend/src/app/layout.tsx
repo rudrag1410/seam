@@ -7,7 +7,12 @@ import "./globals.css";
 
 const sans = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
-const serif = Newsreader({ subsets: ["latin"], variable: "--font-newsreader", display: "swap", style: ["normal", "italic"] });
+const serif = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-newsreader",
+  display: "swap",
+  style: ["normal", "italic"],
+});
 
 export const metadata: Metadata = {
   title: { default: "Seam: resume tailoring you can review", template: "%s · Seam" },
@@ -23,7 +28,11 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${sans.variable} ${mono.variable} ${serif.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

@@ -17,7 +17,9 @@ export const keys = {
 };
 
 export const useMe = () =>
-  useQuery({ queryKey: keys.me, queryFn: () => unwrap(api.GET("/v1/me")),
+  useQuery({
+    queryKey: keys.me,
+    queryFn: () => unwrap(api.GET("/v1/me")),
     retry: false,
     staleTime: 30_000,
     refetchOnWindowFocus: true,

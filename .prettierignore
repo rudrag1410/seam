@@ -1,0 +1,11 @@
+node_modules
+.next
+.next-e2e
+.turbo
+dist
+coverage
+pnpm-lock.yaml
+apps/backend
+packages/fixtures
+packages/api-client/src/schema.ts
+*.tsbuildinfo

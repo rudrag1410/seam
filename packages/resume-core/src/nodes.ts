@@ -18,7 +18,20 @@ export function formatDate(value?: string | null): string {
   if (/^(present|current|now)$/i.test(value)) return "Present";
   const m = /^(\d{4})-(\d{2})$/.exec(value);
   if (!m) return value;
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   return `${months[Number(m[2]) - 1]} ${m[1]}`;
 }
 

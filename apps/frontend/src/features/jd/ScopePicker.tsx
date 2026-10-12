@@ -22,7 +22,10 @@ export const INTENSITY_LABEL: Record<Intensity, string> = {
   [Intensity.Bold]: "Bold",
 };
 
-const INTENSITY = Object.values(Intensity).map((value) => ({ value, label: INTENSITY_LABEL[value] }));
+const INTENSITY = Object.values(Intensity).map((value) => ({
+  value,
+  label: INTENSITY_LABEL[value],
+}));
 
 const INTENSITY_HINT: Record<Intensity, string> = {
   [Intensity.Light]: "Fix terminology and ordering. Minimal rewording.",
@@ -47,7 +50,9 @@ export function ScopePicker({ sections, onSections, intensity, onIntensity }: Sc
             <div key={s.key} className="rounded-[12px] border border-line p-3">
               <Checkbox
                 checked={sections.includes(s.key)}
-                onChange={(on) => onSections(on ? [...sections, s.key] : sections.filter((x) => x !== s.key))}
+                onChange={(on) =>
+                  onSections(on ? [...sections, s.key] : sections.filter((x) => x !== s.key))
+                }
                 label={<span className="font-medium">{s.label}</span>}
               />
               <p className="mt-1 pl-7 text-[12px] text-ink-muted">{s.hint}</p>
@@ -57,7 +62,13 @@ export function ScopePicker({ sections, onSections, intensity, onIntensity }: Sc
       </fieldset>
       <div>
         <p className="mb-3 text-[13px] font-medium">Intensity</p>
-        <Segmented size="sm" aria-label="Intensity" value={intensity} onChange={onIntensity} options={INTENSITY} />
+        <Segmented
+          size="sm"
+          aria-label="Intensity"
+          value={intensity}
+          onChange={onIntensity}
+          options={INTENSITY}
+        />
         <p className="mt-2 text-[13px] text-ink-muted">{INTENSITY_HINT[intensity]}</p>
       </div>
     </div>

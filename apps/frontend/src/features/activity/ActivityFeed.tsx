@@ -40,18 +40,40 @@ export function ActivityFeed({ limit = 20, filterable = true, paged = true }: Ac
     queryKey: ["activity", filter, limit],
     initialPageParam: undefined as number | undefined,
     queryFn: ({ pageParam }) =>
-      unwrap(api.GET("/v1/activity", { params: { query: { limit, cursor: pageParam, type: GROUP_OF[filter] } } })),
+      unwrap(
+        api.GET("/v1/activity", {
+          params: { query: { limit, cursor: pageParam, type: GROUP_OF[filter] } },
+        }),
+      ),
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   });
   const items = q.data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <div>
-      {filterable && <Segmented size="sm" className="mb-6" aria-label="Filter activity" value={filter} onChange={setFilter} options={FILTERS} />}
-      {q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} /> : q.isPending ? (
-        <div className="space-y-3">{Array.from({ length: limit > 5 ? 8 : 5 }, (_, i) => <Skeleton key={i} className="h-[47px]" />)}</div>
+      {filterable && (
+        <Segmented
+          size="sm"
+          className="mb-6"
+          aria-label="Filter activity"
+          value={filter}
+          onChange={setFilter}
+          options={FILTERS}
+        />
+      )}
+      {q.isError ? (
+        <ErrorState error={q.error} onRetry={() => q.refetch()} />
+      ) : q.isPending ? (
+        <div className="space-y-3">
+          {Array.from({ length: limit > 5 ? 8 : 5 }, (_, i) => (
+            <Skeleton key={i} className="h-[47px]" />
+          ))}
+        </div>
       ) : items.length === 0 ? (
-        <EmptyState title="Nothing here yet" body="Uploads, tailoring runs and exports show up here as you go." />
+        <EmptyState
+          title="Nothing here yet"
+          body="Uploads, tailoring runs and exports show up here as you go."
+        />
       ) : (
         <ul className="divide-y divide-line border-y border-line">
           {items.map((e) => {
@@ -60,19 +82,37 @@ export function ActivityFeed({ limit = 20, filterable = true, paged = true }: Ac
               <>
                 <span className="size-1.5 shrink-0 rounded-full bg-ink" aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{e.summary}</span>
-                <time dateTime={e.created_at} className="shrink-0 text-[13px] text-ink-muted tabular">{timeAgo(e.created_at)}</time>
+                <time
+                  dateTime={e.created_at}
+                  className="tabular shrink-0 text-[13px] text-ink-muted"
+                >
+                  {timeAgo(e.created_at)}
+                </time>
               </>
             );
             return (
               <li key={e.id}>
-                {href ? <Link href={href} className="flex h-[46px] items-center gap-3 hover:bg-panel">{row}</Link> : <div className="flex h-[46px] items-center gap-3">{row}</div>}
+                {href ? (
+                  <Link href={href} className="flex h-[46px] items-center gap-3 hover:bg-panel">
+                    {row}
+                  </Link>
+                ) : (
+                  <div className="flex h-[46px] items-center gap-3">{row}</div>
+                )}
               </li>
             );
           })}
         </ul>
       )}
       {paged && q.hasNextPage && (
-        <Button variant="secondary" className="mt-6" loading={q.isFetchingNextPage} onClick={() => q.fetchNextPage()}>Load more</Button>
+        <Button
+          variant="secondary"
+          className="mt-6"
+          loading={q.isFetchingNextPage}
+          onClick={() => q.fetchNextPage()}
+        >
+          Load more
+        </Button>
       )}
     </div>
   );

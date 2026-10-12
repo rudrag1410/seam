@@ -55,7 +55,9 @@ function applyOne(doc: Resume, op: Op): void {
     }
     case OpName.AddSkill:
     case OpName.RemoveSkill: {
-      const group = doc.sections.flatMap((s) => (s.type === "skills" ? s.groups : [])).find((g) => g.id === target);
+      const group = doc.sections
+        .flatMap((s) => (s.type === "skills" ? s.groups : []))
+        .find((g) => g.id === target);
       if (!group) return;
       const value = (op.edited_text || String(payload.value ?? "")).trim();
       const at = group.items.findIndex((x) => x.toLowerCase() === value.toLowerCase());

@@ -29,11 +29,16 @@ export function Breakdown({ score, activeReq, onPick }: BreakdownProps) {
               type="button"
               onClick={() => onPick?.(activeReq === r.id ? null : r.id)}
               aria-pressed={activeReq === r.id}
-              className={cn("flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] hover:bg-cream", activeReq === r.id && "bg-cream")}
+              className={cn(
+                "flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] hover:bg-cream",
+                activeReq === r.id && "bg-cream",
+              )}
             >
               <Icon className={cn("mt-0.5 size-3.5 shrink-0", v.tone)} aria-label={v.label} />
               <span className="flex-1 leading-snug">{r.text}</span>
-              {!r.must_have && <span className="shrink-0 text-[10.5px] text-ink-muted uppercase">nice</span>}
+              {!r.must_have && (
+                <span className="shrink-0 text-[10.5px] text-ink-muted uppercase">nice</span>
+              )}
             </button>
           </li>
         );
@@ -51,10 +56,22 @@ export function KeywordList({ matched, missing }: KeywordListProps) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {matched.map((k) => (
-        <span key={k} className="inline-flex items-center gap-1 rounded-full bg-ins px-2.5 py-0.5 text-xs"><Check className="size-3" />{k}</span>
+        <span
+          key={k}
+          className="inline-flex items-center gap-1 rounded-full bg-ins px-2.5 py-0.5 text-xs"
+        >
+          <Check className="size-3" />
+          {k}
+        </span>
       ))}
       {missing.map((k) => (
-        <span key={k} className="rounded-full border border-dashed border-line-strong px-2.5 py-0.5 text-xs text-ink-muted" title="Not on your resume. Add it only if it's true.">{k}</span>
+        <span
+          key={k}
+          className="rounded-full border border-dashed border-line-strong px-2.5 py-0.5 text-xs text-ink-muted"
+          title="Not on your resume. Add it only if it's true."
+        >
+          {k}
+        </span>
       ))}
     </div>
   );

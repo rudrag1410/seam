@@ -13,7 +13,8 @@ import { ViewMode } from "../resume-canvas/view-model";
 import { canReword } from "./ReviewDock";
 
 const QUICK = ["Shorter", "More technical", "Lead with the metric"];
-const chip = "h-8 shrink-0 rounded-full border border-line bg-bg px-3.5 text-[13px] text-ink-soft transition-colors hover:border-line-strong hover:text-ink disabled:pointer-events-none disabled:opacity-45";
+const chip =
+  "h-8 shrink-0 rounded-full border border-line bg-bg px-3.5 text-[13px] text-ink-soft transition-colors hover:border-line-strong hover:text-ink disabled:pointer-events-none disabled:opacity-45";
 
 interface Ask {
   id: string;
@@ -53,16 +54,27 @@ function onRewritten(next: SuggestionOut): void {
 
 function onAskFailed(error: unknown): void {
   useReview.setState({ asking: false });
-  say({ role: NoteRole.Assistant, tone: NoteTone.Error, text: `${presentError(error).title} The suggestion is unchanged.` });
+  say({
+    role: NoteRole.Assistant,
+    tone: NoteTone.Error,
+    text: `${presentError(error).title} The suggestion is unchanged.`,
+  });
 }
 
-function placeholderFor(status: ReviewState["status"], mode: ReviewState["mode"], current?: SuggestionOut): string {
-  if (status === SessionStatus.Queued || status === SessionStatus.Running) return "Suggestions are still coming in…";
+function placeholderFor(
+  status: ReviewState["status"],
+  mode: ReviewState["mode"],
+  current?: SuggestionOut,
+): string {
+  if (status === SessionStatus.Queued || status === SessionStatus.Running)
+    return "Suggestions are still coming in…";
   if (status === SessionStatus.Failed) return "Nothing to review yet";
   if (status !== SessionStatus.Ready) return "This review is finalized";
   if (mode !== ViewMode.Suggestions) return "Switch to Suggestions to ask for changes";
   if (!current) return "Select a change on the resume to ask about it";
-  return canReword(current) ? "Ask for a different wording of this suggestion…" : "This kind of change can only be accepted or rejected";
+  return canReword(current)
+    ? "Ask for a different wording of this suggestion…"
+    : "This kind of change can only be accepted or rejected";
 }
 
 interface AskComposerProps {
@@ -92,7 +104,13 @@ export function AskComposer({ sessionId }: AskComposerProps) {
       {ready && (
         <div className="hidden flex-wrap gap-2 sm:flex">
           {QUICK.map((q) => (
-            <button key={q} type="button" disabled={!enabled} onClick={() => current && ask.mutate({ id: current.id, instruction: q })} className={chip}>
+            <button
+              key={q}
+              type="button"
+              disabled={!enabled}
+              onClick={() => current && ask.mutate({ id: current.id, instruction: q })}
+              className={chip}
+            >
               {q}
             </button>
           ))}
@@ -124,7 +142,11 @@ export function AskComposer({ sessionId }: AskComposerProps) {
           aria-label="Send"
           className="grid size-9 shrink-0 place-items-center rounded-full bg-ink text-on-ink transition-opacity hover:opacity-90 disabled:opacity-30"
         >
-          {ask.isPending ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
+          {ask.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <ArrowUp className="size-4" />
+          )}
         </button>
       </form>
     </div>

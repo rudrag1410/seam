@@ -37,7 +37,16 @@ function followLatest(end: HTMLElement | null): void {
 }
 
 export function Say({ children, tone }: SayProps) {
-  return <p className={cn("text-[15px] leading-relaxed text-pretty", tone === NoteTone.Error ? "text-del-line" : "text-ink")}>{children}</p>;
+  return (
+    <p
+      className={cn(
+        "text-[15px] leading-relaxed text-pretty",
+        tone === NoteTone.Error ? "text-del-line" : "text-ink",
+      )}
+    >
+      {children}
+    </p>
+  );
 }
 
 interface SayProps {
@@ -78,7 +87,11 @@ function JobBubble({ text, url }: JobBubbleProps) {
     <UserBubble>
       <p className={cn("break-words whitespace-pre-line", !open && "line-clamp-4")}>{text}</p>
       {long && (
-        <button type="button" onClick={() => setOpen((v) => !v)} className="mt-1 text-[13px] text-ink-muted underline underline-offset-4 hover:text-ink">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="mt-1 text-[13px] text-ink-muted underline underline-offset-4 hover:text-ink"
+        >
           {open ? "Show less" : "Show the full posting"}
         </button>
       )}
@@ -90,7 +103,11 @@ function Typing() {
   return (
     <span className="flex h-6 items-center gap-1" role="status" aria-label="Working">
       {[0, 1, 2].map((i) => (
-        <span key={i} className="size-1.5 animate-pulse rounded-full bg-ink-muted" style={{ animationDelay: `${i * 160}ms` }} />
+        <span
+          key={i}
+          className="size-1.5 animate-pulse rounded-full bg-ink-muted"
+          style={{ animationDelay: `${i * 160}ms` }}
+        />
       ))}
     </span>
   );
@@ -111,7 +128,9 @@ function ScoreDetails() {
           <p className="font-medium">
             {Math.round(before.total)} before, {Math.round(live)} with what you&apos;ve accepted
           </p>
-          {best != null && best > live && <p className="text-ink-muted">Up to {Math.round(best)} with every suggestion</p>}
+          {best != null && best > live && (
+            <p className="text-ink-muted">Up to {Math.round(best)} with every suggestion</p>
+          )}
           <Badge className="mt-1.5">Estimate</Badge>
         </div>
       </div>
@@ -124,7 +143,9 @@ function ScoreDetails() {
         <div>
           <KeywordList matched={before.matched_keywords} missing={before.missing_keywords} />
           {before.missing_keywords.length > 0 && (
-            <p className="mt-2 text-xs text-ink-muted">Dashed keywords aren&apos;t on your resume. Add them only if they&apos;re true.</p>
+            <p className="mt-2 text-xs text-ink-muted">
+              Dashed keywords aren&apos;t on your resume. Add them only if they&apos;re true.
+            </p>
           )}
         </div>
       )}
@@ -145,8 +166,16 @@ export function Thread({ intro, onRetry, onEditJob, retrying }: ThreadProps) {
   const started = s.status !== null;
   const steps = useMemo(() => buildSteps(s), [s]);
   const closing = useMemo(() => closingMessage(s), [s]);
-  const allDecided = s.status === SessionStatus.Ready && s.suggestions.length > 0 && !s.asking && s.suggestions.every((x) => x.status !== Decision.Pending);
-  const safeLeft = s.status === SessionStatus.Ready ? s.suggestions.filter((x) => x.status === Decision.Pending && !x.requires_confirmation).length : 0;
+  const allDecided =
+    s.status === SessionStatus.Ready &&
+    s.suggestions.length > 0 &&
+    !s.asking &&
+    s.suggestions.every((x) => x.status !== Decision.Pending);
+  const safeLeft =
+    s.status === SessionStatus.Ready
+      ? s.suggestions.filter((x) => x.status === Decision.Pending && !x.requires_confirmation)
+          .length
+      : 0;
   const jobProblem = !!s.error && isJobTextCode(s.error.code);
 
   const end = useRef<HTMLDivElement>(null);
@@ -177,8 +206,14 @@ export function Thread({ intro, onRetry, onEditJob, retrying }: ThreadProps) {
             details={{
               read: s.jd ? (
                 <div className="py-1">
-                  <JdInsightsCard analysis={s.jd} activeReq={s.activeReq} onPick={highlightRequirement} />
-                  <p className="mt-3 text-xs text-ink-muted">Pick a requirement to highlight the lines that address it.</p>
+                  <JdInsightsCard
+                    analysis={s.jd}
+                    activeReq={s.activeReq}
+                    onPick={highlightRequirement}
+                  />
+                  <p className="mt-3 text-xs text-ink-muted">
+                    Pick a requirement to highlight the lines that address it.
+                  </p>
                 </div>
               ) : undefined,
               score: <ScoreDetails />,
@@ -200,22 +235,47 @@ export function Thread({ intro, onRetry, onEditJob, retrying }: ThreadProps) {
                   <Button size="sm" onClick={onRetry} loading={retrying}>
                     Try again
                   </Button>
-                  <span className="text-[13px] text-ink-muted">Your resume and the job description are saved.</span>
+                  <span className="text-[13px] text-ink-muted">
+                    Your resume and the job description are saved.
+                  </span>
                 </div>
               )}
             </div>
           )}
 
           {closing && <Say>{closing}</Say>}
-          {s.degraded && closing && <Say>Some checks ran in basic mode, so treat the score as a rough guide.</Say>}
-          {closing && s.status === SessionStatus.Ready && s.suggestions.length > 0 && s.notes.length === 0 && (
-            <Say>Go through them below, or click any highlighted line on the resume. Finalize when you&apos;re happy.</Say>
+          {s.degraded && closing && (
+            <Say>Some checks ran in basic mode, so treat the score as a rough guide.</Say>
           )}
+          {closing &&
+            s.status === SessionStatus.Ready &&
+            s.suggestions.length > 0 &&
+            s.notes.length === 0 && (
+              <Say>
+                Go through them below, or click any highlighted line on the resume. Finalize when
+                you&apos;re happy.
+              </Say>
+            )}
 
-          {s.notes.map((n) => (n.role === NoteRole.User ? <UserBubble key={n.id}>{n.text}</UserBubble> : <Say key={n.id} tone={n.tone}>{n.text}</Say>))}
+          {s.notes.map((n) =>
+            n.role === NoteRole.User ? (
+              <UserBubble key={n.id}>{n.text}</UserBubble>
+            ) : (
+              <Say key={n.id} tone={n.tone}>
+                {n.text}
+              </Say>
+            ),
+          )}
           {s.asking && <Typing />}
-          {allDecided && <Say>That&apos;s all of them reviewed. Finalize to save this version, or step back through any you want to change.</Say>}
-          {s.status === SessionStatus.Finalized && <Say>This review is finalized. The saved version is in Resumes.</Say>}
+          {allDecided && (
+            <Say>
+              That&apos;s all of them reviewed. Finalize to save this version, or step back through
+              any you want to change.
+            </Say>
+          )}
+          {s.status === SessionStatus.Finalized && (
+            <Say>This review is finalized. The saved version is in Resumes.</Say>
+          )}
         </>
       )}
       <div ref={end} />

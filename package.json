@@ -10,9 +10,21 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "generate": "turbo run generate --filter=@seam/api-client",
-    "db:migrate": "pnpm --filter @seam/backend db:migrate"
+    "db:migrate": "pnpm --filter @seam/backend db:migrate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "turbo": "^2.5.0"
+    "@eslint/js": "^9.39.5",
+    "@next/eslint-plugin-next": "^16.4.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.5.0",
+    "typescript-eslint": "^8.71.1"
   }
 }

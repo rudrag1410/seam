@@ -19,7 +19,10 @@ export function PaperSkeleton() {
           </div>
           <div className="space-y-3">
             {Array.from({ length: lines }, (_, line) => (
-              <Skeleton key={line} className={line === lines - 1 ? "h-3.5 w-3/5" : "h-3.5 w-full"} />
+              <Skeleton
+                key={line}
+                className={line === lines - 1 ? "h-3.5 w-3/5" : "h-3.5 w-full"}
+              />
             ))}
           </div>
         </div>
