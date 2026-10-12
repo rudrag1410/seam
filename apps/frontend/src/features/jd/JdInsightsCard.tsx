@@ -1,11 +1,33 @@
-import type { FitCheck as Fit, JDAnalysis } from "@seam/api-client";
+import { EmploymentType, type FitCheck as Fit, type JDAnalysis, Seniority, WorkMode } from "@seam/api-client";
 import { Badge } from "@seam/ui";
 import { FitCheck } from "./FitCheck";
 
-const MODE = { remote: "Remote", hybrid: "Hybrid", onsite: "Onsite" } as const;
-const TYPE = { full_time: "Full-time", contract: "Contract", part_time: "Part-time", internship: "Internship", freelance: "Freelance" } as const;
+const SENIORITY_LABEL: Partial<Record<Seniority, string>> = {
+  [Seniority.Junior]: "Junior",
+  [Seniority.Mid]: "Mid",
+  [Seniority.Senior]: "Senior",
+  [Seniority.Staff]: "Staff",
+  [Seniority.Lead]: "Lead",
+};
+const MODE_LABEL: Partial<Record<WorkMode, string>> = {
+  [WorkMode.Remote]: "Remote",
+  [WorkMode.Hybrid]: "Hybrid",
+  [WorkMode.Onsite]: "Onsite",
+};
+const TYPE_LABEL: Partial<Record<EmploymentType, string>> = {
+  [EmploymentType.FullTime]: "Full-time",
+  [EmploymentType.Contract]: "Contract",
+  [EmploymentType.PartTime]: "Part-time",
+  [EmploymentType.Internship]: "Internship",
+  [EmploymentType.Freelance]: "Freelance",
+};
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+interface GroupProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function Group({ title, children }: GroupProps) {
   return (
     <div>
       <h4 className="mb-2 text-[11px] font-medium tracking-[0.08em] text-ink-muted uppercase">{title}</h4>
@@ -14,9 +36,13 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-function Requirement({ requirement: r, activeReq, onPick }: {
-  requirement: JDAnalysis["must_haves"][number]; activeReq?: string | null; onPick?: (id: string | null) => void;
-}) {
+interface RequirementProps {
+  requirement: JDAnalysis["must_haves"][number];
+  activeReq?: string | null;
+  onPick?: (id: string | null) => void;
+}
+
+function Requirement({ requirement: r, activeReq, onPick }: RequirementProps) {
   return (
     <li>
       <button
@@ -29,15 +55,17 @@ function Requirement({ requirement: r, activeReq, onPick }: {
   );
 }
 
-export function JdInsightsCard({ analysis: a, fit, activeReq, onPick }: {
-  analysis: JDAnalysis; fit?: Fit | null; activeReq?: string | null; onPick?: (id: string | null) => void;
-}) {
-  const facets = [
-    a.seniority !== "unspecified" && a.seniority[0]!.toUpperCase() + a.seniority.slice(1),
-    a.work_mode !== "unspecified" && MODE[a.work_mode as keyof typeof MODE],
-    a.employment_type !== "unspecified" && TYPE[a.employment_type as keyof typeof TYPE],
-    a.location,
-  ].filter(Boolean) as string[];
+interface JdInsightsCardProps {
+  analysis: JDAnalysis;
+  fit?: Fit | null;
+  activeReq?: string | null;
+  onPick?: (id: string | null) => void;
+}
+
+export function JdInsightsCard({ analysis: a, fit, activeReq, onPick }: JdInsightsCardProps) {
+  const facets = [SENIORITY_LABEL[a.seniority], MODE_LABEL[a.work_mode], TYPE_LABEL[a.employment_type], a.location].filter(
+    (facet): facet is string => !!facet,
+  );
 
   return (
     <div className="space-y-5">

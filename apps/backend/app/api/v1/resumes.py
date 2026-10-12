@@ -5,7 +5,7 @@ from fastapi import APIRouter, File, UploadFile
 from pydantic import ValidationError
 
 from app.api.deps import AIDep, DbDep, SettingsDep, StorageDep, UserDep
-from app.core.errors import AppError, not_found
+from app.core.errors import AppError, ErrorCode, not_found
 from app.schemas.resume import ResumeOut
 from app.schemas.resume_ast import Resume
 from app.services import resume_service
@@ -48,6 +48,6 @@ async def update(resume_id: UUID, body: Resume, user: UserDep, db: DbDep) -> Res
     try:
         master.document = body.model_dump()
     except ValidationError as exc:  # pragma: no cover - body is already validated
-        raise AppError("VALIDATION_FAILED", str(exc)) from exc
+        raise AppError(ErrorCode.VALIDATION_FAILED, str(exc)) from exc
     await db.commit()
     return resume_service.to_out(master, source)

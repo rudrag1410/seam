@@ -18,8 +18,9 @@ from app.ai.scoring.experience import estimate_years
 from app.ai.scoring.fit import compute_fit
 from app.core.config import Settings
 from app.core.crypto import decrypt
-from app.core.errors import AppError, not_found
+from app.core.errors import AppError, ErrorCode, not_found
 from app.db.models import JobDescription, JobPreferences, MasterResume, Profile, User
+from app.schemas.enums import ActivityKind, EntityType
 from app.schemas.jd import FitCheck, JDAnalysis, JDAnalyzeResponse
 from app.services import activity
 
@@ -30,11 +31,11 @@ def _check_public(host: str) -> None:
     try:
         infos = socket.getaddrinfo(host, None)
     except socket.gaierror as exc:
-        raise AppError("URL_UNREACHABLE", "We couldn't reach that URL.") from exc
+        raise AppError(ErrorCode.URL_UNREACHABLE, "We couldn't reach that URL.") from exc
     for info in infos:
         ip = ipaddress.ip_address(info[4][0])
         if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
-            raise AppError("URL_BLOCKED", "That URL points to a private address.", status=400)
+            raise AppError(ErrorCode.URL_BLOCKED, "That URL points to a private address.", status=400)
 
 
 def _html_to_text(raw: str) -> str:
@@ -51,7 +52,7 @@ async def fetch_url_text(url: str) -> str:
         for _ in range(4):
             parsed = urlparse(current)
             if parsed.scheme not in ("http", "https") or not parsed.hostname:
-                raise AppError("URL_INVALID", "Enter a full http(s) link to the job posting.")
+                raise AppError(ErrorCode.URL_INVALID, "Enter a full http(s) link to the job posting.")
             await asyncio.to_thread(_check_public, parsed.hostname)
             try:
                 async with client.stream("GET", current, headers={"User-Agent": "SeamBot/1.0"}) as resp:
@@ -60,7 +61,7 @@ async def fetch_url_text(url: str) -> str:
                         continue
                     if resp.status_code >= 400:
                         raise AppError(
-                            "URL_UNREACHABLE", f"That page returned an error ({resp.status_code})."
+                            ErrorCode.URL_UNREACHABLE, f"That page returned an error ({resp.status_code})."
                         )
                     body = b""
                     async for chunk in resp.aiter_bytes():
@@ -70,9 +71,9 @@ async def fetch_url_text(url: str) -> str:
                     return _html_to_text(body[:_MAX_BYTES].decode(resp.encoding or "utf-8", "ignore"))
             except httpx.HTTPError as exc:
                 raise AppError(
-                    "URL_UNREACHABLE", "We couldn't load that page. Paste the text instead."
+                    ErrorCode.URL_UNREACHABLE, "We couldn't load that page. Paste the text instead."
                 ) from exc
-    raise AppError("URL_UNREACHABLE", "That link redirected too many times.")
+    raise AppError(ErrorCode.URL_UNREACHABLE, "That link redirected too many times.")
 
 
 async def build_fit(db: AsyncSession, user: User, settings: Settings, analysis: JDAnalysis) -> FitCheck:
@@ -103,7 +104,7 @@ async def ensure_jd(
     """Find or create the job description row for this text, without analysing it.
     Length is validated here, synchronously, so bad input fails before any work starts."""
     if not text and not url:
-        raise AppError("JD_EMPTY", "Paste the job description to continue.")
+        raise AppError(ErrorCode.JD_EMPTY, "Paste the job description to continue.")
     source_url = None
     if not text:
         source_url = url
@@ -135,7 +136,14 @@ async def analyze_row(
     row.title = analysis.title or None
     row.company = analysis.company or None
     label = " · ".join(x for x in [analysis.title, analysis.company] if x) or "job description"
-    activity.record(db, user.id, "jd.analyzed", f"Analyzed {label}", entity_type="jd", entity_id=row.id)
+    activity.record(
+        db,
+        user.id,
+        ActivityKind.JD_ANALYZED,
+        f"Analyzed {label}",
+        entity_type=EntityType.JD,
+        entity_id=row.id,
+    )
     return analysis, result.warnings, result.degraded
 
 

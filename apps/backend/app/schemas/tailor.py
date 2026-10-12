@@ -1,20 +1,18 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import Field, model_validator
 
+from app.core.errors import ErrorCode
 from app.schemas.base import ApiModel
+from app.schemas.enums import Decision, Intensity, SectionName, SessionStatus
 from app.schemas.jd import FitCheck, JDAnalysis
 from app.schemas.resume_ast import Resume
 from app.schemas.scores import MatchScore
-from app.schemas.suggestion import Decision, SuggestionOut
-
-Intensity = Literal["light", "balanced", "bold"]
-SectionName = Literal["summary", "skills", "experience", "projects"]
+from app.schemas.suggestion import SuggestionOut
 
 
 def _default_sections() -> list[SectionName]:
-    return ["summary", "skills", "experience"]
+    return [SectionName.SUMMARY, SectionName.SKILLS, SectionName.EXPERIENCE]
 
 
 class TailorCreate(ApiModel):
@@ -25,7 +23,7 @@ class TailorCreate(ApiModel):
     jd_url: str | None = None
     jd_id: str | None = None
     sections: list[SectionName] = Field(default_factory=_default_sections, min_length=1)
-    intensity: Intensity = "balanced"
+    intensity: Intensity = Intensity.BALANCED
     base_version_id: str | None = None
 
     @model_validator(mode="after")
@@ -41,11 +39,11 @@ class TailorCreated(ApiModel):
 
 class TailorSessionOut(ApiModel):
     id: str
-    status: str
-    intensity: str
-    sections: list[str]
+    status: SessionStatus
+    intensity: Intensity
+    sections: list[SectionName]
     degraded: bool
-    error_code: str | None
+    error_code: ErrorCode | None
     error_message: str | None = None
     resume_id: str
     jd_id: str
@@ -83,7 +81,7 @@ class FinalizeOut(ApiModel):
 
 class SessionListItem(ApiModel):
     id: str
-    status: str
+    status: SessionStatus
     jd_title: str | None
     jd_company: str | None
     suggestion_count: int

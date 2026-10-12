@@ -2,22 +2,22 @@
 Plain, single-column, no tables or images: ATS-safe by construction."""
 
 from dataclasses import dataclass
-from typing import Literal
+
+from app.schemas.enums import BlockKind, SectionType
 
 _MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-Kind = Literal["name", "contact", "heading", "role", "line", "bullet"]
 HEADINGS = {
-    "summary": "Summary",
-    "skills": "Skills",
-    "experience": "Experience",
-    "projects": "Projects",
-    "education": "Education",
+    SectionType.SUMMARY: "Summary",
+    SectionType.SKILLS: "Skills",
+    SectionType.EXPERIENCE: "Experience",
+    SectionType.PROJECTS: "Projects",
+    SectionType.EDUCATION: "Education",
 }
 
 
 @dataclass(frozen=True)
 class Block:
-    kind: Kind
+    kind: BlockKind
     text: str
     meta: str = ""  # role: dates
 
@@ -39,39 +39,43 @@ def _range(start: str | None, end: str | None) -> str:
 
 def to_blocks(doc: dict) -> list[Block]:
     c = doc["contact"]
-    out = [Block("name", c.get("name", ""))]
+    out = [Block(BlockKind.NAME, c.get("name", ""))]
     contact = [x for x in [c.get("email"), c.get("phone"), c.get("location"), *c.get("links", [])] if x]
     if contact:
-        out.append(Block("contact", "  |  ".join(contact)))
+        out.append(Block(BlockKind.CONTACT, "  |  ".join(contact)))
     for s in doc["sections"]:
-        t = s["type"]
-        out.append(Block("heading", s["title"] if t == "other" else HEADINGS[t]))
-        if t == "summary":
-            out.append(Block("line", s["text"]))
-        elif t == "skills":
+        t = SectionType(s["type"])
+        out.append(Block(BlockKind.HEADING, s["title"] if t is SectionType.OTHER else HEADINGS[t]))
+        if t is SectionType.SUMMARY:
+            out.append(Block(BlockKind.LINE, s["text"]))
+        elif t is SectionType.SKILLS:
             out += [
-                Block("line", f"{g['label']}: {', '.join(g['items'])}") for g in s["groups"] if g["items"]
+                Block(BlockKind.LINE, f"{g['label']}: {', '.join(g['items'])}")
+                for g in s["groups"]
+                if g["items"]
             ]
-        elif t == "experience":
+        elif t is SectionType.EXPERIENCE:
             for it in s["items"]:
                 title = " — ".join(x for x in [it["title"], it["company"]] if x)
-                out.append(Block("role", title, _range(it.get("start"), it.get("end"))))
-                out += [Block("bullet", b["text"]) for b in it["bullets"]]
-        elif t == "projects":
+                out.append(Block(BlockKind.ROLE, title, _range(it.get("start"), it.get("end"))))
+                out += [Block(BlockKind.BULLET, b["text"]) for b in it["bullets"]]
+        elif t is SectionType.PROJECTS:
             for it in s["items"]:
-                out.append(Block("role", " — ".join(x for x in [it["name"], it.get("subtitle")] if x)))
-                out += [Block("bullet", b["text"]) for b in it["bullets"]]
-        elif t == "education":
+                out.append(
+                    Block(BlockKind.ROLE, " — ".join(x for x in [it["name"], it.get("subtitle")] if x))
+                )
+                out += [Block(BlockKind.BULLET, b["text"]) for b in it["bullets"]]
+        elif t is SectionType.EDUCATION:
             for it in s["items"]:
                 out.append(
                     Block(
-                        "role",
+                        BlockKind.ROLE,
                         " — ".join(x for x in [it["degree"], it["school"]] if x),
                         _range(it.get("start"), it.get("end")),
                     )
                 )
                 if it.get("details"):
-                    out.append(Block("line", it["details"]))
-        elif t == "other":
-            out += [Block("line", ln) for ln in s["lines"]]
+                    out.append(Block(BlockKind.LINE, it["details"]))
+        elif t is SectionType.OTHER:
+            out += [Block(BlockKind.LINE, ln) for ln in s["lines"]]
     return out

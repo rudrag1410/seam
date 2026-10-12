@@ -6,7 +6,11 @@ import { MessageCircleQuestion } from "lucide-react";
 import { ErrorState } from "@/components/feedback/states";
 import { api, unwrap } from "@/lib/api";
 
-export function InterviewPrepPanel({ versionId }: { versionId: string }) {
+interface InterviewPrepPanelProps {
+  versionId: string;
+}
+
+export function InterviewPrepPanel({ versionId }: InterviewPrepPanelProps) {
   const prep = useMutation({
     mutationFn: () => unwrap(api.POST("/v1/versions/{version_id}/interview-prep", { params: { path: { version_id: versionId } } })),
   });

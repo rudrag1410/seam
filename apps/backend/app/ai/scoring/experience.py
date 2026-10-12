@@ -3,7 +3,8 @@
 import re
 from datetime import date
 
-LEVELS = ["junior", "mid", "senior", "staff", "lead"]
+from app.schemas.enums import SENIORITY_LADDER, SectionType, Seniority
+
 _YEAR_MONTH = re.compile(r"(\d{4})(?:[-/](\d{1,2}))?")
 
 
@@ -22,7 +23,7 @@ def estimate_years(document: dict, today: date | None = None) -> float:
     today = today or date.today()
     total = 0.0
     for section in document.get("sections", []):
-        if section["type"] != "experience":
+        if section["type"] != SectionType.EXPERIENCE:
             continue
         for item in section["items"]:
             start = _parse(item.get("start"), default=today)
@@ -32,20 +33,20 @@ def estimate_years(document: dict, today: date | None = None) -> float:
     return round(total, 1)
 
 
-def level_for_years(years: float) -> str:
+def level_for_years(years: float) -> Seniority:
     if years < 2:
-        return "junior"
+        return Seniority.JUNIOR
     if years < 5:
-        return "mid"
+        return Seniority.MID
     if years < 8:
-        return "senior"
+        return Seniority.SENIOR
     if years < 12:
-        return "staff"
-    return "lead"
+        return Seniority.STAFF
+    return Seniority.LEAD
 
 
-def seniority_fit(jd_level: str, years: float) -> float:
-    if jd_level not in LEVELS:
+def seniority_fit(jd_level: Seniority, years: float) -> float:
+    if jd_level not in SENIORITY_LADDER:
         return 1.0
-    gap = abs(LEVELS.index(jd_level) - LEVELS.index(level_for_years(years)))
+    gap = abs(SENIORITY_LADDER.index(jd_level) - SENIORITY_LADDER.index(level_for_years(years)))
     return {0: 1.0, 1: 0.6}.get(gap, 0.2)

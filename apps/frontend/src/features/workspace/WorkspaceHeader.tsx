@@ -1,23 +1,28 @@
 "use client";
 
 import { Badge, Button, Segmented } from "@seam/ui";
+import { SessionStatus } from "@seam/api-client";
 import { projectScore } from "@seam/resume-core";
 import { ArrowRight, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
-import type { ViewMode } from "../resume-canvas/view-model";
-import { useReview } from "../review/store";
+import { ViewMode } from "../resume-canvas/view-model";
+import { undo } from "../review/actions";
+import { acceptedIds, pendingCount, useReview } from "../review/store";
 
-const MODES: { value: ViewMode; label: string }[] = [
-  { value: "suggestions", label: "Suggestions" },
-  { value: "clean", label: "Clean" },
-  { value: "original", label: "Original" },
+const MODES = [
+  { value: ViewMode.Suggestions, label: "Suggestions" },
+  { value: ViewMode.Clean, label: "Clean" },
+  { value: ViewMode.Original, label: "Original" },
 ];
+
+function setMode(mode: ViewMode): void {
+  useReview.setState({ mode });
+}
 
 export function ModeSwitch() {
   const mode = useReview((s) => s.mode);
-  const patch = useReview((s) => s.patch);
-  return <Segmented size="sm" aria-label="View" value={mode} onChange={(m) => patch({ mode: m })} options={MODES} />;
+  return <Segmented size="sm" aria-label="View" value={mode} onChange={setMode} options={MODES} />;
 }
 
 function Match() {
@@ -25,8 +30,7 @@ function Match() {
   const suggestions = useReview((s) => s.suggestions);
   const live = useMemo(() => {
     if (!before) return null;
-    const accepted = new Set(suggestions.filter((x) => x.status === "accepted" || x.status === "edited").map((x) => x.id));
-    return Math.round(projectScore(before.total, suggestions, accepted));
+    return Math.round(projectScore(before.total, suggestions, acceptedIds(suggestions)));
   }, [before, suggestions]);
   if (!before || live == null) return null;
   const from = Math.round(before.total);
@@ -39,17 +43,19 @@ function Match() {
 }
 
 /** Always 56px tall, with or without a session, so starting a run doesn't move anything. */
-export function WorkspaceHeader({ started, versionId, onFinalize, finalizing }: {
+interface WorkspaceHeaderProps {
   started: boolean;
   versionId?: string | null;
   onFinalize: () => void;
   finalizing: boolean;
-}) {
+}
+
+export function WorkspaceHeader({ started, versionId, onFinalize, finalizing }: WorkspaceHeaderProps) {
   const s = useReview();
-  const running = s.status === "queued" || s.status === "running";
-  const failed = s.status === "failed";
+  const running = s.status === SessionStatus.Queued || s.status === SessionStatus.Running;
+  const failed = s.status === SessionStatus.Failed;
   const title = !started ? "New tailor" : s.title || (running ? "Reading the job description…" : failed ? "Tailoring stopped" : "Tailored resume");
-  const pending = s.suggestions.filter((x) => x.status === "pending").length;
+  const pending = pendingCount(s);
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2.5 border-b border-line bg-bg px-4 sm:px-6">
@@ -68,7 +74,7 @@ export function WorkspaceHeader({ started, versionId, onFinalize, finalizing }: 
           </div>
           <button
             type="button"
-            onClick={s.undo}
+            onClick={undo}
             disabled={!s.history.length}
             aria-label="Undo (⌘Z)"
             title="Undo (⌘Z)"
@@ -76,7 +82,7 @@ export function WorkspaceHeader({ started, versionId, onFinalize, finalizing }: 
           >
             <Undo2 className="size-4" />
           </button>
-          {s.status === "finalized" ? (
+          {s.status === SessionStatus.Finalized ? (
             versionId && (
               <Link href={`/resumes/${versionId}`} className="inline-flex h-8 shrink-0 items-center gap-2 rounded-full bg-ink px-3.5 text-[13px] font-medium text-on-ink hover:opacity-90">
                 Open version <ArrowRight className="size-3.5" />
@@ -85,7 +91,7 @@ export function WorkspaceHeader({ started, versionId, onFinalize, finalizing }: 
           ) : (
             <Button
               size="sm"
-              disabled={s.status !== "ready"}
+              disabled={s.status !== SessionStatus.Ready}
               loading={finalizing}
               onClick={onFinalize}
               title={pending > 0 ? `${pending} undecided ${pending === 1 ? "change" : "changes"} will be left out` : undefined}

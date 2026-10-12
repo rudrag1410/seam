@@ -1,19 +1,7 @@
-from typing import Literal
-
 from pydantic import Field
 
 from app.schemas.base import ApiModel
-
-OpName = Literal[
-    "replace_text",
-    "reorder",
-    "insert_bullet",
-    "remove_bullet",
-    "add_skill",
-    "remove_skill",
-    "rewrite_summary",
-]
-Decision = Literal["pending", "accepted", "rejected", "edited"]
+from app.schemas.enums import Decision, OpName, SectionName
 
 
 class ModelSuggestion(ApiModel):
@@ -38,7 +26,7 @@ class ModelSuggestionBatch(ApiModel):
 class SuggestionOut(ApiModel):
     id: str
     seq: int
-    section: str
+    section: SectionName
     op: OpName
     target: str
     payload: dict
@@ -51,5 +39,5 @@ class SuggestionOut(ApiModel):
     flag_reason: str | None = None
     score_delta: float | None = None
     checks: dict = Field(default_factory=dict)
-    status: Decision = "pending"
+    status: Decision = Decision.PENDING
     edited_text: str | None = None

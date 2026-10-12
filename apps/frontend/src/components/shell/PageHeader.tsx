@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 
-export function PageHeader({ title, body, action }: { title: string; body?: string; action?: ReactNode }) {
+interface PageHeaderProps {
+  title: string;
+  body?: string;
+  action?: ReactNode;
+}
+
+export function PageHeader({ title, body, action }: PageHeaderProps) {
   return (
     <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
       <div>
@@ -12,6 +18,11 @@ export function PageHeader({ title, body, action }: { title: string; body?: stri
   );
 }
 
-export function PageBody({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
+interface PageBodyProps {
+  children: ReactNode;
+  wide?: boolean;
+}
+
+export function PageBody({ children, wide = false }: PageBodyProps) {
   return <div className={`mx-auto px-4 py-8 sm:px-8 sm:py-12 ${wide ? "max-w-[1180px]" : "max-w-[860px]"}`}>{children}</div>;
 }

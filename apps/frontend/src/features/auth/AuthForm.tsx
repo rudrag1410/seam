@@ -20,10 +20,16 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
-type Mode = "sign-in" | "sign-up";
+const SIGN_IN = "/sign-in";
+const SIGN_UP = "/sign-up";
 
-function authenticate(mode: Mode, v: Values) {
-  return mode === "sign-up"
+export enum AuthMode {
+  SignIn = "sign-in",
+  SignUp = "sign-up",
+}
+
+function authenticate(mode: AuthMode, v: Values) {
+  return mode === AuthMode.SignUp
     ? unwrap(api.POST("/v1/auth/signup", { body: { email: v.email, password: v.password, full_name: v.full_name! } }))
     : unwrap(api.POST("/v1/auth/login", { body: { email: v.email, password: v.password } }));
 }
@@ -37,14 +43,18 @@ function destination(next: string | null): string {
   return next && next.startsWith("/") ? next : LANDING;
 }
 
-export function AuthForm({ mode }: { mode: Mode }) {
+interface AuthFormProps {
+  mode: AuthMode;
+}
+
+export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next");
   const expired = params.get("reason") === "expired";
   const qc = useQueryClient();
   const [error, setError] = useState<unknown>(null);
-  const signUp = mode === "sign-up";
+  const signUp = mode === AuthMode.SignUp;
   const {
     register,
     handleSubmit,
@@ -102,7 +112,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       </Button>
       <p className="text-center text-sm text-ink-muted">
         {signUp ? "Already have an account?" : "New to Seam?"}{" "}
-        <Link href={signUp ? "/sign-in" : "/sign-up"} className="font-medium text-ink underline underline-offset-4">
+        <Link href={signUp ? SIGN_IN : SIGN_UP} className="font-medium text-ink underline underline-offset-4">
           {signUp ? "Log in" : "Sign up"}
         </Link>
       </p>

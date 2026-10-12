@@ -8,16 +8,22 @@ import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { Stepper } from "@/features/onboarding/Stepper";
-import { STEPS, type StepSlug, nextStep } from "@/features/onboarding/steps";
+import { OnboardingStep, nextStep, stepFor } from "@/features/onboarding/steps";
 import { AboutForm, CompensationForm, PreferencesForm } from "@/features/profile/forms";
 import { Dropzone, ResumeCard } from "@/features/upload/Dropzone";
 import { api, unwrap } from "@/lib/api";
 import { LANDING } from "@/lib/routes";
 import { keys, usePreferences, usePrimaryResume, useProfile } from "@/lib/queries";
 
-function StepFrame({ slug, title, body, children, skippable = true }: {
-  slug: StepSlug; title: string; body: string; children: ReactNode; skippable?: boolean;
-}) {
+interface StepFrameProps {
+  slug: OnboardingStep;
+  title: string;
+  body: string;
+  children: ReactNode;
+  skippable?: boolean;
+}
+
+function StepFrame({ slug, title, body, children, skippable = true }: StepFrameProps) {
   return (
     <>
       <Stepper current={slug} />
@@ -41,11 +47,11 @@ function FormSkeleton() {
   );
 }
 
-export default function OnboardingStep() {
+export default function OnboardingPage() {
   const { step } = useParams<{ step: string }>();
   const router = useRouter();
   const qc = useQueryClient();
-  const slug = STEPS.find((s) => s.slug === step)?.slug;
+  const slug = stepFor(step);
   const resume = usePrimaryResume();
   const profile = useProfile();
   const prefs = usePreferences();
@@ -62,7 +68,7 @@ export default function OnboardingStep() {
   if (!slug) notFound();
 
   switch (slug) {
-    case "resume":
+    case OnboardingStep.Resume:
       return (
         <StepFrame slug={slug} skippable={false} title="Start with your resume"
           body="Upload it first and we'll fill in the rest for you. You'll just confirm the details.">
@@ -77,7 +83,7 @@ export default function OnboardingStep() {
           )}
         </StepFrame>
       );
-    case "about":
+    case OnboardingStep.About:
       return (
         <StepFrame slug={slug} title="Confirm your details" body="We pulled these from your resume. Fix anything that's off.">
           {profile.data ? (
@@ -85,19 +91,19 @@ export default function OnboardingStep() {
           ) : <FormSkeleton />}
         </StepFrame>
       );
-    case "compensation":
+    case OnboardingStep.Compensation:
       return (
         <StepFrame slug={slug} title="Compensation" body="So we can flag roles that pay below what you're looking for. Optional.">
           {profile.data ? <CompensationForm profile={profile.data} submitLabel="Continue" onSaved={() => router.push(nextStep(slug))} /> : <FormSkeleton />}
         </StepFrame>
       );
-    case "preferences":
+    case OnboardingStep.Preferences:
       return (
         <StepFrame slug={slug} title="What are you looking for?" body="Everything here is optional and editable later. It powers the fit check on each job.">
           {prefs.data ? <PreferencesForm preferences={prefs.data} submitLabel="Continue" onSaved={() => router.push(nextStep(slug))} /> : <FormSkeleton />}
         </StepFrame>
       );
-    case "ready":
+    case OnboardingStep.Ready:
       return (
         <StepFrame slug={slug} skippable={false} title="You're set" body="Paste a job description and Seam will propose edits to your resume. You review every one.">
           <Button size="lg" loading={complete.isPending} onClick={() => complete.mutate()}>

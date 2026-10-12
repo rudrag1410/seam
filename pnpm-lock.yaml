@@ -272,6 +272,9 @@ importers:
 
   packages/resume-core:
     dependencies:
+      '@seam/api-client':
+        specifier: workspace:*
+        version: link:../api-client
       diff-match-patch:
         specifier: ^1.0.5
         version: 1.0.5

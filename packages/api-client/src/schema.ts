@@ -492,6 +492,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * ActivityGroup
+         * @description The first part of an activity kind, for filtering the feed ("resume" matches "resume.uploaded").
+         * @enum {string}
+         */
+        ActivityGroup: ActivityGroup;
+        /**
+         * ActivityKind
+         * @description What an entry in the activity feed records.
+         * @enum {string}
+         */
+        ActivityKind: ActivityKind;
         /** ActivityOut */
         ActivityOut: {
             /**
@@ -501,14 +513,12 @@ export interface components {
             created_at: string;
             /** Entity Id */
             entity_id: string | null;
-            /** Entity Type */
-            entity_type: string | null;
+            entity_type: components["schemas"]["EntityType"] | null;
             /** Id */
             id: number;
             /** Summary */
             summary: string;
-            /** Type */
-            type: string;
+            type: components["schemas"]["ActivityKind"];
         };
         /** ActivityPage */
         ActivityPage: {
@@ -546,6 +556,16 @@ export interface components {
         Bullet: {
             /** Id */
             id: string;
+            /** Text */
+            text: string;
+        };
+        /**
+         * ChangeKind
+         * @enum {string}
+         */
+        ChangeKind: ChangeKind;
+        /** ChunkData */
+        ChunkData: {
             /** Text */
             text: string;
         };
@@ -592,18 +612,10 @@ export interface components {
              * @default false
              */
             include_notice_period: boolean;
-            /**
-             * Length
-             * @default standard
-             * @enum {string}
-             */
-            length: "short" | "standard";
-            /**
-             * Tone
-             * @default professional
-             * @enum {string}
-             */
-            tone: "professional" | "warm" | "direct";
+            /** @default standard */
+            length: components["schemas"]["LetterLength"];
+            /** @default professional */
+            tone: components["schemas"]["Tone"];
         };
         /** CoverLetterOut */
         CoverLetterOut: {
@@ -623,22 +635,32 @@ export interface components {
             /** Version Id */
             version_id: string;
         };
+        /**
+         * Decision
+         * @enum {string}
+         */
+        Decision: Decision;
         /** DecisionIn */
         DecisionIn: {
             /** Edited Text */
             edited_text?: string | null;
             /** Id */
             id: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "pending" | "accepted" | "rejected" | "edited";
+            status: components["schemas"]["Decision"];
         };
         /** DecisionsPatch */
         DecisionsPatch: {
             /** Decisions */
             decisions: components["schemas"]["DecisionIn"][];
+        };
+        /** DoneData */
+        DoneData: {
+            /** Count */
+            count: number;
+            /** Degraded */
+            degraded: boolean;
+            /** Duration Ms */
+            duration_ms: number | null;
         };
         /** EducationItem */
         "EducationItem-Input": {
@@ -705,6 +727,56 @@ export interface components {
              * @enum {string}
              */
             type: "education";
+        };
+        /**
+         * EmploymentType
+         * @enum {string}
+         */
+        EmploymentType: EmploymentType;
+        /**
+         * EntityType
+         * @description The kind of thing an activity entry points at.
+         * @enum {string}
+         */
+        EntityType: EntityType;
+        /** ErrorBody */
+        ErrorBody: {
+            code: components["schemas"]["ErrorCode"];
+            /** Hint */
+            hint: string | null;
+            /** Message */
+            message: string;
+            /**
+             * Retryable
+             * @default false
+             */
+            retryable: boolean;
+        };
+        /**
+         * ErrorCode
+         * @description Stable codes the frontend maps to copy and a recovery action. Never reuse or rename one.
+         * @enum {string}
+         */
+        ErrorCode: ErrorCode;
+        /** ErrorData */
+        ErrorData: {
+            code: components["schemas"]["ErrorCode"];
+            /** Hint */
+            hint: string | null;
+            /** Message */
+            message: string;
+            /**
+             * Retryable
+             * @default false
+             */
+            retryable: boolean;
+        };
+        /**
+         * ErrorEnvelope
+         * @description The body of every failed request.
+         */
+        ErrorEnvelope: {
+            error: components["schemas"]["ErrorBody"];
         };
         /** ExperienceItem */
         "ExperienceItem-Input": {
@@ -776,6 +848,16 @@ export interface components {
              */
             type: "experience";
         };
+        /**
+         * ExportFormat
+         * @enum {string}
+         */
+        ExportFormat: ExportFormat;
+        /**
+         * ExportTemplate
+         * @enum {string}
+         */
+        ExportTemplate: ExportTemplate;
         /** FinalizeOut */
         FinalizeOut: {
             /** Version Id */
@@ -790,24 +872,26 @@ export interface components {
         FitItem: {
             /** Detail */
             detail: string;
-            /**
-             * Key
-             * @enum {string}
-             */
-            key: "work_mode" | "location" | "job_type" | "compensation" | "seniority";
+            key: components["schemas"]["FitKey"];
             /** Label */
             label: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "ok" | "warn" | "unclear";
+            status: components["schemas"]["FitStatus"];
         };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
+        /**
+         * FitKey
+         * @enum {string}
+         */
+        FitKey: FitKey;
+        /**
+         * FitStatus
+         * @enum {string}
+         */
+        FitStatus: FitStatus;
+        /**
+         * Intensity
+         * @enum {string}
+         */
+        Intensity: Intensity;
         /** InterviewPrep */
         InterviewPrep: {
             /** Questions */
@@ -829,12 +913,8 @@ export interface components {
              * @default
              */
             company: string;
-            /**
-             * Employment Type
-             * @default unspecified
-             * @enum {string}
-             */
-            employment_type: "full_time" | "contract" | "part_time" | "internship" | "freelance" | "unspecified";
+            /** @default unspecified */
+            employment_type: components["schemas"]["EmploymentType"];
             /** Facet Confidence */
             facet_confidence: {
                 [key: string]: number;
@@ -853,23 +933,15 @@ export interface components {
             /** Responsibilities */
             responsibilities: string[];
             salary_range: components["schemas"]["SalaryRange"] | null;
-            /**
-             * Seniority
-             * @default unspecified
-             * @enum {string}
-             */
-            seniority: "junior" | "mid" | "senior" | "staff" | "lead" | "unspecified";
+            /** @default unspecified */
+            seniority: components["schemas"]["Seniority"];
             /**
              * Title
              * @default
              */
             title: string;
-            /**
-             * Work Mode
-             * @default unspecified
-             * @enum {string}
-             */
-            work_mode: "remote" | "hybrid" | "onsite" | "unspecified";
+            /** @default unspecified */
+            work_mode: components["schemas"]["WorkMode"];
         };
         /** JDAnalyzeRequest */
         JDAnalyzeRequest: {
@@ -895,6 +967,31 @@ export interface components {
             title: string;
             /** Warnings */
             warnings: string[];
+        };
+        /** JobData */
+        JobData: {
+            analysis: components["schemas"]["JDAnalysis"];
+            /** Company */
+            company: string;
+            fit: components["schemas"]["FitCheck"];
+            /** Title */
+            title: string;
+        };
+        /** LetterEvents */
+        LetterEvents: {
+            chunk: components["schemas"]["ChunkData"];
+            done: components["schemas"]["LetterSavedData"];
+            error: components["schemas"]["ErrorData"];
+        };
+        /**
+         * LetterLength
+         * @enum {string}
+         */
+        LetterLength: LetterLength;
+        /** LetterSavedData */
+        LetterSavedData: {
+            /** Id */
+            id: string;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -933,16 +1030,17 @@ export interface components {
             after: string | null;
             /** Before */
             before: string | null;
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "added" | "removed" | "changed" | "moved";
+            kind: components["schemas"]["ChangeKind"];
             /** Node Id */
             node_id: string;
             /** Section */
             section: string;
         };
+        /**
+         * OpName
+         * @enum {string}
+         */
+        OpName: OpName;
         /** OtherSection */
         "OtherSection-Input": {
             /** Id */
@@ -971,6 +1069,12 @@ export interface components {
              */
             type: "other";
         };
+        /**
+         * ParsePath
+         * @description How a resume was read: its text, its page images, or the built-in parser without AI.
+         * @enum {string}
+         */
+        ParsePath: ParsePath;
         /** PreferencesIO */
         "PreferencesIO-Input": {
             /** Avoid Tech */
@@ -978,7 +1082,7 @@ export interface components {
             /** Industries */
             industries?: string[];
             /** Job Types */
-            job_types?: string[];
+            job_types?: components["schemas"]["EmploymentType"][];
             /** Locations */
             locations?: string[];
             /**
@@ -988,14 +1092,13 @@ export interface components {
             open_to_relocation: boolean;
             /** Preferred Tech */
             preferred_tech?: string[];
-            /** Seniority */
-            seniority?: string | null;
+            seniority?: components["schemas"]["Seniority"] | null;
             /** Target Roles */
             target_roles?: string[];
             /** Work Authorization */
             work_authorization?: string | null;
             /** Work Modes */
-            work_modes?: string[];
+            work_modes?: components["schemas"]["WorkMode"][];
         };
         /** PreferencesIO */
         "PreferencesIO-Output": {
@@ -1004,7 +1107,7 @@ export interface components {
             /** Industries */
             industries: string[];
             /** Job Types */
-            job_types: string[];
+            job_types: components["schemas"]["EmploymentType"][];
             /** Locations */
             locations: string[];
             /**
@@ -1014,14 +1117,13 @@ export interface components {
             open_to_relocation: boolean;
             /** Preferred Tech */
             preferred_tech: string[];
-            /** Seniority */
-            seniority: string | null;
+            seniority: components["schemas"]["Seniority"] | null;
             /** Target Roles */
             target_roles: string[];
             /** Work Authorization */
             work_authorization: string | null;
             /** Work Modes */
-            work_modes: string[];
+            work_modes: components["schemas"]["WorkMode"][];
         };
         /** ProfileIO */
         "ProfileIO-Input": {
@@ -1176,8 +1278,7 @@ export interface components {
             must_have: boolean;
             /** Text */
             text: string;
-            /** Verdict */
-            verdict: string;
+            verdict: components["schemas"]["Verdict"];
         };
         /** Resume */
         "Resume-Input": {
@@ -1205,8 +1306,7 @@ export interface components {
             id: string;
             /** Page Count */
             page_count: number | null;
-            /** Parse Path */
-            parse_path: string | null;
+            parse_path: components["schemas"]["ParsePath"] | null;
             /**
              * Prefill
              * @default {}
@@ -1217,6 +1317,11 @@ export interface components {
             /** Size Bytes */
             size_bytes: number | null;
         };
+        /**
+         * SalaryPeriod
+         * @enum {string}
+         */
+        SalaryPeriod: SalaryPeriod;
         /** SalaryRange */
         SalaryRange: {
             /** Currency */
@@ -1225,13 +1330,25 @@ export interface components {
             max: number | null;
             /** Min */
             min: number | null;
-            /**
-             * Period
-             * @default year
-             * @enum {string}
-             */
-            period: "year" | "month";
+            /** @default year */
+            period: components["schemas"]["SalaryPeriod"];
         };
+        /** ScoreData */
+        ScoreData: {
+            before: components["schemas"]["MatchScore"];
+            projected: components["schemas"]["MatchScore"] | null;
+        };
+        /**
+         * SectionName
+         * @description The sections a user can ask to have tailored.
+         * @enum {string}
+         */
+        SectionName: SectionName;
+        /**
+         * Seniority
+         * @enum {string}
+         */
+        Seniority: Seniority;
         /** SessionListItem */
         SessionListItem: {
             /**
@@ -1251,11 +1368,15 @@ export interface components {
             match_after: number | null;
             /** Match Before */
             match_before: number | null;
-            /** Status */
-            status: string;
+            status: components["schemas"]["SessionStatus"];
             /** Suggestion Count */
             suggestion_count: number;
         };
+        /**
+         * SessionStatus
+         * @enum {string}
+         */
+        SessionStatus: SessionStatus;
         /** SignupRequest */
         SignupRequest: {
             /**
@@ -1316,6 +1437,28 @@ export interface components {
              */
             type: "skills";
         };
+        /**
+         * Stage
+         * @enum {string}
+         */
+        Stage: Stage;
+        /** StageData */
+        StageData: {
+            /** Progress */
+            progress: number;
+            section: components["schemas"]["SectionName"] | null;
+            stage: components["schemas"]["Stage"];
+            /** Tasks */
+            tasks: {
+                [key: string]: number;
+            } | null;
+        };
+        /**
+         * StreamEvent
+         * @description The events a tailoring run publishes, in the order they first appear.
+         * @enum {string}
+         */
+        StreamEvent: StreamEvent;
         /** SuggestionOut */
         SuggestionOut: {
             /** Addresses */
@@ -1338,11 +1481,7 @@ export interface components {
             flag_reason: string | null;
             /** Id */
             id: string;
-            /**
-             * Op
-             * @enum {string}
-             */
-            op: "replace_text" | "reorder" | "insert_bullet" | "remove_bullet" | "add_skill" | "remove_skill" | "rewrite_summary";
+            op: components["schemas"]["OpName"];
             /** Payload */
             payload: {
                 [key: string]: unknown;
@@ -1356,16 +1495,11 @@ export interface components {
             requires_confirmation: boolean;
             /** Score Delta */
             score_delta: number | null;
-            /** Section */
-            section: string;
+            section: components["schemas"]["SectionName"];
             /** Seq */
             seq: number;
-            /**
-             * Status
-             * @default pending
-             * @enum {string}
-             */
-            status: "pending" | "accepted" | "rejected" | "edited";
+            /** @default pending */
+            status: components["schemas"]["Decision"];
             /** Target */
             target: string;
         };
@@ -1412,12 +1546,8 @@ export interface components {
         TailorCreate: {
             /** Base Version Id */
             base_version_id?: string | null;
-            /**
-             * Intensity
-             * @default balanced
-             * @enum {string}
-             */
-            intensity: "light" | "balanced" | "bold";
+            /** @default balanced */
+            intensity: components["schemas"]["Intensity"];
             /** Jd Id */
             jd_id?: string | null;
             /** Jd Text */
@@ -1427,12 +1557,25 @@ export interface components {
             /** Resume Id */
             resume_id: string;
             /** Sections */
-            sections?: ("summary" | "skills" | "experience" | "projects")[];
+            sections?: components["schemas"]["SectionName"][];
         };
         /** TailorCreated */
         TailorCreated: {
             /** Id */
             id: string;
+        };
+        /**
+         * TailorEvents
+         * @description One field per event name, so the generated client has a type for each payload.
+         */
+        TailorEvents: {
+            done: components["schemas"]["DoneData"];
+            error: components["schemas"]["ErrorData"];
+            jd: components["schemas"]["JobData"];
+            score: components["schemas"]["ScoreData"];
+            stage: components["schemas"]["StageData"];
+            suggestion: components["schemas"]["SuggestionOut"];
+            warning: components["schemas"]["WarningData"];
         };
         /** TailorSessionOut */
         TailorSessionOut: {
@@ -1443,15 +1586,13 @@ export interface components {
             created_at: string;
             /** Degraded */
             degraded: boolean;
-            /** Error Code */
-            error_code: string | null;
+            error_code: components["schemas"]["ErrorCode"] | null;
             /** Error Message */
             error_message: string | null;
             fit: components["schemas"]["FitCheck"] | null;
             /** Id */
             id: string;
-            /** Intensity */
-            intensity: string;
+            intensity: components["schemas"]["Intensity"];
             jd: components["schemas"]["JDAnalysis"] | null;
             /** Jd Company */
             jd_company: string | null;
@@ -1472,14 +1613,18 @@ export interface components {
             score_after: components["schemas"]["MatchScore"] | null;
             score_before: components["schemas"]["MatchScore"] | null;
             /** Sections */
-            sections: string[];
-            /** Status */
-            status: string;
+            sections: components["schemas"]["SectionName"][];
+            status: components["schemas"]["SessionStatus"];
             /** Suggestions */
             suggestions: components["schemas"]["SuggestionOut"][];
             /** Version Id */
             version_id: string | null;
         };
+        /**
+         * Tone
+         * @enum {string}
+         */
+        Tone: Tone;
         /** UserOut */
         UserOut: {
             /** Email */
@@ -1493,19 +1638,12 @@ export interface components {
             /** Onboarded */
             onboarded: boolean;
         };
-        /** ValidationError */
-        ValidationError: {
-            /** Context */
-            ctx?: Record<string, never>;
-            /** Input */
-            input?: unknown;
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-        };
+        /**
+         * Verdict
+         * @description How well the resume shows a requirement.
+         * @enum {string}
+         */
+        Verdict: Verdict;
         /** VersionCompare */
         VersionCompare: {
             a: components["schemas"]["VersionDetail"];
@@ -1568,6 +1706,22 @@ export interface components {
             /** Session Id */
             session_id: string | null;
         };
+        /**
+         * WarningCode
+         * @enum {string}
+         */
+        WarningCode: WarningCode;
+        /** WarningData */
+        WarningData: {
+            code: components["schemas"]["WarningCode"];
+            /** Message */
+            message: string;
+        };
+        /**
+         * WorkMode
+         * @enum {string}
+         */
+        WorkMode: WorkMode;
     };
     responses: never;
     parameters: never;
@@ -1597,6 +1751,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     readyz_readyz_get: {
@@ -1619,13 +1782,22 @@ export interface operations {
                     };
                 };
             };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     feed_v1_activity_get: {
         parameters: {
             query?: {
                 cursor?: number | null;
-                type?: string | null;
+                type?: components["schemas"]["ActivityGroup"] | null;
                 limit?: number;
             };
             header?: never;
@@ -1643,13 +1815,13 @@ export interface operations {
                     "application/json": components["schemas"]["ActivityPage"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1678,13 +1850,13 @@ export interface operations {
                     };
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1704,6 +1876,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
             };
         };
     };
@@ -1725,6 +1906,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1753,13 +1943,13 @@ export interface operations {
                     };
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1786,13 +1976,13 @@ export interface operations {
                     "application/json": components["schemas"]["JDAnalyzeResponse"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1815,6 +2005,15 @@ export interface operations {
                     "application/json": components["schemas"]["UserOut"];
                 };
             };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     delete_me_v1_me_delete: {
@@ -1832,6 +2031,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
             };
         };
     };
@@ -1851,6 +2059,15 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     get_preferences_v1_me_preferences_get: {
@@ -1869,6 +2086,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PreferencesIO-Output"];
+                };
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1895,13 +2121,13 @@ export interface operations {
                     "application/json": components["schemas"]["PreferencesIO-Output"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1922,6 +2148,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileIO-Output"];
+                };
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1948,13 +2183,13 @@ export interface operations {
                     "application/json": components["schemas"]["ProfileIO-Output"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1981,13 +2216,13 @@ export interface operations {
                     "application/json": components["schemas"]["ResumeOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2008,6 +2243,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResumeOut"];
+                };
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2032,13 +2276,13 @@ export interface operations {
                     "application/json": components["schemas"]["ResumeOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2067,13 +2311,13 @@ export interface operations {
                     "application/json": components["schemas"]["ResumeOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2098,13 +2342,13 @@ export interface operations {
                     "application/json": components["schemas"]["SessionListItem"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2131,13 +2375,13 @@ export interface operations {
                     "application/json": components["schemas"]["TailorCreated"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2162,13 +2406,13 @@ export interface operations {
                     "application/json": components["schemas"]["TailorSessionOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2193,13 +2437,13 @@ export interface operations {
                     "application/json": components["schemas"]["FinalizeOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2217,22 +2461,22 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Server-sent events, one payload type per event name. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "text/event-stream": components["schemas"]["TailorEvents"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "text/event-stream": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2259,13 +2503,13 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2295,13 +2539,13 @@ export interface operations {
                     "application/json": components["schemas"]["SuggestionOut"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2322,6 +2566,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionOut"][];
+                };
+            };
+            /** @description The request failed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2347,13 +2600,13 @@ export interface operations {
                     "application/json": components["schemas"]["VersionCompare"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2378,13 +2631,13 @@ export interface operations {
                     "application/json": components["schemas"]["VersionDetail"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2404,22 +2657,22 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Server-sent events, one payload type per event name. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "text/event-stream": components["schemas"]["LetterEvents"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "text/event-stream": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2444,13 +2697,13 @@ export interface operations {
                     "application/json": components["schemas"]["CoverLetterOut"][];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2478,13 +2731,13 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2509,15 +2762,197 @@ export interface operations {
                     "application/json": components["schemas"]["InterviewPrep"];
                 };
             };
-            /** @description Validation Error */
-            422: {
+            /** @description The request failed. */
+            default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
     };
+}
+export enum ActivityGroup {
+    Resume = "resume",
+    Jd = "jd",
+    Tailor = "tailor",
+    Review = "review",
+    Version = "version",
+    CoverLetter = "cover_letter",
+    Profile = "profile"
+}
+export enum ActivityKind {
+    ResumeUploaded = "resume.uploaded",
+    JdAnalyzed = "jd.analyzed",
+    TailorCompleted = "tailor.completed",
+    ReviewFinalized = "review.finalized",
+    VersionExported = "version.exported",
+    CoverLetterGenerated = "cover_letter.generated",
+    ProfileUpdated = "profile.updated"
+}
+export enum ChangeKind {
+    Added = "added",
+    Removed = "removed",
+    Changed = "changed",
+    Moved = "moved"
+}
+export enum Decision {
+    Pending = "pending",
+    Accepted = "accepted",
+    Rejected = "rejected",
+    Edited = "edited"
+}
+export enum EmploymentType {
+    FullTime = "full_time",
+    Contract = "contract",
+    PartTime = "part_time",
+    Internship = "internship",
+    Freelance = "freelance",
+    Unspecified = "unspecified"
+}
+export enum EntityType {
+    Session = "session",
+    Version = "version",
+    Resume = "resume",
+    Jd = "jd"
+}
+export enum ErrorCode {
+    CsrfBlocked = "CSRF_BLOCKED",
+    EmailTaken = "EMAIL_TAKEN",
+    ExportFailed = "EXPORT_FAILED",
+    FileCorrupt = "FILE_CORRUPT",
+    FileEmpty = "FILE_EMPTY",
+    FileTooLarge = "FILE_TOO_LARGE",
+    FileTypeUnsupported = "FILE_TYPE_UNSUPPORTED",
+    FormatUnsupported = "FORMAT_UNSUPPORTED",
+    InvalidCredentials = "INVALID_CREDENTIALS",
+    JdEmpty = "JD_EMPTY",
+    JdNotAJd = "JD_NOT_A_JD",
+    JdTooLong = "JD_TOO_LONG",
+    JdTooShort = "JD_TOO_SHORT",
+    JdUnreadable = "JD_UNREADABLE",
+    LlmNotConfigured = "LLM_NOT_CONFIGURED",
+    LlmUnavailable = "LLM_UNAVAILABLE",
+    NotFound = "NOT_FOUND",
+    NoJd = "NO_JD",
+    PdfPasswordProtected = "PDF_PASSWORD_PROTECTED",
+    RegenerateEmpty = "REGENERATE_EMPTY",
+    ResumeUnreadable = "RESUME_UNREADABLE",
+    SessionNotReady = "SESSION_NOT_READY",
+    TailorFailed = "TAILOR_FAILED",
+    TemplateUnsupported = "TEMPLATE_UNSUPPORTED",
+    TooManyPages = "TOO_MANY_PAGES",
+    Unauthorized = "UNAUTHORIZED",
+    UrlBlocked = "URL_BLOCKED",
+    UrlInvalid = "URL_INVALID",
+    UrlUnreachable = "URL_UNREACHABLE",
+    ValidationFailed = "VALIDATION_FAILED"
+}
+export enum ExportFormat {
+    Pdf = "pdf",
+    Docx = "docx",
+    Txt = "txt"
+}
+export enum ExportTemplate {
+    Classic = "classic",
+    Modern = "modern"
+}
+export enum FitKey {
+    WorkMode = "work_mode",
+    Location = "location",
+    JobType = "job_type",
+    Compensation = "compensation",
+    Seniority = "seniority"
+}
+export enum FitStatus {
+    Ok = "ok",
+    Warn = "warn",
+    Unclear = "unclear"
+}
+export enum Intensity {
+    Light = "light",
+    Balanced = "balanced",
+    Bold = "bold"
+}
+export enum LetterLength {
+    Short = "short",
+    Standard = "standard"
+}
+export enum OpName {
+    ReplaceText = "replace_text",
+    Reorder = "reorder",
+    InsertBullet = "insert_bullet",
+    RemoveBullet = "remove_bullet",
+    AddSkill = "add_skill",
+    RemoveSkill = "remove_skill",
+    RewriteSummary = "rewrite_summary"
+}
+export enum ParsePath {
+    Text = "text",
+    Vision = "vision",
+    Basic = "basic"
+}
+export enum SalaryPeriod {
+    Year = "year",
+    Month = "month"
+}
+export enum SectionName {
+    Summary = "summary",
+    Skills = "skills",
+    Experience = "experience",
+    Projects = "projects"
+}
+export enum Seniority {
+    Junior = "junior",
+    Mid = "mid",
+    Senior = "senior",
+    Staff = "staff",
+    Lead = "lead",
+    Unspecified = "unspecified"
+}
+export enum SessionStatus {
+    Queued = "queued",
+    Running = "running",
+    Ready = "ready",
+    Failed = "failed",
+    Finalized = "finalized"
+}
+export enum Stage {
+    Reading = "reading",
+    Analyzing = "analyzing",
+    Tailoring = "tailoring"
+}
+export enum StreamEvent {
+    Stage = "stage",
+    Jd = "jd",
+    Score = "score",
+    Suggestion = "suggestion",
+    Warning = "warning",
+    Done = "done",
+    Error = "error",
+    Chunk = "chunk"
+}
+export enum Tone {
+    Professional = "professional",
+    Warm = "warm",
+    Direct = "direct"
+}
+export enum Verdict {
+    Demonstrated = "demonstrated",
+    Listed = "listed",
+    Missing = "missing",
+    Unsure = "unsure"
+}
+export enum WarningCode {
+    JdNotice = "JD_NOTICE",
+    Partial = "PARTIAL",
+    DegradedChecks = "DEGRADED_CHECKS"
+}
+export enum WorkMode {
+    Remote = "remote",
+    Hybrid = "hybrid",
+    Onsite = "onsite",
+    Unspecified = "unspecified"
 }

@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import Field
 
 from app.schemas.base import ApiModel
+from app.schemas.enums import ChangeKind, LetterLength, Tone
 from app.schemas.resume_ast import Resume
 from app.schemas.scores import AtsScore, MatchScore
 
@@ -28,7 +28,7 @@ class VersionDetail(VersionOut):
 
 class NodeChange(ApiModel):
     node_id: str
-    kind: Literal["added", "removed", "changed", "moved"]
+    kind: ChangeKind
     section: str
     before: str | None = None
     after: str | None = None
@@ -43,8 +43,8 @@ class VersionCompare(ApiModel):
 
 
 class CoverLetterIn(ApiModel):
-    tone: Literal["professional", "warm", "direct"] = "professional"
-    length: Literal["short", "standard"] = "standard"
+    tone: Tone = Tone.PROFESSIONAL
+    length: LetterLength = LetterLength.STANDARD
     include_notice_period: bool = False
 
 

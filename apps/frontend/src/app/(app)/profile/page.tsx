@@ -12,7 +12,13 @@ import { api, unwrap } from "@/lib/api";
 import { presentError } from "@/lib/errors";
 import { usePreferences, usePrimaryResume, useProfile } from "@/lib/queries";
 
-function Section({ title, body, children }: { title: string; body?: string; children: React.ReactNode }) {
+interface SectionProps {
+  title: string;
+  body?: string;
+  children: React.ReactNode;
+}
+
+function Section({ title, body, children }: SectionProps) {
   return (
     <section className="border-t border-line py-10 first:border-0 first:pt-0">
       <h2 className="text-2xl font-medium tracking-[-0.022em]">{title}</h2>

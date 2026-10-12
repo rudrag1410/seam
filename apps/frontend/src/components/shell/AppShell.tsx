@@ -11,7 +11,11 @@ import { ShellSkeleton } from "./ShellSkeleton";
 import { Sidebar } from "./Sidebar";
 import { LANDING } from "@/lib/routes";
 
-export function AppShell({ children }: { children: ReactNode }) {
+interface AppShellProps {
+  children: ReactNode;
+}
+
+export function AppShell({ children }: AppShellProps) {
   const me = useMe();
   const router = useRouter();
   const path = usePathname();

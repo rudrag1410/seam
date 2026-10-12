@@ -1,44 +1,51 @@
 "use client";
 
+import { Decision, OpName } from "@seam/api-client";
 import { useEffect } from "react";
-import type { ViewMode } from "../resume-canvas/view-model";
+import { isTyping, listen } from "@/lib/dom";
+import { ViewMode } from "../resume-canvas/view-model";
+import { acceptSection, decide, move, undo } from "./actions";
 import { useReview } from "./store";
 
-const MODES: ViewMode[] = ["suggestions", "clean", "original"];
+const MODES: ViewMode[] = [ViewMode.Suggestions, ViewMode.Clean, ViewMode.Original];
 
-function typing(el: EventTarget | null) {
-  const t = el as HTMLElement | null;
-  return !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+function nextMode(mode: ViewMode): ViewMode {
+  return MODES[(MODES.indexOf(mode) + 1) % MODES.length]!;
 }
 
 /** J/K move, A accept, R reject, E edit, Shift+A accept all in section, V cycle view, Cmd+Z undo. */
+function onReviewKey(e: KeyboardEvent): void {
+  if (isTyping(e.target) || e.altKey) return;
+  const key = e.key.toLowerCase();
+  if ((e.metaKey || e.ctrlKey) && key === "z") {
+    e.preventDefault();
+    undo();
+    return;
+  }
+  if (e.metaKey || e.ctrlKey) return;
+  const s = useReview.getState();
+  const current = s.suggestions.find((x) => x.id === s.cursor);
+  switch (key) {
+    case "j":
+      return move(1);
+    case "k":
+      return move(-1);
+    case "v":
+      return useReview.setState({ mode: nextMode(s.mode) });
+    case "escape":
+      return useReview.setState({ editing: null, confirming: null });
+  }
+  if (!current) return;
+  switch (key) {
+    case "a":
+      return e.shiftKey ? acceptSection(current.section) : decide(current.id, Decision.Accepted);
+    case "r":
+      return decide(current.id, Decision.Rejected);
+    case "e":
+      if (current.op !== OpName.Reorder && current.op !== OpName.RemoveBullet) useReview.setState({ editing: current.id });
+  }
+}
+
 export function useReviewKeys(enabled: boolean) {
-  useEffect(() => {
-    if (!enabled) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (typing(e.target) || e.altKey) return;
-      const s = useReview.getState();
-      const key = e.key.toLowerCase();
-      if ((e.metaKey || e.ctrlKey) && key === "z") {
-        e.preventDefault();
-        return s.undo();
-      }
-      if (e.metaKey || e.ctrlKey) return;
-      const current = s.suggestions.find((x) => x.id === s.cursor);
-      switch (key) {
-        case "j": return s.move(1);
-        case "k": return s.move(-1);
-        case "a":
-          if (e.shiftKey && current) return s.acceptSection(current.section);
-          if (current) s.decide(current.id, "accepted");
-          return;
-        case "r": if (current) s.decide(current.id, "rejected"); return;
-        case "e": if (current && current.op !== "reorder" && current.op !== "remove_bullet") s.patch({ editing: current.id }); return;
-        case "v": s.patch({ mode: MODES[(MODES.indexOf(s.mode) + 1) % MODES.length]! }); return;
-        case "escape": s.patch({ editing: null, confirming: null });
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [enabled]);
+  useEffect(() => (enabled ? listen("keydown", onReviewKey) : undefined), [enabled]);
 }

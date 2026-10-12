@@ -1,14 +1,14 @@
-import json
 from collections.abc import AsyncIterator
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Request
-from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import BrokerDep, DbDep, SettingsDep, UserDep
+from app.api.sse import EventStreamResponse, frame
 from app.core.config import Settings
 from app.db.models import TailorSession
+from app.schemas.stream import TailorEvents
 from app.schemas.suggestion import SuggestionOut
 from app.schemas.tailor import (
     DecisionsPatch,
@@ -25,15 +25,14 @@ from app.services.events import TailorBroker
 router = APIRouter(prefix="/tailor-sessions", tags=["tailor"])
 
 
-def _sse(event_id: int | None, event: str, data: dict) -> str:
-    head = f"id: {event_id}\n" if event_id is not None else ""
-    return f"{head}event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
-
-
 async def _live(broker: TailorBroker, key: str, last: int) -> AsyncIterator[str]:
     """A run still in memory: replay what was missed, then follow it."""
     async for item in broker.subscribe(key, last):
-        yield ": heartbeat\n\n" if item is None else _sse(*item)
+        if item is None:
+            yield ": heartbeat\n\n"
+        else:
+            event_id, event, data = item
+            yield frame(event, data, event_id)
 
 
 async def _replay(
@@ -42,7 +41,7 @@ async def _replay(
     """A run no longer in memory: rebuild its events from what was saved."""
     async for event_id, event, data in tailor_service.replay_from_db(db, settings, session):
         if event_id > last:
-            yield _sse(event_id, event, data)
+            yield frame(event, data, event_id)
 
 
 @router.post("", response_model=TailorCreated, status_code=202)
@@ -62,7 +61,13 @@ async def get_one(session_id: UUID, user: UserDep, db: DbDep, settings: Settings
     return await tailor_service.session_out(db, user, settings, session)
 
 
-@router.get("/{session_id}/stream")
+@router.get(
+    "/{session_id}/stream",
+    response_class=EventStreamResponse,
+    responses={
+        200: {"model": TailorEvents, "description": "Server-sent events, one payload type per event name."}
+    },
+)
 async def stream(
     session_id: UUID,
     user: UserDep,
@@ -70,19 +75,14 @@ async def stream(
     settings: SettingsDep,
     broker: BrokerDep,
     last_event_id: str | None = Header(default=None),
-) -> StreamingResponse:
+) -> EventStreamResponse:
     session = await tailor_service.owned_session(db, user, session_id)
     key = str(session.id)
     last = int(last_event_id) if last_event_id and last_event_id.isdigit() else -1
 
-    return StreamingResponse(
+    return EventStreamResponse(
         _live(broker, key, last) if broker.has(key) else _replay(db, settings, session, last),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache, no-transform",
-            "X-Accel-Buffering": "no",
-            "Connection": "keep-alive",
-        },
+        headers={"Connection": "keep-alive"},
     )
 
 

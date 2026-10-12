@@ -5,7 +5,7 @@ import { StitchLine, cn } from "@seam/ui";
 import { MotionConfig, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { InlineDiff } from "./InlineDiff";
-import type { BulletView, NodeState, SectionView, SkillChip } from "./view-model";
+import { type BulletView, NodeState, SectionKind, type SectionView, type SkillChip } from "./view-model";
 
 interface CanvasProps {
   contact: Resume["contact"];
@@ -14,20 +14,25 @@ interface CanvasProps {
   cursor?: string | null;
   highlight?: ReadonlySet<string>;
   onSelect?: (suggestionId: string) => void;
-  /** Section types that suggestions are still being written for. */
-  busy?: ReadonlySet<string>;
+  /** Kinds of section that suggestions are still being written for. */
+  busy?: ReadonlySet<SectionKind>;
 }
 
 const GUTTER: Record<NodeState, string> = {
-  plain: "bg-transparent",
-  changed: "bg-ins-line",
-  inserted: "bg-ins-line",
-  removed: "bg-del-line",
-  moved: "bg-blue",
-  settled: "bg-ins-line/35",
+  [NodeState.Plain]: "bg-transparent",
+  [NodeState.Changed]: "bg-ins-line",
+  [NodeState.Inserted]: "bg-ins-line",
+  [NodeState.Removed]: "bg-del-line",
+  [NodeState.Moved]: "bg-blue",
+  [NodeState.Settled]: "bg-ins-line/35",
 };
 
-function Heading({ children, busy }: { children: ReactNode; busy: boolean }) {
+interface HeadingProps {
+  children: ReactNode;
+  busy: boolean;
+}
+
+function Heading({ children, busy }: HeadingProps) {
   return (
     <h2 className="relative mt-5 mb-2 border-b border-ink/80 pb-0.5 text-[11.5px] font-semibold tracking-[0.08em] text-ink uppercase">
       {children}
@@ -40,18 +45,20 @@ function Heading({ children, busy }: { children: ReactNode; busy: boolean }) {
 interface NodeProps {
   node: BulletView;
   inList?: boolean;
-  active: boolean;
-  highlighted: boolean;
+  cursor?: string | null;
+  highlight?: ReadonlySet<string>;
   onSelect?: (suggestionId: string) => void;
 }
 
 // Node and Chip live at module scope on purpose. Declared inside the canvas they would be new
 // component types on every render, and React would unmount and rebuild every line each time
 // anything in the review changed.
-function Node({ node, inList = false, active, highlighted, onSelect }: NodeProps) {
+function Node({ node, inList = false, cursor, highlight, onSelect }: NodeProps) {
   const primary = node.suggestionId ?? node.suggestionIds[0];
+  const active = !!cursor && node.suggestionIds.includes(cursor);
+  const highlighted = !!node.suggestionId && !!highlight?.has(node.suggestionId);
   const actionable = !!primary && !!onSelect;
-  const flaggedPending = node.flagged && node.state !== "settled" && node.state !== "plain";
+  const flaggedPending = node.flagged && node.state !== NodeState.Settled && node.state !== NodeState.Plain;
   return (
     <div
       role={actionable ? "button" : undefined}
@@ -72,7 +79,7 @@ function Node({ node, inList = false, active, highlighted, onSelect }: NodeProps
         actionable && "cursor-pointer hover:bg-cream/60",
         highlighted && "bg-yellow/25",
         active && "bg-cream/80 ring-1 ring-ink/25",
-        node.state === "removed" && "text-ink-muted line-through decoration-del-line",
+        node.state === NodeState.Removed && "text-ink-muted line-through decoration-del-line",
       )}
     >
       {/* change bar lives in the margin, clear of list markers, so text never shifts */}
@@ -85,15 +92,21 @@ function Node({ node, inList = false, active, highlighted, onSelect }: NodeProps
         )}
       />
       {node.runs ? <InlineDiff runs={node.runs} /> : node.text}
-      {node.state === "moved" && node.movedFrom && (
+      {node.state === NodeState.Moved && node.movedFrom && (
         <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ink-muted">↑ MOVED FROM {node.movedFrom}</span>
       )}
-      {node.state === "inserted" && <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ins-line">NEW</span>}
+      {node.state === NodeState.Inserted && <span className="ml-2 inline-block align-middle font-sans text-[10.5px] font-medium tracking-wide whitespace-nowrap text-ins-line">NEW</span>}
     </div>
   );
 }
 
-function Chip({ chip, active, onSelect }: { chip: SkillChip; active: boolean; onSelect?: (suggestionId: string) => void }) {
+interface ChipProps {
+  chip: SkillChip;
+  active: boolean;
+  onSelect?: (suggestionId: string) => void;
+}
+
+function Chip({ chip, active, onSelect }: ChipProps) {
   const actionable = !!chip.suggestionId && !!onSelect;
   return (
     <button
@@ -104,15 +117,15 @@ function Chip({ chip, active, onSelect }: { chip: SkillChip; active: boolean; on
       onClick={() => actionable && onSelect(chip.suggestionId!)}
       className={cn(
         "rounded-full border px-2.5 py-0.5 text-[12.5px] leading-5 transition-colors",
-        chip.state === "plain" && "border-transparent bg-cream/70",
-        chip.state === "settled" && "border-ins-line/40 bg-ins",
-        chip.state === "inserted" && (chip.flagged ? "border-dashed border-yellow bg-warn" : "border-dashed border-ins-line bg-ins"),
-        chip.state === "removed" && "border-transparent bg-del line-through",
+        chip.state === NodeState.Plain && "border-transparent bg-cream/70",
+        chip.state === NodeState.Settled && "border-ins-line/40 bg-ins",
+        chip.state === NodeState.Inserted && (chip.flagged ? "border-dashed border-yellow bg-warn" : "border-dashed border-ins-line bg-ins"),
+        chip.state === NodeState.Removed && "border-transparent bg-del line-through",
         active && "ring-2 ring-ink/40",
         actionable && "cursor-pointer",
       )}
     >
-      {chip.state === "inserted" && "+ "}
+      {chip.state === NodeState.Inserted && "+ "}
       {chip.value}
     </button>
   );
@@ -121,17 +134,6 @@ function Chip({ chip, active, onSelect }: { chip: SkillChip; active: boolean; on
 /** The paper. Every node that carries a suggestion exposes `data-anchor`, so the workspace can
  *  scroll the one under review into view. Selecting a node never changes the layout. */
 export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy }: CanvasProps) {
-  const isActive = (ids: string[]) => !!cursor && ids.includes(cursor);
-  const node = (n: BulletView, inList = false) => (
-    <Node
-      node={n}
-      inList={inList}
-      active={isActive(n.suggestionIds)}
-      highlighted={!!n.suggestionId && !!highlight?.has(n.suggestionId)}
-      onSelect={onSelect}
-    />
-  );
-
   return (
     <MotionConfig reducedMotion="user">
       <article
@@ -149,9 +151,9 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
         {view.map((sec) => (
           <section key={sec.id} aria-label={sec.label}>
             <Heading busy={!!busy?.has(sec.type)}>{sec.label}</Heading>
-            {sec.type === "summary" && node(sec.node)}
+            {sec.type === SectionKind.Summary && <Node node={sec.node} cursor={cursor} highlight={highlight} onSelect={onSelect} />}
 
-            {sec.type === "skills" && (
+            {sec.type === SectionKind.Skills && (
               <div className="space-y-2">
                 {sec.groups.map((g) => (
                   <div key={g.id} className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
@@ -164,7 +166,7 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
               </div>
             )}
 
-            {(sec.type === "experience" || sec.type === "projects") && (
+            {(sec.type === SectionKind.Experience || sec.type === SectionKind.Projects) && (
               <div className="space-y-4">
                 {sec.items.map((item) => (
                   <div key={item.id}>
@@ -199,7 +201,7 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
                           transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                           className="list-disc marker:text-[#5b5853]"
                         >
-                          {node(b, true)}
+                          <Node node={b} inList cursor={cursor} highlight={highlight} onSelect={onSelect} />
                         </motion.li>
                       ))}
                     </ul>
@@ -208,7 +210,7 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
               </div>
             )}
 
-            {sec.type === "education" && (
+            {sec.type === SectionKind.Education && (
               <div className="space-y-1.5">
                 {sec.items.map((i) => (
                   <div key={i.id} className="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -223,7 +225,7 @@ export function ResumeCanvas({ contact, view, cursor, highlight, onSelect, busy 
               </div>
             )}
 
-            {sec.type === "other" && (
+            {sec.type === SectionKind.Other && (
               <ul className="space-y-1">
                 {sec.lines.map((l) => (
                   <li key={l}>{l}</li>

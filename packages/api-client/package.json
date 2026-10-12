@@ -6,7 +6,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "generate": "openapi-typescript ../../apps/backend/openapi.json -o src/schema.d.ts",
+    "generate": "openapi-typescript ../../apps/backend/openapi.json --enum --conditional-enums --dedupe-enums -o src/schema.ts",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json"
   },

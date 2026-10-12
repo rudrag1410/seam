@@ -10,7 +10,7 @@ import { formatBytes, plural } from "@/lib/format";
 import { keys } from "@/lib/queries";
 import { ApiException } from "@/lib/api";
 import { handleUnauthorized } from "@/lib/session";
-import type { ResumeOut } from "@seam/api-client";
+import { ClientErrorCode, ParsePath, type ResumeOut } from "@seam/api-client";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = {
@@ -34,7 +34,7 @@ async function uploadResume(file: File): Promise<ResumeOut> {
   try {
     res = await fetch(`${API_URL}/v1/resumes`, { method: "POST", body: form, credentials: "include" });
   } catch {
-    throw new ApiException(0, { code: "NETWORK", message: "We couldn't reach the server.", retryable: true });
+    throw new ApiException(0, { code: ClientErrorCode.Network, message: "We couldn't reach the server.", retryable: true });
   }
   const body = await res.json();
   if (res.status === 401) handleUnauthorized();
@@ -53,7 +53,11 @@ export function summarize(resume: ResumeOut) {
   };
 }
 
-export function ResumeCard({ resume }: { resume: ResumeOut }) {
+interface ResumeCardProps {
+  resume: ResumeOut;
+}
+
+export function ResumeCard({ resume }: ResumeCardProps) {
   const s = summarize(resume);
   return (
     <div className="flex min-h-[78px] items-center gap-4 rounded-[16px] border border-line bg-panel p-4">
@@ -68,8 +72,8 @@ export function ResumeCard({ resume }: { resume: ResumeOut }) {
           {` · ${plural(s.roles, "role")}, ${plural(s.bullets, "bullet")}, ${plural(s.skills, "skill")} found`}
         </p>
       </div>
-      {resume.parse_path === "vision" && <Badge tone="yellow">Read as image</Badge>}
-      {resume.parse_path === "basic" && (
+      {resume.parse_path === ParsePath.Vision && <Badge tone="yellow">Read as image</Badge>}
+      {resume.parse_path === ParsePath.Basic && (
         <Badge tone="yellow" title="Read without AI. Check the details look right.">
           Basic read
         </Badge>
@@ -78,12 +82,17 @@ export function ResumeCard({ resume }: { resume: ResumeOut }) {
   );
 }
 
-export function Dropzone({ onUploaded, compact = false }: { onUploaded?: (r: ResumeOut) => void; compact?: boolean }) {
+interface DropzoneProps {
+  onUploaded?: (r: ResumeOut) => void;
+  compact?: boolean;
+}
+
+export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
   const qc = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (file: File) => {
       const problem = clientError(file);
-      if (problem) throw new ApiException(0, { code: "CLIENT_VALIDATION", message: problem });
+      if (problem) throw new ApiException(0, { code: ClientErrorCode.Validation, message: problem });
       return uploadResume(file);
     },
     onSuccess: (resume) => {

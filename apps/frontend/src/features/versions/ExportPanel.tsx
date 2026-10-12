@@ -1,23 +1,33 @@
 "use client";
 
+import { ExportFormat, ExportTemplate } from "@seam/api-client";
 import { Button, Segmented } from "@seam/ui";
 import { Download } from "lucide-react";
 import { useState } from "react";
 import { API_URL } from "@/lib/env";
 
 const FORMATS = [
-  { id: "pdf", label: "PDF" },
-  { id: "docx", label: "DOCX" },
-  { id: "txt", label: "Plain text" },
-] as const;
+  { id: ExportFormat.Pdf, label: "PDF" },
+  { id: ExportFormat.Docx, label: "DOCX" },
+  { id: ExportFormat.Txt, label: "Plain text" },
+];
 
-export function ExportPanel({ versionId }: { versionId: string }) {
-  const [template, setTemplate] = useState<"classic" | "modern">("classic");
+const TEMPLATES = [
+  { value: ExportTemplate.Classic, label: "Classic (serif)" },
+  { value: ExportTemplate.Modern, label: "Modern (sans)" },
+];
+
+interface ExportPanelProps {
+  versionId: string;
+}
+
+export function ExportPanel({ versionId }: ExportPanelProps) {
+  const [template, setTemplate] = useState<ExportTemplate>(ExportTemplate.Classic);
   return (
     <div className="space-y-4">
       <Segmented
         size="sm" aria-label="Template" value={template} onChange={setTemplate}
-        options={[{ value: "classic", label: "Classic (serif)" }, { value: "modern", label: "Modern (sans)" }]}
+        options={TEMPLATES}
       />
       <div className="flex flex-wrap gap-2">
         {FORMATS.map((f) => (

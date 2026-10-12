@@ -3,15 +3,16 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import ActivityEvent
+from app.schemas.enums import ActivityKind, EntityType
 
 
 def record(
     db: AsyncSession,
     user_id: UUID,
-    type_: str,
+    type_: ActivityKind,
     summary: str,
     *,
-    entity_type: str | None = None,
+    entity_type: EntityType | None = None,
     entity_id: UUID | None = None,
     meta: dict | None = None,
 ) -> None:

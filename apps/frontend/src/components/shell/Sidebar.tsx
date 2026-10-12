@@ -11,7 +11,12 @@ import { NAV } from "./nav";
 import { useSignOut } from "./useSignOut";
 import { LANDING } from "@/lib/routes";
 
-export function Sidebar({ name, onNavigate }: { name: string; onNavigate?: () => void }) {
+interface SidebarProps {
+  name: string;
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ name, onNavigate }: SidebarProps) {
   const path = usePathname();
   const signOut = useSignOut();
   return (

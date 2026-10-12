@@ -5,7 +5,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
-from app.core.errors import AppError, unauthorized
+from app.core.errors import AppError, ErrorCode, unauthorized
 from app.core.security import (
     create_access_token,
     hash_password,
@@ -20,7 +20,7 @@ async def create_user(db: AsyncSession, email: str, password: str, full_name: st
     email = email.lower()
     if await db.scalar(select(User.id).where(User.email == email)):
         raise AppError(
-            "EMAIL_TAKEN",
+            ErrorCode.EMAIL_TAKEN,
             "An account with that email already exists.",
             status=409,
             hint="Try signing in instead.",
@@ -36,7 +36,7 @@ async def create_user(db: AsyncSession, email: str, password: str, full_name: st
 async def authenticate(db: AsyncSession, email: str, password: str) -> User:
     user = await db.scalar(select(User).where(User.email == email.lower()))
     if user is None or not verify_password(password, user.password_hash):
-        raise AppError("INVALID_CREDENTIALS", "That email and password don't match.", status=401)
+        raise AppError(ErrorCode.INVALID_CREDENTIALS, "That email and password don't match.", status=401)
     return user
 
 

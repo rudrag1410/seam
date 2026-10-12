@@ -7,7 +7,7 @@ from app.ai.gateway.router import Task
 from app.ai.limits import clip
 from app.ai.prompts.registry import render
 from app.core.config import Settings
-from app.core.errors import AppError
+from app.core.errors import AppError, ErrorCode
 from app.parsing.consistency import unmatched_ratio
 from app.parsing.docx import extract_docx
 from app.parsing.heuristic import heuristic_parse, merge_links
@@ -15,19 +15,20 @@ from app.parsing.ids import build_resume
 from app.parsing.pdf import ExtractedDocument, extract_pdf, render_pages
 from app.parsing.quality import choose_path
 from app.parsing.validate import ValidatedFile
+from app.schemas.enums import FileKind, ParsePath
 from app.schemas.parsed import ParsedResume
 from app.schemas.resume_ast import Resume
 
 log = logging.getLogger("seam.parse")
 _MAX_UNMATCHED = 0.25
-_AI_ERRORS = {"LLM_UNAVAILABLE", "LLM_NOT_CONFIGURED"}
+_AI_ERRORS = {ErrorCode.LLM_UNAVAILABLE, ErrorCode.LLM_NOT_CONFIGURED}
 
 
 @dataclass
 class ParseResult:
     resume: Resume
     page_count: int
-    path: str  # "text" | "vision" | "basic" (built-in parser, no AI)
+    path: ParsePath
     text: str
 
 
@@ -44,25 +45,25 @@ async def _vision(ai: AIGateway, settings: Settings, data: bytes) -> ParsedResum
 
 async def _structure(
     ai: AIGateway, settings: Settings, data: bytes, doc: ExtractedDocument, file: ValidatedFile
-) -> tuple[ParsedResume, str]:
+) -> tuple[ParsedResume, ParsePath]:
     """Structure the extracted text. Uses the model when one is configured and answering,
     and the built-in parser otherwise, so uploading a resume never depends on an AI key."""
-    can_vision = file.kind == "pdf" and not settings.is_mock and settings.has_llm
-    path = await choose_path(ai, doc.text, doc.page_count) if file.kind == "pdf" else "text"
+    can_vision = file.kind is FileKind.PDF and not settings.is_mock and settings.has_llm
+    path = await choose_path(ai, doc.text, doc.page_count) if file.kind is FileKind.PDF else ParsePath.TEXT
 
-    if path == "vision" and not can_vision:
+    if path is ParsePath.VISION and not can_vision:
         if len(doc.text) < 80:
             raise AppError(
-                "RESUME_UNREADABLE",
+                ErrorCode.RESUME_UNREADABLE,
                 "This looks like a scanned resume, and reading images needs AI to be set up.",
                 hint="Upload a PDF exported from Word or Google Docs, or add OPENAI_API_KEY.",
             )
-        path = "text"
+        path = ParsePath.TEXT
 
     if settings.has_llm:
         try:
-            if path == "vision":
-                return await _vision(ai, settings, data), "vision"
+            if path is ParsePath.VISION:
+                return await _vision(ai, settings, data), ParsePath.VISION
             parsed = await ai.generate.structured(
                 Task.PARSE_STRUCTURE,
                 system=render(settings.prompt_version, "parse_structure"),
@@ -72,22 +73,22 @@ async def _structure(
             )
             if can_vision and unmatched_ratio(parsed, doc.text) > _MAX_UNMATCHED:
                 log.info("consistency check failed on the text path, retrying with vision")
-                return await _vision(ai, settings, data), "vision"
-            return parsed, "text"
+                return await _vision(ai, settings, data), ParsePath.VISION
+            return parsed, ParsePath.TEXT
         except AppError as exc:
             if exc.code not in _AI_ERRORS:
                 raise
             log.warning("AI structuring unavailable (%s); using the built-in parser", exc.code)
 
-    return heuristic_parse(doc.text, doc.links), "basic"
+    return heuristic_parse(doc.text, doc.links), ParsePath.BASIC
 
 
 async def parse_resume(ai: AIGateway, settings: Settings, data: bytes, file: ValidatedFile) -> ParseResult:
-    extract = extract_pdf if file.kind == "pdf" else extract_docx
+    extract = extract_pdf if file.kind is FileKind.PDF else extract_docx
     doc: ExtractedDocument = await asyncio.to_thread(extract, data, settings)
     if len(doc.text) < 80:
         raise AppError(
-            "RESUME_UNREADABLE",
+            ErrorCode.RESUME_UNREADABLE,
             "We couldn't find any text in that file.",
             hint="If it's a scan, upload a PDF exported from Word or Google Docs.",
         )
@@ -99,7 +100,7 @@ async def parse_resume(ai: AIGateway, settings: Settings, data: bytes, file: Val
     resume = build_resume(parsed)
     if not resume.sections:
         raise AppError(
-            "RESUME_UNREADABLE",
+            ErrorCode.RESUME_UNREADABLE,
             "We couldn't find resume content in that file.",
             hint="Check that it's your resume and that the text is selectable.",
         )

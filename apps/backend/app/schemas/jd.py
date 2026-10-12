@@ -1,12 +1,7 @@
-from typing import Literal
-
 from pydantic import Field
 
 from app.schemas.base import ApiModel
-
-WorkMode = Literal["remote", "hybrid", "onsite", "unspecified"]
-EmploymentType = Literal["full_time", "contract", "part_time", "internship", "freelance", "unspecified"]
-Seniority = Literal["junior", "mid", "senior", "staff", "lead", "unspecified"]
+from app.schemas.enums import EmploymentType, FitKey, FitStatus, SalaryPeriod, Seniority, WorkMode
 
 
 class Requirement(ApiModel):
@@ -20,15 +15,15 @@ class SalaryRange(ApiModel):
     min: float | None = None
     max: float | None = None
     currency: str | None = None
-    period: Literal["year", "month"] = "year"
+    period: SalaryPeriod = SalaryPeriod.YEAR
 
 
 class JDAnalysis(ApiModel):
     title: str = ""
     company: str = ""
-    seniority: Seniority = "unspecified"
-    employment_type: EmploymentType = "unspecified"
-    work_mode: WorkMode = "unspecified"
+    seniority: Seniority = Seniority.UNSPECIFIED
+    employment_type: EmploymentType = EmploymentType.UNSPECIFIED
+    work_mode: WorkMode = WorkMode.UNSPECIFIED
     location: str = ""
     salary_range: SalaryRange | None = None
     must_haves: list[Requirement] = Field(default_factory=list)
@@ -42,9 +37,9 @@ class JDAnalysis(ApiModel):
 
 
 class FitItem(ApiModel):
-    key: Literal["work_mode", "location", "job_type", "compensation", "seniority"]
+    key: FitKey
     label: str
-    status: Literal["ok", "warn", "unclear"]
+    status: FitStatus
     detail: str
 
 

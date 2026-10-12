@@ -3,6 +3,8 @@
 import json
 
 from app.ai.gateway.openai_client import LLM_UNAVAILABLE
+from app.schemas.enums import StreamEvent
+from app.schemas.stream import TAILOR_EVENTS
 from tests.conftest import text_to_pdf
 
 
@@ -139,6 +141,10 @@ def test_full_tailoring_flow(authed, resume_pdf, jd_text):
     assert authed.get("/v1/applications").status_code == 404  # the tracker is gone
 
     feed = authed.get("/v1/activity").json()["items"]
+    # the feed can be narrowed to one kind of event, and rejects a group that doesn't exist
+    resumes = authed.get("/v1/activity", params={"type": "resume"}).json()["items"]
+    assert resumes and all(item["type"].startswith("resume.") for item in resumes)
+    assert authed.get("/v1/activity", params={"type": "nonsense"}).status_code == 422
     assert feed[0]["created_at"].endswith(("Z", "+00:00")), "timestamps must be explicit UTC"
     kinds = {e["type"] for e in feed}
     assert {
@@ -274,6 +280,10 @@ def test_session_starts_from_pasted_text_and_streams_the_analysis(authed, resume
     plan = next(d["tasks"] for n, d in events if n == "stage" and "tasks" in d)
     finished = [d["section"] for n, d in events if n == "stage" and "section" in d]
     assert plan and all(finished.count(section) == pieces for section, pieces in plan.items())
+
+    # every event a run publishes matches its declared payload, which is what the client is typed from
+    for name, data in events:
+        TAILOR_EVENTS[StreamEvent(name)].model_validate(data)
 
     # a reconnect shortly after replays the live log; once that is gone it replays from the database
     live = [n for n, _ in _sse(authed, f"/v1/tailor-sessions/{sid}/stream")]

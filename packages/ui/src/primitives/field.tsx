@@ -16,6 +16,15 @@ export function Textarea({
   return <textarea ref={ref} className={cn(base, "min-h-28 resize-y py-3 leading-relaxed", className)} {...props} />;
 }
 
+interface FieldProps {
+  label: string;
+  hint?: ReactNode;
+  error?: string;
+  children: ReactNode;
+  className?: string;
+  htmlFor?: string;
+}
+
 export function Field({
   label,
   hint,
@@ -23,14 +32,7 @@ export function Field({
   children,
   className,
   htmlFor,
-}: {
-  label: string;
-  hint?: ReactNode;
-  error?: string;
-  children: ReactNode;
-  className?: string;
-  htmlFor?: string;
-}) {
+}: FieldProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink">

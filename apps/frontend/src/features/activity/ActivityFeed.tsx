@@ -5,30 +5,50 @@ import { Segmented, Skeleton, Button } from "@seam/ui";
 import Link from "next/link";
 import { useState } from "react";
 import { EmptyState, ErrorState } from "@/components/feedback/states";
+import { ActivityGroup } from "@seam/api-client";
 import { api, unwrap } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 import { activityHref } from "./links";
 
+enum FeedFilter {
+  All = "all",
+  Resumes = "resumes",
+  Reviews = "reviews",
+}
+
 const FILTERS = [
-  { value: "", label: "All" },
-  { value: "resume", label: "Resumes" },
-  { value: "review", label: "Reviews" },
+  { value: FeedFilter.All, label: "All" },
+  { value: FeedFilter.Resumes, label: "Resumes" },
+  { value: FeedFilter.Reviews, label: "Reviews" },
 ];
 
-export function ActivityFeed({ limit = 20, filterable = true, paged = true }: { limit?: number; filterable?: boolean; paged?: boolean }) {
-  const [type, setType] = useState("");
+/** The group of events each filter narrows the feed to; none for "All". */
+const GROUP_OF: Record<FeedFilter, ActivityGroup | undefined> = {
+  [FeedFilter.All]: undefined,
+  [FeedFilter.Resumes]: ActivityGroup.Resume,
+  [FeedFilter.Reviews]: ActivityGroup.Review,
+};
+
+interface ActivityFeedProps {
+  limit?: number;
+  filterable?: boolean;
+  paged?: boolean;
+}
+
+export function ActivityFeed({ limit = 20, filterable = true, paged = true }: ActivityFeedProps) {
+  const [filter, setFilter] = useState<FeedFilter>(FeedFilter.All);
   const q = useInfiniteQuery({
-    queryKey: ["activity", type || "all", limit],
+    queryKey: ["activity", filter, limit],
     initialPageParam: undefined as number | undefined,
     queryFn: ({ pageParam }) =>
-      unwrap(api.GET("/v1/activity", { params: { query: { limit, cursor: pageParam, type: type || undefined } } })),
+      unwrap(api.GET("/v1/activity", { params: { query: { limit, cursor: pageParam, type: GROUP_OF[filter] } } })),
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   });
   const items = q.data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <div>
-      {filterable && <Segmented size="sm" className="mb-6" aria-label="Filter activity" value={type} onChange={setType} options={FILTERS} />}
+      {filterable && <Segmented size="sm" className="mb-6" aria-label="Filter activity" value={filter} onChange={setFilter} options={FILTERS} />}
       {q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} /> : q.isPending ? (
         <div className="space-y-3">{Array.from({ length: limit > 5 ? 8 : 5 }, (_, i) => <Skeleton key={i} className="h-[46px]" />)}</div>
       ) : items.length === 0 ? (

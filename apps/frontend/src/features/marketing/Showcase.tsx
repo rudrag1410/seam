@@ -4,28 +4,38 @@ import { Segmented } from "@seam/ui";
 import { useState } from "react";
 import { MockExport, MockReview, MockScore } from "./MockProduct";
 
+enum ShowcaseTab {
+  Review = "review",
+  Score = "score",
+  Export = "export",
+}
+
 const TABS = {
-  review: {
+  [ShowcaseTab.Review]: {
     title: "Every edit is a proposal",
     body: "Seam reads the posting the way a recruiter would, then suggests specific changes inline, like tracked changes. Accept, reject or rewrite each one.",
     visual: <MockReview />,
   },
-  score: {
+  [ShowcaseTab.Score]: {
     title: "A score that shows its work",
     body: "Each requirement is rated against your resume, so you can see exactly why a role is a 64 and what moves it to an 81. It updates as you accept edits.",
     visual: <MockScore />,
   },
-  export: {
+  [ShowcaseTab.Export]: {
     title: "Plain, ATS-safe exports",
     body: "One column, real headings, selectable text. Download PDF, DOCX or plain text, with an estimated ATS score and fix-it hints.",
     visual: <MockExport />,
   },
-} as const;
+};
 
-type Tab = keyof typeof TABS;
+const TAB_OPTIONS = [
+  { value: ShowcaseTab.Review, label: "Review" },
+  { value: ShowcaseTab.Score, label: "Score" },
+  { value: ShowcaseTab.Export, label: "Export" },
+];
 
 export function Showcase() {
-  const [tab, setTab] = useState<Tab>("review");
+  const [tab, setTab] = useState<ShowcaseTab>(ShowcaseTab.Review);
   const t = TABS[tab];
   return (
     <section className="mx-auto max-w-[1200px] px-4 sm:px-6">
@@ -40,11 +50,7 @@ export function Showcase() {
           aria-label="Feature"
           value={tab}
           onChange={setTab}
-          options={[
-            { value: "review", label: "Review" },
-            { value: "score", label: "Score" },
-            { value: "export", label: "Export" },
-          ]}
+          options={TAB_OPTIONS}
         />
         <div className="mx-auto mt-12 grid max-w-5xl items-center gap-10 text-left md:grid-cols-2 md:gap-16">
           <div key={tab} className="animate-fade-in">

@@ -1,88 +1,102 @@
 "use client";
 
-import type { SuggestionOut } from "@seam/api-client";
+import { SessionStatus, type SuggestionOut } from "@seam/api-client";
 import { cn } from "@seam/ui";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowUp, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { api, unwrap } from "@/lib/api";
 import { presentError } from "@/lib/errors";
-import { useReview } from "../review/store";
+import { replaceSuggestion, say } from "../review/actions";
+import { NoteRole, NoteTone, type ReviewState, useReview } from "../review/store";
+import { ViewMode } from "../resume-canvas/view-model";
 import { canReword } from "./ReviewDock";
 
 const QUICK = ["Shorter", "More technical", "Lead with the metric"];
 const chip = "h-8 shrink-0 rounded-full border border-line bg-bg px-3.5 text-[13px] text-ink-soft transition-colors hover:border-line-strong hover:text-ink disabled:pointer-events-none disabled:opacity-45";
 
+interface Ask {
+  id: string;
+  instruction: string;
+}
+
+function requestRewrite(sessionId: string, { id, instruction }: Ask) {
+  return unwrap(
+    api.POST("/v1/tailor-sessions/{session_id}/suggestions/{suggestion_id}/regenerate", {
+      params: { path: { session_id: sessionId, suggestion_id: id } },
+      body: { instruction },
+    }),
+  );
+}
+
+function wording(s?: SuggestionOut): string {
+  return String((s?.payload as { after?: string } | undefined)?.after ?? "");
+}
+
+/** The request shows up in the conversation straight away. */
+function onAsked({ instruction }: Ask): void {
+  say({ role: NoteRole.User, text: instruction });
+  useReview.setState({ asking: true });
+}
+
+function onRewritten(next: SuggestionOut): void {
+  const before = useReview.getState().suggestions.find((x) => x.id === next.id);
+  const changed = wording(before) !== wording(next);
+  replaceSuggestion(next);
+  useReview.setState({ asking: false });
+  say({
+    role: NoteRole.Assistant,
+    text: changed
+      ? "Done. The new wording is on the resume, ready for you to accept or reject."
+      : "I couldn't find a wording that fits that better, so the suggestion is unchanged.",
+  });
+}
+
+function onAskFailed(error: unknown): void {
+  useReview.setState({ asking: false });
+  say({ role: NoteRole.Assistant, tone: NoteTone.Error, text: `${presentError(error).title} The suggestion is unchanged.` });
+}
+
+/** Says what the box is for right now, or why it can't be used. */
+function placeholderFor(status: ReviewState["status"], mode: ReviewState["mode"], current?: SuggestionOut): string {
+  if (status === SessionStatus.Queued || status === SessionStatus.Running) return "Suggestions are still coming in…";
+  if (status === SessionStatus.Failed) return "Nothing to review yet";
+  if (status !== SessionStatus.Ready) return "This review is finalized";
+  if (mode !== ViewMode.Suggestions) return "Switch to Suggestions to ask for changes";
+  if (!current) return "Select a change on the resume to ask about it";
+  return canReword(current) ? "Ask for a different wording of this suggestion…" : "This kind of change can only be accepted or rejected";
+}
+
+interface AskComposerProps {
+  sessionId: string;
+}
+
 /** Asks for a different wording of the suggestion under review. The request and the reply
  *  appear in the conversation, and the new wording replaces the old one on the resume. */
-export function AskComposer({ sessionId }: { sessionId: string }) {
+export function AskComposer({ sessionId }: AskComposerProps) {
   const status = useReview((s) => s.status);
   const mode = useReview((s) => s.mode);
   const current = useReview((s) => s.suggestions.find((x) => x.id === s.cursor));
   const [text, setText] = useState("");
 
   const ask = useMutation({
-    mutationFn: ({ id, instruction }: { id: string; instruction: string }) =>
-      unwrap(
-        api.POST("/v1/tailor-sessions/{session_id}/suggestions/{suggestion_id}/regenerate", {
-          params: { path: { session_id: sessionId, suggestion_id: id } },
-          body: { instruction },
-        }),
-      ),
-    onMutate: ({ instruction }) => {
-      const st = useReview.getState();
-      st.say({ role: "user", text: instruction });
-      st.patch({ asking: true });
-      setText("");
-    },
-    onSuccess: (next) => {
-      const st = useReview.getState();
-      const wording = (x?: SuggestionOut) => String((x?.payload as { after?: string } | undefined)?.after ?? "");
-      const changed = wording(st.suggestions.find((x) => x.id === next.id)) !== wording(next);
-      st.replaceSuggestion(next);
-      st.patch({ asking: false });
-      st.say({
-        role: "assistant",
-        text: changed
-          ? "Done. The new wording is on the resume, ready for you to accept or reject."
-          : "I couldn't find a wording that fits that better, so the suggestion is unchanged.",
-      });
-    },
-    onError: (e) => {
-      const st = useReview.getState();
-      st.patch({ asking: false });
-      st.say({ role: "assistant", tone: "error", text: `${presentError(e).title} The suggestion is unchanged.` });
-    },
+    mutationFn: (request: Ask) => requestRewrite(sessionId, request),
+    onMutate: onAsked,
+    onSuccess: onRewritten,
+    onError: onAskFailed,
   });
 
-  const ready = status === "ready" && mode === "suggestions";
+  const ready = status === SessionStatus.Ready && mode === ViewMode.Suggestions;
   const enabled = ready && !!current && canReword(current) && !ask.isPending;
-  const send = (instruction: string) => {
-    const value = instruction.trim();
-    if (enabled && value.length > 1) ask.mutate({ id: current.id, instruction: value });
-  };
 
-  const placeholder =
-    status === "queued" || status === "running"
-      ? "Suggestions are still coming in…"
-      : status === "failed"
-        ? "Nothing to review yet"
-        : status !== "ready"
-          ? "This review is finalized"
-        : mode !== "suggestions"
-          ? "Switch to Suggestions to ask for changes"
-          : !current
-            ? "Select a change on the resume to ask about it"
-            : canReword(current)
-              ? "Ask for a different wording of this suggestion…"
-              : "This kind of change can only be accepted or rejected";
+  const placeholder = placeholderFor(status, mode, current);
 
   return (
     <div className="space-y-2.5">
       {ready && (
         <div className="hidden flex-wrap gap-2 sm:flex">
           {QUICK.map((q) => (
-            <button key={q} type="button" disabled={!enabled} onClick={() => send(q)} className={chip}>
+            <button key={q} type="button" disabled={!enabled} onClick={() => current && ask.mutate({ id: current.id, instruction: q })} className={chip}>
               {q}
             </button>
           ))}
@@ -91,7 +105,9 @@ export function AskComposer({ sessionId }: { sessionId: string }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          send(text);
+          if (!enabled || text.trim().length < 2) return;
+          ask.mutate({ id: current.id, instruction: text.trim() });
+          setText("");
         }}
         className={cn(
           "flex h-12 items-center gap-2 rounded-full border border-line-strong bg-bg pr-1.5 pl-5 transition-colors focus-within:border-ink",

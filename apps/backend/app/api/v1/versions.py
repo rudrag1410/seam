@@ -1,9 +1,8 @@
-import json
 from collections.abc import AsyncIterator
 from uuid import UUID
 
 from fastapi import APIRouter, Query, Request
-from fastapi.responses import RedirectResponse, Response, StreamingResponse
+from fastapi.responses import RedirectResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,10 +10,13 @@ from app.ai.gateway import AIGateway
 from app.ai.pipelines.cover_letter import stream_cover_letter
 from app.ai.pipelines.interview_prep import interview_prep
 from app.api.deps import AIDep, DbDep, SettingsDep, StorageDep, UserDep
+from app.api.sse import EventStreamResponse, frame
 from app.core.config import Settings
-from app.core.errors import AppError
+from app.core.errors import AppError, ErrorCode
 from app.db.models import CoverLetter, JobDescription, Profile, ResumeVersion, TailorSession, User
+from app.schemas.enums import ActivityKind, EntityType, StreamEvent
 from app.schemas.jd import JDAnalysis
+from app.schemas.stream import LetterEvents
 from app.schemas.version import (
     CoverLetterIn,
     CoverLetterOut,
@@ -28,15 +30,11 @@ from app.services import activity, version_service
 router = APIRouter(prefix="/versions", tags=["versions"])
 
 
-def _sse(event: str, data: dict) -> str:
-    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
-
-
 async def _analysis(db, version: ResumeVersion) -> JDAnalysis:
     session = await db.get(TailorSession, version.session_id) if version.session_id else None
     jd = await db.get(JobDescription, session.jd_id) if session else None
     if jd is None or jd.analysis is None:
-        raise AppError("NO_JD", "This version isn't linked to a job description.", status=409)
+        raise AppError(ErrorCode.NO_JD, "This version isn't linked to a job description.", status=409)
     return JDAnalysis.model_validate(jd.analysis)
 
 
@@ -131,9 +129,9 @@ async def _cover_letter_events(
             notice_period_days=notice,
         ):
             parts.append(chunk)
-            yield _sse("chunk", {"text": chunk})
+            yield frame(StreamEvent.CHUNK, {"text": chunk})
     except AppError as exc:
-        yield _sse("error", exc.payload()["error"])
+        yield frame(StreamEvent.ERROR, exc.payload()["error"])
         return
     letter = CoverLetter(version_id=version.id, tone=body.tone, length=body.length, body="".join(parts))
     db.add(letter)
@@ -141,16 +139,22 @@ async def _cover_letter_events(
     activity.record(
         db,
         user.id,
-        "cover_letter.generated",
+        ActivityKind.COVER_LETTER_GENERATED,
         f"Generated cover letter for {version.label}",
-        entity_type="version",
+        entity_type=EntityType.VERSION,
         entity_id=version.id,
     )
     await db.commit()
-    yield _sse("done", {"id": str(letter.id)})
+    yield frame(StreamEvent.DONE, {"id": str(letter.id)})
 
 
-@router.post("/{version_id}/cover-letter")
+@router.post(
+    "/{version_id}/cover-letter",
+    response_class=EventStreamResponse,
+    responses={
+        200: {"model": LetterEvents, "description": "Server-sent events, one payload type per event name."}
+    },
+)
 async def cover_letter(
     version_id: UUID,
     body: CoverLetterIn,
@@ -159,17 +163,13 @@ async def cover_letter(
     db: DbDep,
     ai: AIDep,
     settings: SettingsDep,
-) -> StreamingResponse:
+) -> EventStreamResponse:
     version = await version_service.owned_version(db, user, version_id)
     analysis = await _analysis(db, version)
     profile = await db.get(Profile, user.id)
     notice = profile.notice_period_days if body.include_notice_period and profile else None
 
-    return StreamingResponse(
-        _cover_letter_events(db, ai, settings, user, version, analysis, body, notice),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
-    )
+    return EventStreamResponse(_cover_letter_events(db, ai, settings, user, version, analysis, body, notice))
 
 
 @router.post("/{version_id}/interview-prep", response_model=InterviewPrep)

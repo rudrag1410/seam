@@ -10,7 +10,8 @@ import json
 import logging
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import Any
+from enum import Enum
+from typing import Any, TypedDict
 
 from pydantic import ValidationError
 
@@ -29,7 +30,18 @@ from app.ai.scoring.experience import estimate_years
 from app.ai.scoring.keywords import canonicalize, find_keywords, resume_text
 from app.ai.scoring.match import Coverage, compute_match, keyword_coverage
 from app.core.config import Settings
-from app.core.errors import AppError
+from app.core.errors import AppError, ErrorCode
+from app.schemas.enums import (
+    SKILL_OPS,
+    TEXT_OPS,
+    Intensity,
+    OpName,
+    SectionName,
+    SectionType,
+    Stage,
+    StreamEvent,
+    WarningCode,
+)
 from app.schemas.jd import JDAnalysis
 from app.schemas.scores import MatchScore
 from app.schemas.suggestion import ModelSuggestion, ModelSuggestionBatch
@@ -37,19 +49,24 @@ from app.schemas.suggestion import ModelSuggestion, ModelSuggestionBatch
 log = logging.getLogger("seam.tailor")
 
 CONCURRENCY = 6
-TEXT_OPS = {"replace_text", "rewrite_summary", "insert_bullet"}
-SKILL_OPS = {"add_skill", "remove_skill"}
 SECTION_LABEL = {
-    "summary": "Summary",
-    "skills": "Skills",
-    "experience": "Experience",
-    "projects": "Projects",
+    SectionName.SUMMARY: "Summary",
+    SectionName.SKILLS: "Skills",
+    SectionName.EXPERIENCE: "Experience",
+    SectionName.PROJECTS: "Projects",
 }
+
+
+class RunEvent(TypedDict):
+    """One thing a run reports: which event, and its payload (see `app.schemas.stream`)."""
+
+    event: StreamEvent
+    data: dict[str, Any]
 
 
 @dataclass
 class SectionTask:
-    section: str  # summary | skills | experience | projects
+    section: SectionName
     nodes: list[dict]
     instruction: str | None = None
 
@@ -58,30 +75,31 @@ class SectionTask:
 class TailorInputs:
     resume: dict
     jd: JDAnalysis
-    sections: list[str]
-    intensity: str
+    sections: list[SectionName]
+    intensity: Intensity
 
 
-def build_tasks(resume: dict, sections: list[str]) -> list[SectionTask]:
+def build_tasks(resume: dict, sections: list[SectionName]) -> list[SectionTask]:
     tasks: list[SectionTask] = []
     for s in resume["sections"]:
         if s["type"] not in sections:
             continue
-        if s["type"] == "summary":
-            tasks.append(SectionTask("summary", [{"id": s["id"], "text": s["text"]}]))
-        elif s["type"] == "skills":
+        if s["type"] == SectionType.SUMMARY:
+            tasks.append(SectionTask(SectionName.SUMMARY, [{"id": s["id"], "text": s["text"]}]))
+        elif s["type"] == SectionType.SKILLS:
             tasks.append(
                 SectionTask(
-                    "skills", [{"id": g["id"], "label": g["label"], "items": g["items"]} for g in s["groups"]]
+                    SectionName.SKILLS,
+                    [{"id": g["id"], "label": g["label"], "items": g["items"]} for g in s["groups"]],
                 )
             )
-        elif s["type"] in ("experience", "projects"):
+        elif s["type"] in (SectionType.EXPERIENCE, SectionType.PROJECTS):
             for it in s["items"]:
                 head = it.get("title") or it.get("subtitle") or ""
                 name = it.get("company") or it.get("name") or ""
                 tasks.append(
                     SectionTask(
-                        s["type"],
+                        SectionName(s["type"]),
                         [
                             {
                                 "id": it["id"],
@@ -154,9 +172,9 @@ async def _generate_stream(
 
 
 def _before_of(s: ModelSuggestion, texts: dict[str, str], doc: dict) -> dict | None:
-    if s.op in ("replace_text", "rewrite_summary", "remove_bullet"):
+    if s.op in (OpName.REPLACE_TEXT, OpName.REWRITE_SUMMARY, OpName.REMOVE_BULLET):
         return {"text": texts.get(s.target, "")}
-    if s.op == "reorder":
+    if s.op == OpName.REORDER:
         for sec in doc["sections"]:
             for it in sec.get("items", []):
                 if it["id"] == s.target:
@@ -165,13 +183,13 @@ def _before_of(s: ModelSuggestion, texts: dict[str, str], doc: dict) -> dict | N
 
 
 def _payload_of(s: ModelSuggestion, seq_hint: str) -> dict:
-    if s.op in ("replace_text", "rewrite_summary"):
+    if s.op in (OpName.REPLACE_TEXT, OpName.REWRITE_SUMMARY):
         return {"after": s.after}
-    if s.op == "insert_bullet":
+    if s.op == OpName.INSERT_BULLET:
         return {"after": s.after, "new_id": f"{s.target}.n{seq_hint}"}
-    if s.op == "reorder":
+    if s.op == OpName.REORDER:
         return {"order": s.order}
-    if s.op in ("add_skill", "remove_skill"):
+    if s.op in (OpName.ADD_SKILL, OpName.REMOVE_SKILL):
         return {"value": (s.value or "").strip()}
     return {}
 
@@ -181,7 +199,7 @@ def _estimate_delta(s: ModelSuggestion, jd: JDAnalysis, before_text: str, after_
     if not jd.keywords:
         return 0.0
     wanted = {canonicalize(k) for k in jd.keywords}
-    if s.op == "reorder":
+    if s.op == OpName.REORDER:
         return 0.3
     before_kw, after_kw = set(find_keywords(before_text)), set(find_keywords(after_text))
     gained = len((after_kw - before_kw) & wanted)
@@ -215,19 +233,19 @@ def _guard(
 
     if s.op in TEXT_OPS and s.after:
         evidence = "\n".join(texts.get(e, "") for e in s.evidence)
-        if s.op == "rewrite_summary" or not evidence:
+        if s.op == OpName.REWRITE_SUMMARY or not evidence:
             evidence = full_text
         res = check_fabrication(s.after, evidence_text=evidence, resume_text=full_text, estimated_years=years)
         s.after = res.after
         after_text = res.after
         if res.requires_confirmation:
             needs, flag = True, res.reason
-        if s.op == "replace_text" and s.after.strip() == before_text.strip():
+        if s.op == OpName.REPLACE_TEXT and s.after.strip() == before_text.strip():
             return None
-    if s.op == "insert_bullet":
+    if s.op == OpName.INSERT_BULLET:
         needs = True
         flag = flag or "New content. Only accept if it's true."
-    if s.op == "add_skill" and s.value:
+    if s.op == OpName.ADD_SKILL and s.value:
         known = canonicalize(s.value) in set(find_keywords(full_text)) or s.value.lower() in full_text.lower()
         needs = not known
         if needs:
@@ -300,7 +318,9 @@ async def _ground(
         it["flag_reason"] = "Check this one before accepting."
 
     high = settings.jev_confidence_high
-    if it["op"] == "replace_text" and ((fit_r < fit_o and fo_conf >= high and fr_conf >= high) or same < 0.5):
+    if it["op"] == OpName.REPLACE_TEXT and (
+        (fit_r < fit_o and fo_conf >= high and fr_conf >= high) or same < 0.5
+    ):
         return None, False
     if req_id:
         it["score_delta"] = _delta_from_fit(inp.jd, req_id, fit_o, fit_r)
@@ -341,7 +361,23 @@ async def _process_stream(
             yield item, degraded
 
 
-WorkQueue = asyncio.Queue[tuple[str, SectionTask, Any, bool]]
+class WorkKind(Enum):
+    ITEM = "item"  # one suggestion is ready
+    FAILED = "failed"  # the piece couldn't be written
+    FINISHED = "finished"  # the piece is over, however it went
+
+
+@dataclass(frozen=True)
+class WorkMessage:
+    """What a section worker tells the run loop."""
+
+    kind: WorkKind
+    task: SectionTask
+    payload: Any = None
+    degraded: bool = False
+
+
+WorkQueue = asyncio.Queue[WorkMessage]
 
 
 async def _section_worker(
@@ -356,34 +392,34 @@ async def _section_worker(
     try:
         async with sem:
             async for item, deg in _process_stream(ai, settings, inp, task):
-                await queue.put(("item", task, item, deg))
+                await queue.put(WorkMessage(WorkKind.ITEM, task, item, deg))
     except asyncio.CancelledError:
         raise
     except Exception as exc:  # one bad section must not sink the run
         if not isinstance(exc, AppError):
             log.exception("tailor task failed")
-        await queue.put(("error", task, exc, False))
+        await queue.put(WorkMessage(WorkKind.FAILED, task, exc))
     finally:
-        await queue.put(("done", task, None, False))
+        await queue.put(WorkMessage(WorkKind.FINISHED, task))
 
 
-async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> AsyncIterator[dict[str, Any]]:
+async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> AsyncIterator[RunEvent]:
     """Yields SSE-shaped events: stage, score, suggestion, warning, done.
 
     Sections run in parallel and each suggestion is emitted the moment it is ready, so the first
     one appears after a single model call's first few seconds rather than after the whole run."""
     degraded = False
-    yield {"event": "stage", "data": {"stage": "analyzing", "progress": 0.05}}
+    yield {"event": StreamEvent.STAGE, "data": {"stage": Stage.ANALYZING, "progress": 0.05}}
     # the "before" score runs alongside generation instead of blocking it
     before_task = asyncio.create_task(score_document(ai, settings, inp.resume, inp.jd))
 
     tasks = build_tasks(inp.resume, inp.sections)
     total = len(tasks)
     # how many pieces each section is split into, so the client can show per-section progress
-    plan: dict[str, int] = {}
+    plan: dict[SectionName, int] = {}
     for t in tasks:
         plan[t.section] = plan.get(t.section, 0) + 1
-    yield {"event": "stage", "data": {"stage": "tailoring", "progress": 0.1, "tasks": plan}}
+    yield {"event": StreamEvent.STAGE, "data": {"stage": Stage.TAILORING, "progress": 0.1, "tasks": plan}}
 
     queue: WorkQueue = asyncio.Queue()
     sem = asyncio.Semaphore(CONCURRENCY)
@@ -407,23 +443,23 @@ async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> As
             if before is None and before_task.done():
                 before, d = before_task.result()
                 degraded |= d
-                yield {"event": "score", "data": {"before": before.model_dump()}}
+                yield {"event": StreamEvent.SCORE, "data": {"before": before.model_dump()}}
             if finished < total and next_event.done():
-                kind, task, payload, deg = next_event.result()
+                msg = next_event.result()
                 next_event = asyncio.create_task(queue.get())
-                if kind == "item":
-                    degraded |= deg
-                    produced.append(payload)
-                    yield {"event": "suggestion", "data": payload}
-                elif kind == "error":
-                    failures.append(payload)
+                if msg.kind is WorkKind.ITEM:
+                    degraded |= msg.degraded
+                    produced.append(msg.payload)
+                    yield {"event": StreamEvent.SUGGESTION, "data": msg.payload}
+                elif msg.kind is WorkKind.FAILED:
+                    failures.append(msg.payload)
                 else:
                     finished += 1
                     yield {
-                        "event": "stage",
+                        "event": StreamEvent.STAGE,
                         "data": {
-                            "stage": "tailoring",
-                            "section": task.section,
+                            "stage": Stage.TAILORING,
+                            "section": msg.task.section,
                             "progress": 0.1 + 0.8 * finished / max(total, 1),
                         },
                     }
@@ -438,14 +474,17 @@ async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> As
             failures[0]
             if isinstance(failures[0], AppError)
             else AppError(
-                "TAILOR_FAILED", "We couldn't generate suggestions right now.", status=500, retryable=True
+                ErrorCode.TAILOR_FAILED,
+                "We couldn't generate suggestions right now.",
+                status=500,
+                retryable=True,
             )
         )
     if failures:
         yield {
-            "event": "warning",
+            "event": StreamEvent.WARNING,
             "data": {
-                "code": "PARTIAL",
+                "code": WarningCode.PARTIAL,
                 "message": "Some sections couldn't be generated. You can retry them.",
             },
         }
@@ -460,15 +499,21 @@ async def run_tailor(ai: AIGateway, settings: Settings, inp: TailorInputs) -> As
     degraded |= deg
     if degraded:
         yield {
-            "event": "warning",
-            "data": {"code": "DEGRADED_CHECKS", "message": "Some checks are running in basic mode."},
+            "event": StreamEvent.WARNING,
+            "data": {
+                "code": WarningCode.DEGRADED_CHECKS,
+                "message": "Some checks are running in basic mode.",
+            },
         }
-    yield {"event": "score", "data": {"before": before.model_dump(), "projected": projected.model_dump()}}
-    yield {"event": "done", "data": {"count": len(produced), "degraded": degraded}}
+    yield {
+        "event": StreamEvent.SCORE,
+        "data": {"before": before.model_dump(), "projected": projected.model_dump()},
+    }
+    yield {"event": StreamEvent.DONE, "data": {"count": len(produced), "degraded": degraded}}
 
 
 async def regenerate_one(
-    ai: AIGateway, settings: Settings, inp: TailorInputs, target: str, section: str, instruction: str
+    ai: AIGateway, settings: Settings, inp: TailorInputs, target: str, section: SectionName, instruction: str
 ) -> dict:
     """Re-run a single node with a user instruction. Jev maps the instruction to a template."""
     answers = await ai.jev.ask(instruction, intent_battery())
@@ -488,13 +533,13 @@ async def regenerate_one(
         None,
     )
     if task is None:
-        raise AppError("NOT_FOUND", "That part of the resume no longer exists.", status=404)
+        raise AppError(ErrorCode.NOT_FOUND, "That part of the resume no longer exists.", status=404)
     task.instruction = f"{text} Edit only the node with id {target}; return at most one suggestion for it."
     items = [item async for item, _ in _process_stream(ai, settings, inp, task)]
     match = next((i for i in items if i["target"] == target), None)
     if match is None:
         raise AppError(
-            "REGENERATE_EMPTY",
+            ErrorCode.REGENERATE_EMPTY,
             "We couldn't improve on that one with that instruction.",
             hint="Try different wording.",
             retryable=True,

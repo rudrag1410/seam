@@ -7,6 +7,8 @@ Mirrored by `packages/resume-core/src/apply-ops.ts`; both run the shared vectors
 import copy
 from typing import Any
 
+from app.schemas.enums import OpName, SectionType
+
 Op = dict[str, Any]  # {op, target, payload, edited_text?}
 
 
@@ -46,9 +48,9 @@ def _text_for(op: Op) -> str:
 def _apply_one(doc: dict, op: Op) -> None:
     kind, target, payload = op["op"], op["target"], op["payload"]
 
-    if kind in ("replace_text", "rewrite_summary"):
+    if kind in (OpName.REPLACE_TEXT, OpName.REWRITE_SUMMARY):
         section = next((s for s in doc["sections"] if s["id"] == target), None)
-        if section is not None and section["type"] == "summary":
+        if section is not None and section["type"] == SectionType.SUMMARY:
             section["text"] = _text_for(op)
             return
         found = _find_bullet_parent(doc, target)
@@ -56,7 +58,7 @@ def _apply_one(doc: dict, op: Op) -> None:
             bullets, i = found
             bullets[i]["text"] = _text_for(op)
 
-    elif kind == "reorder":
+    elif kind == OpName.REORDER:
         item = _find_item(doc, target)
         if item is None:
             return
@@ -65,26 +67,26 @@ def _apply_one(doc: dict, op: Op) -> None:
         listed = {b["id"] for b in ordered}
         item["bullets"] = ordered + [b for b in item["bullets"] if b["id"] not in listed]
 
-    elif kind == "insert_bullet":
+    elif kind == OpName.INSERT_BULLET:
         item = _find_item(doc, target)
         if item is not None:
             item["bullets"].append({"id": payload["new_id"], "text": _text_for(op)})
 
-    elif kind == "remove_bullet":
+    elif kind == OpName.REMOVE_BULLET:
         found = _find_bullet_parent(doc, target)
         if found:
             bullets, i = found
             del bullets[i]
 
-    elif kind in ("add_skill", "remove_skill"):
+    elif kind in (OpName.ADD_SKILL, OpName.REMOVE_SKILL):
         group = _find_group(doc, target)
         if group is None:
             return
         value = (op.get("edited_text") or payload["value"]).strip()
         lowered = [s.lower() for s in group["items"]]
-        if kind == "add_skill" and value.lower() not in lowered:
+        if kind == OpName.ADD_SKILL and value.lower() not in lowered:
             group["items"].append(value)
-        elif kind == "remove_skill" and value.lower() in lowered:
+        elif kind == OpName.REMOVE_SKILL and value.lower() in lowered:
             group["items"].pop(lowered.index(value.lower()))
 
 

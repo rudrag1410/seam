@@ -17,7 +17,11 @@ export const metadata: Metadata = {
 
 const themeScript = `try{var t=localStorage.getItem("seam-theme");if(t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}`;
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+interface RootLayoutProps {
+  children: ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`} suppressHydrationWarning>
       <head>

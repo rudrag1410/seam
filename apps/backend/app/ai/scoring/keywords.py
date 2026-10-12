@@ -6,6 +6,8 @@ from pathlib import Path
 
 import yaml
 
+from app.schemas.enums import SectionType
+
 _YAML = Path(__file__).resolve().parent.parent / "canonical_skills.yaml"
 
 
@@ -54,20 +56,20 @@ def resume_text(document: dict) -> str:
     """Flatten a resume document into searchable text."""
     parts: list[str] = [document.get("contact", {}).get("name", "")]
     for s in document.get("sections", []):
-        if s["type"] == "summary":
+        if s["type"] == SectionType.SUMMARY:
             parts.append(s["text"])
-        elif s["type"] == "skills":
+        elif s["type"] == SectionType.SKILLS:
             for g in s["groups"]:
                 parts.append(g["label"])
                 parts.extend(g["items"])
-        elif s["type"] in ("experience", "projects"):
+        elif s["type"] in (SectionType.EXPERIENCE, SectionType.PROJECTS):
             for it in s["items"]:
                 parts.extend([it.get("company", ""), it.get("title", ""), it.get("name", "")])
                 parts.extend(b["text"] for b in it["bullets"])
-        elif s["type"] == "education":
+        elif s["type"] == SectionType.EDUCATION:
             for it in s["items"]:
                 parts.extend([it["school"], it.get("degree", ""), it.get("details") or ""])
-        elif s["type"] == "other":
+        elif s["type"] == SectionType.OTHER:
             parts.append(s["title"])
             parts.extend(s["lines"])
     return "\n".join(p for p in parts if p)

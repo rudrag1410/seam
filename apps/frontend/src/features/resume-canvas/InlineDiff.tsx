@@ -1,6 +1,10 @@
 import type { DiffRun } from "@seam/resume-core";
 
-export function InlineDiff({ runs }: { runs: DiffRun[] }) {
+interface InlineDiffProps {
+  runs: DiffRun[];
+}
+
+export function InlineDiff({ runs }: InlineDiffProps) {
   return (
     <>
       {runs.map((r, i) =>

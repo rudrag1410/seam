@@ -4,17 +4,17 @@ import { Popover, PopoverContent, PopoverTrigger, cn } from "@seam/ui";
 import { ArrowUp, Link2, Loader2, SlidersHorizontal, Type } from "lucide-react";
 import { useLayoutEffect, useRef } from "react";
 import { MAX_JD_CHARS, MIN_JD_CHARS, jdProblem } from "../jd/limits";
-import { type Intensity, ScopePicker, type SectionKey } from "../jd/ScopePicker";
+import type { Intensity, SectionName } from "@seam/api-client";
+import { INTENSITY_LABEL, ScopePicker } from "../jd/ScopePicker";
 
 export interface JobDraft {
   text: string;
   url: string;
   byUrl: boolean;
-  sections: SectionKey[];
+  sections: SectionName[];
   intensity: Intensity;
 }
 
-const INTENSITY: Record<Intensity, string> = { light: "Light", balanced: "Balanced", bold: "Bold" };
 const tool = "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
 
 export function jobReady(d: JobDraft): boolean {
@@ -23,8 +23,7 @@ export function jobReady(d: JobDraft): boolean {
   return job && d.sections.length > 0;
 }
 
-/** Where the job description goes in. Sending it is the only thing that starts any work. */
-export function JobComposer({ draft, onChange, onSend, sending, disabledReason, error }: {
+interface JobComposerProps {
   draft: JobDraft;
   onChange: (patch: Partial<JobDraft>) => void;
   onSend: () => void;
@@ -32,7 +31,10 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
   /** Why sending isn't possible yet for a reason outside this box (e.g. no resume). */
   disabledReason?: string;
   error?: string | null;
-}) {
+}
+
+/** Where the job description goes in. Sending it is the only thing that starts any work. */
+export function JobComposer({ draft, onChange, onSend, sending, disabledReason, error }: JobComposerProps) {
   const area = useRef<HTMLTextAreaElement>(null);
   const n = draft.text.trim().length;
   const problem = draft.byUrl ? null : jdProblem(n);
@@ -88,7 +90,7 @@ export function JobComposer({ draft, onChange, onSend, sending, disabledReason, 
           <Popover>
             <PopoverTrigger className={tool} aria-label="What to tailor">
               <SlidersHorizontal className="size-3.5" aria-hidden />
-              {draft.sections.length} {draft.sections.length === 1 ? "section" : "sections"} · {INTENSITY[draft.intensity]}
+              {draft.sections.length} {draft.sections.length === 1 ? "section" : "sections"} · {INTENSITY_LABEL[draft.intensity]}
             </PopoverTrigger>
             <PopoverContent side="top" align="start" className="w-[min(420px,calc(100vw-32px))] p-5">
               <ScopePicker

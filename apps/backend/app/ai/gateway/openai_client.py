@@ -17,7 +17,7 @@ from app.ai.gateway.json_stream import ArrayObjectScanner
 from app.ai.gateway.router import Route, Task, route_for
 from app.ai.gateway.usage import CallRecord, Recorder, timed
 from app.core.config import Settings
-from app.core.errors import AppError
+from app.core.errors import AppError, ErrorCode
 
 log = logging.getLogger("seam.openai")
 T = TypeVar("T", bound=BaseModel)
@@ -28,7 +28,7 @@ def _messages(items: list[Any]) -> list[ChatCompletionMessageParam]:
 
 
 LLM_UNAVAILABLE = AppError(
-    "LLM_UNAVAILABLE",
+    ErrorCode.LLM_UNAVAILABLE,
     "The AI service isn't responding right now.",
     status=503,
     hint="Your inputs are saved. Try again in a minute.",
@@ -36,7 +36,7 @@ LLM_UNAVAILABLE = AppError(
 )
 
 LLM_NOT_CONFIGURED = AppError(
-    "LLM_NOT_CONFIGURED",
+    ErrorCode.LLM_NOT_CONFIGURED,
     "AI isn't set up on this server yet.",
     status=503,
     hint="Add OPENAI_API_KEY to apps/backend/.env and restart the API. (AI_MODE=mock runs an offline demo.)",

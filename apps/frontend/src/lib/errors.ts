@@ -1,4 +1,4 @@
-import { ApiException } from "@seam/api-client";
+import { ApiError, ApiException, ClientErrorCode, ErrorCode, JOB_TEXT_CODES } from "@seam/api-client";
 
 export interface Presentable {
   title: string;
@@ -7,15 +7,20 @@ export interface Presentable {
 }
 
 /** Every backend error has a stable `code`; this maps codes to copy and recovery hints. */
-const COPY: Record<string, Partial<Presentable>> = {
-  FILE_TYPE_UNSUPPORTED: { hint: "Resumes must be PDF or DOCX files." },
-  FILE_TOO_LARGE: { hint: "Export a smaller copy and try again." },
-  PDF_PASSWORD_PROTECTED: { hint: "Export an unlocked copy and upload that." },
-  JD_NOT_A_JD: { hint: "Paste the job posting you want to tailor for." },
-  LLM_UNAVAILABLE: { hint: "Your inputs are saved. Try again in a minute.", retryable: true },
-  NETWORK: { hint: "Check your connection and try again.", retryable: true },
-  INVALID_CREDENTIALS: { hint: "Check your email and password." },
+const COPY: Partial<Record<ApiError["code"], Partial<Presentable>>> = {
+  [ErrorCode.FileTypeUnsupported]: { hint: "Resumes must be PDF or DOCX files." },
+  [ErrorCode.FileTooLarge]: { hint: "Export a smaller copy and try again." },
+  [ErrorCode.PdfPasswordProtected]: { hint: "Export an unlocked copy and upload that." },
+  [ErrorCode.JdNotAJd]: { hint: "Paste the job posting you want to tailor for." },
+  [ErrorCode.LlmUnavailable]: { hint: "Your inputs are saved. Try again in a minute.", retryable: true },
+  [ClientErrorCode.Network]: { hint: "Check your connection and try again.", retryable: true },
+  [ErrorCode.InvalidCredentials]: { hint: "Check your email and password." },
 };
+
+/** True for the errors that mean the job text itself is the problem, so the user can fix it and resend. */
+export function isJobTextCode(code: ApiError["code"]): boolean {
+  return JOB_TEXT_CODES.has(code as ErrorCode);
+}
 
 export function presentError(err: unknown): Presentable {
   if (err instanceof ApiException) {

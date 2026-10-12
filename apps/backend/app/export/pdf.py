@@ -17,15 +17,16 @@ from reportlab.platypus import (
 )
 
 from app.export.layout import Block, to_blocks
+from app.schemas.enums import BlockKind, ExportTemplate
 
 _FACES = {
-    "classic": ("Times-Roman", "Times-Bold"),
-    "modern": ("Helvetica", "Helvetica-Bold"),
+    ExportTemplate.CLASSIC: ("Times-Roman", "Times-Bold"),
+    ExportTemplate.MODERN: ("Helvetica", "Helvetica-Bold"),
 }
 
 
-def _styles(template: str) -> dict[str, ParagraphStyle]:
-    regular, bold = _FACES.get(template, _FACES["classic"])
+def _styles(template: ExportTemplate) -> dict[str, ParagraphStyle]:
+    regular, bold = _FACES.get(template, _FACES[ExportTemplate.CLASSIC])
     base = ParagraphStyle("base", fontName=regular, fontSize=10, leading=13.2)
     return {
         "name": ParagraphStyle(
@@ -59,31 +60,31 @@ def _flush_bullets(story: list, bullets: list[Block], style: ParagraphStyle) -> 
     bullets.clear()
 
 
-def render_pdf(doc: dict, template: str = "classic") -> bytes:
+def render_pdf(doc: dict, template: ExportTemplate = ExportTemplate.CLASSIC) -> bytes:
     st = _styles(template)
     story: list = []
     bullets: list[Block] = []
 
     for b in to_blocks(doc):
-        if b.kind == "bullet":
+        if b.kind is BlockKind.BULLET:
             bullets.append(b)
             continue
         _flush_bullets(story, bullets, st["bullet"])
-        if b.kind == "heading":
+        if b.kind is BlockKind.HEADING:
             story += [
                 Paragraph(escape(b.text.upper()), st["heading"]),
                 HRFlowable(width="100%", thickness=0.6, color="#222222", spaceAfter=3),
             ]
-        elif b.kind == "role":
+        elif b.kind is BlockKind.ROLE:
             text = escape(b.text) + (
-                f"  <font name='{_FACES.get(template, _FACES['classic'])[0]}'>({escape(b.meta)})</font>"
+                f"  <font name='{_FACES.get(template, _FACES[ExportTemplate.CLASSIC])[0]}'>({escape(b.meta)})</font>"
                 if b.meta
                 else ""
             )
             story.append(Paragraph(text, st["role"]))
         else:
             story.append(Paragraph(escape(b.text), st[b.kind]))
-        if b.kind == "contact":
+        if b.kind is BlockKind.CONTACT:
             story.append(Spacer(1, 2))
     _flush_bullets(story, bullets, st["bullet"])
 

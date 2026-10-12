@@ -1,34 +1,57 @@
 "use client";
 
-import type { SuggestionOut } from "@seam/api-client";
+import { Decision, OpName, type SuggestionOut } from "@seam/api-client";
 import { Badge, Button, Kbd, Textarea, cn } from "@seam/ui";
 import { Check, ChevronLeft, ChevronRight, Pencil, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { decide, move } from "../review/actions";
 import { useReview } from "../review/store";
 import { SECTION_LABEL } from "./steps";
 
-const OP_LABEL: Record<SuggestionOut["op"], string> = {
-  replace_text: "Rephrase",
-  rewrite_summary: "Rewrite summary",
-  reorder: "Reorder bullets",
-  insert_bullet: "New bullet",
-  remove_bullet: "Remove bullet",
-  add_skill: "Add skill",
-  remove_skill: "Remove skill",
+const OP_LABEL: Record<OpName, string> = {
+  [OpName.ReplaceText]: "Rephrase",
+  [OpName.RewriteSummary]: "Rewrite summary",
+  [OpName.Reorder]: "Reorder bullets",
+  [OpName.InsertBullet]: "New bullet",
+  [OpName.RemoveBullet]: "Remove bullet",
+  [OpName.AddSkill]: "Add skill",
+  [OpName.RemoveSkill]: "Remove skill",
 };
-const DECIDED: Record<string, string> = { accepted: "Accepted", edited: "Edited", rejected: "Rejected" };
+const DECIDED: Record<Decision, string> = {
+  [Decision.Pending]: "Pending",
+  [Decision.Accepted]: "Accepted",
+  [Decision.Edited]: "Edited",
+  [Decision.Rejected]: "Rejected",
+};
 
-export const canEdit = (s: SuggestionOut) => s.op !== "reorder" && s.op !== "remove_bullet";
+export const canEdit = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.RemoveBullet;
 /** Rewrites can be redone with an instruction; reorders and skill changes can't. */
-export const canReword = (s: SuggestionOut) => s.op !== "reorder" && s.op !== "add_skill" && s.op !== "remove_skill";
+export const canReword = (s: SuggestionOut) => s.op !== OpName.Reorder && s.op !== OpName.AddSkill && s.op !== OpName.RemoveSkill;
+
+function startEdit(id: string): void {
+  useReview.setState({ editing: id });
+}
+
+function cancelEdit(): void {
+  useReview.setState({ editing: null });
+}
+
+/** The user's own wording replaces the suggestion's. An empty box saves nothing. */
+function saveEdit(id: string, text: string): void {
+  if (text.trim()) decide(id, Decision.Edited, text.trim());
+}
 
 function suggestedText(s: SuggestionOut): string {
   const p = s.payload as { after?: string; value?: string };
   return s.edited_text || p.after || p.value || "";
 }
 
-function Stepper({ index, total }: { index: number; total: number }) {
-  const move = useReview((st) => st.move);
+interface StepperProps {
+  index: number;
+  total: number;
+}
+
+function Stepper({ index, total }: StepperProps) {
   const arrow = "grid size-7 place-items-center rounded-full border border-line text-ink-soft hover:border-line-strong hover:text-ink disabled:opacity-40";
   return (
     <div className="flex items-center gap-1.5">
@@ -45,10 +68,12 @@ function Stepper({ index, total }: { index: number; total: number }) {
   );
 }
 
-function EditBox({ suggestion: s }: { suggestion: SuggestionOut }) {
+interface EditBoxProps {
+  suggestion: SuggestionOut;
+}
+
+function EditBox({ suggestion: s }: EditBoxProps) {
   const [text, setText] = useState(suggestedText(s));
-  const cancel = () => useReview.getState().patch({ editing: null });
-  const save = () => text.trim() && useReview.getState().decide(s.id, "edited", text.trim());
   return (
     <div className="mt-3">
       <Textarea
@@ -61,16 +86,16 @@ function EditBox({ suggestion: s }: { suggestion: SuggestionOut }) {
         onKeyDown={(e) => {
           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
-            save();
+            saveEdit(s.id, text);
           }
-          if (e.key === "Escape") cancel();
+          if (e.key === "Escape") cancelEdit();
         }}
       />
       <div className="mt-2.5 flex items-center gap-2">
-        <Button size="sm" onClick={save}>
+        <Button size="sm" onClick={() => saveEdit(s.id, text)}>
           Save edit <Kbd className="hidden border-transparent bg-white/15 text-inherit sm:inline-flex">⌘↵</Kbd>
         </Button>
-        <Button size="sm" variant="ghost" onClick={cancel}>
+        <Button size="sm" variant="ghost" onClick={cancelEdit}>
           Cancel
         </Button>
       </div>
@@ -86,7 +111,6 @@ export function ReviewDock() {
   const editing = useReview((st) => st.editing);
   const confirming = useReview((st) => st.confirming);
   const jd = useReview((st) => st.jd);
-  const decide = useReview((st) => st.decide);
 
   const index = suggestions.findIndex((x) => x.id === cursor);
   const s = suggestions[index];
@@ -102,7 +126,7 @@ export function ReviewDock() {
     const r = jd?.must_haves.find((x) => x.id === id) ?? jd?.nice_to_haves.find((x) => x.id === id);
     return r ? [r.text] : [];
   });
-  const decided = s.status !== "pending";
+  const decided = s.status !== Decision.Pending;
   const unsure = (s.checks as { band?: string } | null)?.band === "medium";
   const isConfirming = confirming === s.id;
 
@@ -111,14 +135,14 @@ export function ReviewDock() {
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-medium">{OP_LABEL[s.op]}</span>
-          <span className="text-ink-muted">in {SECTION_LABEL[s.section] ?? s.section}</span>
+          <span className="text-ink-muted">in {SECTION_LABEL[s.section]}</span>
           {s.score_delta != null && s.score_delta > 0 && (
             <Badge tone="green" className="tabular">
               +{s.score_delta.toFixed(1)} match
             </Badge>
           )}
           {unsure && <Badge tone="yellow">Check this</Badge>}
-          {decided && <Badge tone={s.status === "rejected" ? "orange" : "ink"}>{DECIDED[s.status]}</Badge>}
+          {decided && <Badge tone={s.status === Decision.Rejected ? "orange" : "ink"}>{DECIDED[s.status]}</Badge>}
         </div>
         <Stepper index={index} total={suggestions.length} />
       </div>
@@ -143,15 +167,15 @@ export function ReviewDock() {
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {decided ? (
-              <Button size="sm" variant="secondary" onClick={() => decide(s.id, "pending")}>
+              <Button size="sm" variant="secondary" onClick={() => decide(s.id, Decision.Pending)}>
                 Undo decision
               </Button>
             ) : (
               <>
-                <Button size="sm" variant="secondary" onClick={() => decide(s.id, "rejected")}>
+                <Button size="sm" variant="secondary" onClick={() => decide(s.id, Decision.Rejected)}>
                   <X className="size-3.5" /> Reject <Kbd className="hidden sm:inline-flex">R</Kbd>
                 </Button>
-                <Button size="sm" onClick={() => decide(s.id, "accepted")} className={cn(isConfirming && "bg-ins-line text-bg")}>
+                <Button size="sm" onClick={() => decide(s.id, Decision.Accepted)} className={cn(isConfirming && "bg-ins-line text-bg")}>
                   <Check className="size-3.5" />
                   {isConfirming ? "Yes, this is true" : "Accept"}
                   {!isConfirming && <Kbd className="hidden border-transparent bg-white/15 text-inherit sm:inline-flex">A</Kbd>}
@@ -159,7 +183,7 @@ export function ReviewDock() {
               </>
             )}
             {canEdit(s) && (
-              <Button size="sm" variant="ghost" onClick={() => useReview.getState().patch({ editing: s.id })}>
+              <Button size="sm" variant="ghost" onClick={() => startEdit(s.id)}>
                 <Pencil className="size-3.5" /> Edit <Kbd className="hidden sm:inline-flex">E</Kbd>
               </Button>
             )}

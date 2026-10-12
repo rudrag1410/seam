@@ -1,10 +1,13 @@
 import logging
 from contextlib import asynccontextmanager
+from functools import partial
+from typing import Any
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import TypeAdapter
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import Response
 
@@ -12,9 +15,11 @@ from app.ai.gateway import build_gateway
 from app.ai.gateway.usage import make_db_recorder
 from app.api.v1 import api_router, health_router
 from app.core.config import Settings, get_settings
-from app.core.errors import AppError, install_error_handlers
+from app.core.errors import AppError, ErrorCode, install_error_handlers
 from app.db.base import Base
 from app.db.session import make_engine, make_sessionmaker
+from app.schemas.enums import ApiEnum, ExportFormat, ExportTemplate, StreamEvent
+from app.schemas.stream import ErrorEnvelope
 from app.services.events import TailorBroker
 from app.storage import build_storage
 
@@ -49,17 +54,36 @@ async def origin_check(request: Request, call_next: RequestResponseEndpoint) -> 
         allowed = {o.rstrip("/") for o in settings.cors_origin_list}
         if origin.rstrip("/") not in allowed and urlparse(origin).netloc != request.url.netloc:
             return JSONResponse(
-                AppError("CSRF_BLOCKED", "Cross-site request blocked.", status=403).payload(),
+                AppError(ErrorCode.CSRF_BLOCKED, "Cross-site request blocked.", status=403).payload(),
                 status_code=403,
             )
     return await call_next(request)
 
 
+#: Enums the client uses but no request or response body mentions (event names, and export choices
+#: that arrive as plain query strings so a bad value gets our own error code), so nothing else
+#: would put them in the schema.
+CLIENT_ONLY_ENUMS: tuple[type[ApiEnum], ...] = (StreamEvent, ExportFormat, ExportTemplate)
+
+
+def _openapi_with_client_enums(app: FastAPI) -> dict[str, Any]:
+    schema = FastAPI.openapi(app)
+    for enum in CLIENT_ONLY_ENUMS:
+        schema["components"]["schemas"][enum.__name__] = TypeAdapter(enum).json_schema()
+    return schema
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
-    app = FastAPI(title="Seam API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(
+        title="Seam API",
+        version="0.1.0",
+        lifespan=lifespan,
+        responses={"default": {"model": ErrorEnvelope, "description": "The request failed."}},
+    )
     app.state.settings = settings
     install_error_handlers(app)
+    app.openapi = partial(_openapi_with_client_enums, app)  # type: ignore[method-assign]
     app.add_middleware(BaseHTTPMiddleware, dispatch=origin_check)
     app.add_middleware(
         CORSMiddleware,

@@ -3,36 +3,61 @@
 import { cn } from "@seam/ui";
 import { useEffect, useRef, useState } from "react";
 
+/** One eased run from a number to another, a frame at a time. */
+class Roll {
+  private frame = 0;
+  private started = 0;
+
+  constructor(
+    private readonly from: number,
+    private readonly to: number,
+    private readonly ms: number,
+    private readonly onValue: (value: number) => void,
+  ) {}
+
+  /** Begins the run and returns the function that stops it. */
+  start(): () => void {
+    if (this.from === this.to || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.onValue(this.to);
+    } else {
+      this.started = performance.now();
+      this.frame = requestAnimationFrame(this.step);
+    }
+    return this.stop;
+  }
+
+  private readonly step = (now: number): void => {
+    const t = Math.min(1, (now - this.started) / this.ms);
+    this.onValue(this.from + (this.to - this.from) * (1 - (1 - t) ** 3));
+    if (t < 1) this.frame = requestAnimationFrame(this.step);
+  };
+
+  private readonly stop = (): void => cancelAnimationFrame(this.frame);
+}
+
 /** Animated number that rolls toward its target. */
 export function useRollingNumber(target: number, ms = 450) {
   const [value, setValue] = useState(target);
   const from = useRef(target);
   useEffect(() => {
-    const start = performance.now();
-    const origin = from.current;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches || origin === target) {
-      setValue(target);
-      from.current = target;
-      return;
-    }
-    let raf = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / ms);
-      const eased = 1 - (1 - t) ** 3;
-      const v = origin + (target - origin) * eased;
-      setValue(v);
+    const roll = new Roll(from.current, target, ms, (v) => {
       from.current = v;
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+      setValue(v);
+    });
+    return roll.start();
   }, [target, ms]);
   return value;
 }
 
-export function ScoreRing({ value, size = 96, stroke = 7, label, className }: {
-  value: number; size?: number; stroke?: number; label?: string; className?: string;
-}) {
+interface ScoreRingProps {
+  value: number;
+  size?: number;
+  stroke?: number;
+  label?: string;
+  className?: string;
+}
+
+export function ScoreRing({ value, size = 96, stroke = 7, label, className }: ScoreRingProps) {
   const shown = useRollingNumber(value);
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;

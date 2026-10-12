@@ -12,7 +12,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base, CreatedMixin, IdMixin, Json, UTCDateTime, utcnow
+from app.db.base import Base, CreatedMixin, EnumString, IdMixin, Json, UTCDateTime, utcnow
+from app.schemas.enums import ActivityKind, EntityType
 
 
 class ActivityEvent(Base):
@@ -23,8 +24,8 @@ class ActivityEvent(Base):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True
     )
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"))
-    type: Mapped[str] = mapped_column(String(50))
-    entity_type: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    type: Mapped[ActivityKind] = mapped_column(EnumString(ActivityKind, 50))
+    entity_type: Mapped[EntityType | None] = mapped_column(EnumString(EntityType, 30), nullable=True)
     entity_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
     summary: Mapped[str] = mapped_column(String(500))
     meta: Mapped[dict] = mapped_column(Json, default=dict)

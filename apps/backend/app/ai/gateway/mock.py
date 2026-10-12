@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from app.ai.gateway.router import Task
 from app.ai.scoring.keywords import canonicalize, find_keywords
 from app.parsing.heuristic import BULLET, heuristic_parse
+from app.schemas.enums import EmploymentType, OpName, SectionName, Seniority, WorkMode
 from app.schemas.suggestion import ModelSuggestion, ModelSuggestionBatch
 
 T = TypeVar("T", bound=BaseModel)
@@ -52,13 +53,15 @@ def _mock_jd(text: str) -> dict:
         "nice_to_haves": nice[:6],
         "responsibilities": duties[:8],
         "keywords": find_keywords(text)[:20],
-        "seniority": "senior" if re.search(r"senior|sr\.", text, re.I) else "unspecified",
-        "work_mode": "remote"
+        "seniority": Seniority.SENIOR if re.search(r"senior|sr\.", text, re.I) else Seniority.UNSPECIFIED,
+        "work_mode": WorkMode.REMOTE
         if re.search(r"\bremote\b", text, re.I)
-        else "hybrid"
+        else WorkMode.HYBRID
         if re.search(r"hybrid", text, re.I)
-        else "unspecified",
-        "employment_type": "full_time" if re.search(r"full[- ]time", text, re.I) else "unspecified",
+        else WorkMode.UNSPECIFIED,
+        "employment_type": EmploymentType.FULL_TIME
+        if re.search(r"full[- ]time", text, re.I)
+        else EmploymentType.UNSPECIFIED,
         "location": "Bengaluru" if "Bengaluru" in text else "",
         "salary_range": {
             "min": float(salary.group(2).replace(",", "")),
@@ -80,14 +83,14 @@ def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
     section, nodes, jd_kw = ctx["section"], ctx["nodes"], ctx.get("keywords", [])
     out: list[ModelSuggestion] = []
     req_ids = [r["id"] for r in ctx.get("requirements", [])][:2]
-    if section == "summary" and nodes:
+    if section == SectionName.SUMMARY and nodes:
         node = nodes[0]
         top = [k for k in jd_kw if k in set(find_keywords(ctx["context_text"]))][:3]
         if top and "hands-on strength in" not in node["text"]:
             joined = ", ".join(top[:-1]) + (f" and {top[-1]}" if len(top) > 1 else top[0])
             out.append(
                 ModelSuggestion(
-                    op="rewrite_summary",
+                    op=OpName.REWRITE_SUMMARY,
                     target=node["id"],
                     after=f"{node['text'].rstrip('. ')}, with hands-on strength in {joined}.",
                     rationale="Surfaces the stack the role asks for, using skills already on your resume.",
@@ -96,13 +99,13 @@ def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
                     confidence=0.7,
                 )
             )
-    elif section == "skills":
+    elif section == SectionName.SKILLS:
         have = set(find_keywords(ctx["context_text"]))
         for group in nodes[:1]:
             for kw in [k for k in jd_kw if canonicalize(k) not in have][:3]:
                 out.append(
                     ModelSuggestion(
-                        op="add_skill",
+                        op=OpName.ADD_SKILL,
                         target=group["id"],
                         value=kw,
                         requires_confirmation=True,
@@ -112,7 +115,7 @@ def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
                         confidence=0.5,
                     )
                 )
-    elif section in ("experience", "projects"):
+    elif section in (SectionName.EXPERIENCE, SectionName.PROJECTS):
         for item in nodes:
             bullets = item["bullets"]
             # most relevant first; ties keep their original order
@@ -122,7 +125,7 @@ def _mock_tailor(ctx: dict) -> ModelSuggestionBatch:
             if [b["id"] for b in ranked] != [b["id"] for b in bullets] and len(bullets) > 1:
                 out.append(
                     ModelSuggestion(
-                        op="reorder",
+                        op=OpName.REORDER,
                         target=item["id"],
                         order=[b["id"] for b in ranked],
                         rationale="Moves the work closest to the job's requirements to the top.",

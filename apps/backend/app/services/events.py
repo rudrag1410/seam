@@ -10,13 +10,15 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from typing import Any
 
+from app.schemas.enums import StreamEvent
+
 _RETAIN_SECONDS = 600
 HEARTBEAT_SECONDS = 15
 
 
 @dataclass
 class _Stream:
-    events: list[tuple[str, dict[str, Any]]] = field(default_factory=list)
+    events: list[tuple[StreamEvent, dict[str, Any]]] = field(default_factory=list)
     finished: bool = False
     cond: asyncio.Condition = field(default_factory=asyncio.Condition)
 
@@ -31,7 +33,7 @@ class TailorBroker:
     def open(self, session_id: str) -> None:
         self._streams[session_id] = _Stream()
 
-    async def publish(self, session_id: str, event: str, data: dict[str, Any]) -> None:
+    async def publish(self, session_id: str, event: StreamEvent, data: dict[str, Any]) -> None:
         stream = self._streams[session_id]
         async with stream.cond:
             stream.events.append((event, data))
@@ -46,7 +48,7 @@ class TailorBroker:
 
     async def subscribe(
         self, session_id: str, last_id: int = -1
-    ) -> AsyncIterator[tuple[int, str, dict[str, Any]] | None]:
+    ) -> AsyncIterator[tuple[int, StreamEvent, dict[str, Any]] | None]:
         """Yields (id, event, data); yields None as a heartbeat tick while idle."""
         stream = self._streams[session_id]
         cursor = last_id + 1

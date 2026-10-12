@@ -34,6 +34,8 @@
   --radius-lg: 20px;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow-pop: 0 10px 30px -12px rgba(16, 15, 15, 0.22), 0 0 0 1px var(--line);
+  /* the highlight that sweeps across a loading placeholder */
+  --shimmer: rgba(255, 255, 255, 0.65);
 }
 
 :root[data-theme="dark"] {
@@ -53,6 +55,7 @@
   --warn-bg: rgba(255, 216, 98, 0.16);
   --warn-ink: #ffd862;
   --shadow-pop: 0 10px 30px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--line);
+  --shimmer: rgba(249, 249, 246, 0.07);
 }
 
 @theme inline {
@@ -140,6 +143,9 @@
   65%, 85% { clip-path: inset(0 0 0 0); opacity: 1; }
   100% { clip-path: inset(0 0 0 0); opacity: 0; }
 }
+@keyframes seam-shimmer {
+  to { transform: translateX(100%); }
+}
 @keyframes seam-turn {
   to { transform: rotate(360deg); }
 }
@@ -155,6 +161,22 @@
     background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 11px);
     animation: seam-stitch 1s var(--ease-out) 0.15s both;
   }
+  /* a loading placeholder: the panel colour with a soft highlight sweeping across it. The highlight is
+     clipped to the box and moves by transform only, so it can't change the layout. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--cream);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent 0%, var(--shimmer) 50%, transparent 100%);
+    animation: seam-shimmer 1.5s ease-in-out infinite;
+  }
+
   /* the working indicators: a line of stitches being sewn, and a stitched ring that turns */
   .stitch-sew {
     display: block;
@@ -170,7 +192,8 @@
   @media (prefers-reduced-motion: reduce) {
     .splash-stitch,
     .stitch-sew,
-    .stitch-ring { animation: none !important; }
+    .stitch-ring,
+    .skeleton::after { animation: none !important; }
   }
 
   .font-display {

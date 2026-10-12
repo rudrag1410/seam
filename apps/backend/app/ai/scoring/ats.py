@@ -3,6 +3,7 @@
 import re
 
 from app.ai.scoring.keywords import find_keywords, keyword_alignment, resume_text
+from app.schemas.enums import SectionType
 from app.schemas.scores import AtsCheck, AtsScore
 
 STRONG_VERBS = {
@@ -43,7 +44,7 @@ _METRIC = re.compile(r"\d")
 def _bullets(document: dict) -> list[str]:
     out: list[str] = []
     for s in document.get("sections", []):
-        if s["type"] in ("experience", "projects"):
+        if s["type"] in (SectionType.EXPERIENCE, SectionType.PROJECTS):
             for it in s["items"]:
                 out.extend(b["text"] for b in it["bullets"])
     return out
@@ -63,7 +64,7 @@ def bullet_strength(text: str) -> float:
 def compute_ats(document: dict, jd_keywords: list[str] | None = None) -> AtsScore:
     types = {s["type"] for s in document.get("sections", [])}
     contact = document.get("contact", {})
-    exp = next((s for s in document["sections"] if s["type"] == "experience"), None)
+    exp = next((s for s in document["sections"] if s["type"] == SectionType.EXPERIENCE), None)
     text = resume_text(document)
     words = len(text.split())
     bullets = _bullets(document)

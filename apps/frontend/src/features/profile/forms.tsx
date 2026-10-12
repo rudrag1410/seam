@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Lock } from "lucide-react";
 import { ErrorState } from "@/components/feedback/states";
 import { type AboutValues, type CompensationValues, aboutSchema, compensationSchema } from "./schema";
-import type { Preferences, Profile } from "@seam/api-client";
+import { EmploymentType, type Preferences, type Profile, Seniority, WorkMode } from "@seam/api-client";
 import { useSavePreferences, useSaveProfile } from "./hooks";
 
 type Prefill = Record<string, string | number | null | undefined>;
@@ -40,17 +40,19 @@ function aboutDefaults(profile: Profile, prefill: Prefill): AboutValues {
   };
 }
 
+interface AboutFormProps {
+  profile: Profile;
+  prefill?: Prefill;
+  submitLabel?: string;
+  onSaved?: () => void;
+}
+
 export function AboutForm({
   profile,
   prefill = {},
   submitLabel = "Save",
   onSaved,
-}: {
-  profile: Profile;
-  prefill?: Prefill;
-  submitLabel?: string;
-  onSaved?: () => void;
-}) {
+}: AboutFormProps) {
   const save = useSaveProfile();
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AboutValues>({
     resolver: zodResolver(aboutSchema),
@@ -109,15 +111,17 @@ export function AboutForm({
 
 const CURRENCIES = ["INR", "USD", "EUR", "GBP"];
 
+interface CompensationFormProps {
+  profile: Profile;
+  submitLabel?: string;
+  onSaved?: () => void;
+}
+
 export function CompensationForm({
   profile,
   submitLabel = "Save",
   onSaved,
-}: {
-  profile: Profile;
-  submitLabel?: string;
-  onSaved?: () => void;
-}) {
+}: CompensationFormProps) {
   const save = useSaveProfile();
   const { register, handleSubmit, control, formState: { errors } } = useForm<CompensationValues>({
     resolver: zodResolver(compensationSchema),
@@ -170,25 +174,31 @@ export function CompensationForm({
   );
 }
 
-const SENIORITY = ["junior", "mid", "senior", "staff", "lead"] as const;
+const SENIORITY = [Seniority.Junior, Seniority.Mid, Seniority.Senior, Seniority.Staff, Seniority.Lead];
 const JOB_TYPES = [
-  { value: "full_time", label: "Full-time" }, { value: "contract", label: "Contract" },
-  { value: "part_time", label: "Part-time" }, { value: "internship", label: "Internship" },
-  { value: "freelance", label: "Freelance" },
+  { value: EmploymentType.FullTime, label: "Full-time" },
+  { value: EmploymentType.Contract, label: "Contract" },
+  { value: EmploymentType.PartTime, label: "Part-time" },
+  { value: EmploymentType.Internship, label: "Internship" },
+  { value: EmploymentType.Freelance, label: "Freelance" },
 ];
 const WORK_MODES = [
-  { value: "remote", label: "Remote" }, { value: "hybrid", label: "Hybrid" }, { value: "onsite", label: "Onsite" },
+  { value: WorkMode.Remote, label: "Remote" },
+  { value: WorkMode.Hybrid, label: "Hybrid" },
+  { value: WorkMode.Onsite, label: "Onsite" },
 ];
+
+interface PreferencesFormProps {
+  preferences: Preferences;
+  submitLabel?: string;
+  onSaved?: () => void;
+}
 
 export function PreferencesForm({
   preferences,
   submitLabel = "Save",
   onSaved,
-}: {
-  preferences: Preferences;
-  submitLabel?: string;
-  onSaved?: () => void;
-}) {
+}: PreferencesFormProps) {
   const save = useSavePreferences();
   const [p, setP] = useState<Preferences>(preferences);
 
@@ -207,7 +217,7 @@ export function PreferencesForm({
       </Field>
       <Field label="Seniority">
         <Segmented size="sm" aria-label="Seniority" className="self-start"
-          value={(p.seniority ?? "") as string}
+          value={p.seniority ?? Seniority.Unspecified}
           onChange={(v) => setP((s) => ({ ...s, seniority: v }))}
           options={SENIORITY.map((s) => ({ value: s, label: s[0]!.toUpperCase() + s.slice(1) }))} />
       </Field>

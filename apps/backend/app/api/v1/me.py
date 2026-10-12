@@ -7,6 +7,7 @@ from app.api.deps import DbDep, SettingsDep, StorageDep, UserDep
 from app.core.security import clear_auth_cookies
 from app.db.models import MasterResume
 from app.schemas.common import PreferencesIO, ProfileIO, UserOut
+from app.schemas.enums import ActivityKind
 from app.services import activity, profile_service
 from app.storage.keys import user_prefixes
 
@@ -33,7 +34,7 @@ async def get_profile(user: UserDep, db: DbDep, settings: SettingsDep) -> Profil
 @router.put("/profile", response_model=ProfileIO)
 async def put_profile(body: ProfileIO, user: UserDep, db: DbDep, settings: SettingsDep) -> ProfileIO:
     out = await profile_service.save_profile(db, user, body, settings)
-    activity.record(db, user.id, "profile.updated", "Updated profile")
+    activity.record(db, user.id, ActivityKind.PROFILE_UPDATED, "Updated profile")
     await db.commit()
     return out
 
@@ -46,7 +47,7 @@ async def get_preferences(user: UserDep, db: DbDep) -> PreferencesIO:
 @router.put("/preferences", response_model=PreferencesIO)
 async def put_preferences(body: PreferencesIO, user: UserDep, db: DbDep) -> PreferencesIO:
     out = await profile_service.save_preferences(db, user, body)
-    activity.record(db, user.id, "profile.updated", "Updated job preferences")
+    activity.record(db, user.id, ActivityKind.PROFILE_UPDATED, "Updated job preferences")
     await db.commit()
     return out
 

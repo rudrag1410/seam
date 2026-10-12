@@ -1,10 +1,14 @@
 import { cn } from "@seam/ui";
 import { Check } from "lucide-react";
-import { STEPS, type StepSlug } from "./steps";
+import { type OnboardingStep, STEPS } from "./steps";
 
 /** One row at every width: numbered circles, with only the current step's label spelled out.
  *  The connectors stretch to fill whatever space is left. */
-export function Stepper({ current }: { current: StepSlug }) {
+interface StepperProps {
+  current: OnboardingStep;
+}
+
+export function Stepper({ current }: StepperProps) {
   const at = STEPS.findIndex((s) => s.slug === current);
   return (
     <ol className="flex w-full items-center gap-2 text-[13px]" aria-label="Onboarding progress">

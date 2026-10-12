@@ -10,7 +10,10 @@
     "test": "vitest run",
     "lint": "tsc -p tsconfig.json"
   },
-  "dependencies": { "diff-match-patch": "^1.0.5" },
+  "dependencies": {
+    "@seam/api-client": "workspace:*",
+    "diff-match-patch": "^1.0.5"
+  },
   "devDependencies": {
     "@seam/tsconfig": "workspace:*",
     "@types/diff-match-patch": "^1.0.36",

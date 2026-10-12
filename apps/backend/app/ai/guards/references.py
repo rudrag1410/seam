@@ -1,5 +1,6 @@
 """Reference check: drop suggestions that point at nodes which don't exist."""
 
+from app.schemas.enums import OpName, SectionType
 from app.schemas.suggestion import ModelSuggestion
 
 SECTION_OF_OP_TARGET = {"summary": "summary", "skills": "skills"}
@@ -22,7 +23,7 @@ def node_index(document: dict) -> dict[str, tuple[str, str]]:
 def bullet_text(document: dict) -> dict[str, str]:
     out: dict[str, str] = {}
     for s in document["sections"]:
-        if s["type"] == "summary":
+        if s["type"] == SectionType.SUMMARY:
             out[s["id"]] = s["text"]
         for it in s.get("items", []):
             for b in it.get("bullets", []):
@@ -31,13 +32,13 @@ def bullet_text(document: dict) -> dict[str, str]:
 
 
 _EXPECTED_KIND = {
-    "replace_text": {"bullet", "section"},
-    "rewrite_summary": {"section"},
-    "reorder": {"item"},
-    "insert_bullet": {"item"},
-    "remove_bullet": {"bullet"},
-    "add_skill": {"group"},
-    "remove_skill": {"group"},
+    OpName.REPLACE_TEXT: {"bullet", "section"},
+    OpName.REWRITE_SUMMARY: {"section"},
+    OpName.REORDER: {"item"},
+    OpName.INSERT_BULLET: {"item"},
+    OpName.REMOVE_BULLET: {"bullet"},
+    OpName.ADD_SKILL: {"group"},
+    OpName.REMOVE_SKILL: {"group"},
 }
 
 
@@ -46,13 +47,13 @@ def is_valid_reference(s: ModelSuggestion, index: dict[str, tuple[str, str]], al
     entry = index.get(s.target)
     if entry is None or entry[0] not in _EXPECTED_KIND[s.op] or entry[1] not in allowed:
         return False
-    if s.op == "rewrite_summary" and entry[1] != "summary":
+    if s.op == OpName.REWRITE_SUMMARY and entry[1] != "summary":
         return False
-    if s.op == "reorder":
+    if s.op == OpName.REORDER:
         return bool(s.order) and all(i in index and index[i][0] == "bullet" for i in s.order)
-    if s.op in ("replace_text", "rewrite_summary", "insert_bullet"):
+    if s.op in (OpName.REPLACE_TEXT, OpName.REWRITE_SUMMARY, OpName.INSERT_BULLET):
         return bool(s.after and s.after.strip())
-    if s.op in ("add_skill", "remove_skill"):
+    if s.op in (OpName.ADD_SKILL, OpName.REMOVE_SKILL):
         return bool(s.value and s.value.strip())
     return True
 

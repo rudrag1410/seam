@@ -8,7 +8,11 @@ import { timeAgo } from "@/lib/format";
 import { keys } from "@/lib/queries";
 import { activityHref } from "./links";
 
-export function SidebarRecent({ onNavigate }: { onNavigate?: () => void }) {
+interface SidebarRecentProps {
+  onNavigate?: () => void;
+}
+
+export function SidebarRecent({ onNavigate }: SidebarRecentProps) {
   const { data, isPending } = useQuery({
     queryKey: keys.recent,
     queryFn: () => unwrap(api.GET("/v1/activity", { params: { query: { limit: 5 } } })),

@@ -13,7 +13,7 @@ from app.ai.ops.apply_ops import apply_ops
 from app.ai.pipelines.tailor import TailorInputs, regenerate_one, run_tailor, score_document
 from app.ai.scoring.ats import compute_ats
 from app.core.config import Settings
-from app.core.errors import AppError, not_found
+from app.core.errors import AppError, ErrorCode, not_found
 from app.db.models import (
     JobDescription,
     MasterResume,
@@ -21,6 +21,18 @@ from app.db.models import (
     Suggestion,
     TailorSession,
     User,
+)
+from app.schemas.enums import (
+    KEPT_DECISIONS,
+    REVIEWABLE_STATUSES,
+    ActivityKind,
+    Decision,
+    EntityType,
+    SectionName,
+    SessionStatus,
+    Stage,
+    StreamEvent,
+    WarningCode,
 )
 from app.schemas.jd import FitCheck, JDAnalysis
 from app.schemas.resume_ast import Resume
@@ -104,7 +116,7 @@ async def create_session(request: Request, db: AsyncSession, user: User, body: T
         jd_id=jd.id,
         sections=list(body.sections),
         intensity=body.intensity,
-        status="queued",
+        status=SessionStatus.QUEUED,
         prompt_version=settings.prompt_version,
     )
     db.add(session)
@@ -132,20 +144,20 @@ async def _run(app, session_id: UUID) -> None:
             jd = await db.get(JobDescription, session.jd_id)
             user = await db.get(User, session.user_id)
             assert jd is not None and user is not None
-            session.status = "running"
+            session.status = SessionStatus.RUNNING
             await db.commit()
 
             # Reading the job is the first streamed step, so the user sees progress immediately
             # instead of waiting on a form.
-            await broker.publish(key, "stage", {"stage": "reading", "progress": 0.02})
+            await broker.publish(key, StreamEvent.STAGE, {"stage": Stage.READING, "progress": 0.02})
             analysis, warnings, jd_degraded = await jd_service.analyze_row(
                 db, app.state.ai, settings, user, jd
             )
             await db.commit()
             fit = await jd_service.build_fit(db, user, settings, analysis)
-            await broker.publish(key, "jd", jd_event(jd, analysis, fit))
+            await broker.publish(key, StreamEvent.JD, jd_event(jd, analysis, fit))
             for w in warnings:
-                await broker.publish(key, "warning", {"code": "JD_NOTICE", "message": w})
+                await broker.publish(key, StreamEvent.WARNING, {"code": WarningCode.JD_NOTICE, "message": w})
 
             inp = TailorInputs(
                 resume=await base_document(db, session),
@@ -156,7 +168,7 @@ async def _run(app, session_id: UUID) -> None:
 
             async for ev in run_tailor(app.state.ai, settings, inp):
                 name, data = ev["event"], ev["data"]
-                if name == "suggestion":
+                if name == StreamEvent.SUGGESTION:
                     seq += 1
                     row = Suggestion(
                         session_id=session.id,
@@ -179,14 +191,14 @@ async def _run(app, session_id: UUID) -> None:
                     await db.flush()
                     data = suggestion_out(row).model_dump()
                     await db.commit()
-                elif name == "score":
+                elif name == StreamEvent.SCORE:
                     session.score_before = data.get("before")
                     if "projected" in data:
                         session.score_after = data["projected"]
                     await db.commit()
-                elif name == "done":
+                elif name == StreamEvent.DONE:
                     session.degraded = bool(data.get("degraded")) or jd_degraded
-                    session.status = "ready"
+                    session.status = SessionStatus.READY
                     session.completed_at = datetime.now(UTC)
                     session.duration_ms = int((time.perf_counter() - started) * 1000)
                     data = {**data, "duration_ms": session.duration_ms}
@@ -194,9 +206,9 @@ async def _run(app, session_id: UUID) -> None:
                     activity.record(
                         db,
                         session.user_id,
-                        "tailor.completed",
+                        ActivityKind.TAILOR_COMPLETED,
                         f"{data['count']} suggestions ready for {label}",
-                        entity_type="session",
+                        entity_type=EntityType.SESSION,
                         entity_id=session.id,
                     )
                     await db.commit()
@@ -210,7 +222,7 @@ async def _run(app, session_id: UUID) -> None:
                 broker,
                 session,
                 AppError(
-                    "TAILOR_FAILED",
+                    ErrorCode.TAILOR_FAILED,
                     "Something went wrong while generating suggestions.",
                     status=500,
                     hint="Your inputs are saved. Try again.",
@@ -231,15 +243,15 @@ def jd_event(jd: JobDescription, analysis: JDAnalysis, fit: FitCheck) -> dict:
 
 
 async def _fail(db: AsyncSession, broker: TailorBroker, session: TailorSession, exc: AppError) -> None:
-    session.status = "failed"
+    session.status = SessionStatus.FAILED
     session.error_code, session.error_message = exc.code, exc.message
     await db.commit()
-    await broker.publish(str(session.id), "error", exc.payload()["error"])
+    await broker.publish(str(session.id), StreamEvent.ERROR, exc.payload()["error"])
 
 
 async def replay_from_db(
     db: AsyncSession, settings: Settings, session: TailorSession
-) -> AsyncIterator[tuple[int, str, dict]]:
+) -> AsyncIterator[tuple[int, StreamEvent, dict]]:
     """Synthesize the event stream for a session that is no longer in memory."""
     n = 0
     jd = await db.get(JobDescription, session.jd_id)
@@ -247,12 +259,12 @@ async def replay_from_db(
     if jd is not None and jd.analysis and user is not None:
         analysis = JDAnalysis.model_validate(jd.analysis)
         fit = await jd_service.build_fit(db, user, settings, analysis)
-        yield n, "jd", jd_event(jd, analysis, fit)
+        yield n, StreamEvent.JD, jd_event(jd, analysis, fit)
         n += 1
     if session.score_before:
         yield (
             n,
-            "score",
+            StreamEvent.SCORE,
             {
                 "before": session.score_before,
                 **({"projected": session.score_after} if session.score_after else {}),
@@ -265,14 +277,18 @@ async def replay_from_db(
         )
     ).all()
     for row in rows:
-        yield n, "suggestion", suggestion_out(row).model_dump()
+        yield n, StreamEvent.SUGGESTION, suggestion_out(row).model_dump()
         n += 1
-    if session.status == "failed":
-        yield n, "error", {"code": session.error_code, "message": session.error_message, "retryable": True}
+    if session.status == SessionStatus.FAILED:
+        yield (
+            n,
+            StreamEvent.ERROR,
+            {"code": session.error_code, "message": session.error_message, "retryable": True},
+        )
     else:
         yield (
             n,
-            "done",
+            StreamEvent.DONE,
             {"count": len(rows), "degraded": session.degraded, "duration_ms": session.duration_ms},
         )
 
@@ -334,7 +350,7 @@ async def list_sessions(db: AsyncSession, user: User, limit: int = 20) -> list[S
             await db.scalar(
                 select(func.count())
                 .select_from(Suggestion)
-                .where(Suggestion.session_id == s.id, Suggestion.status != "pending")
+                .where(Suggestion.session_id == s.id, Suggestion.status != Decision.PENDING)
             )
             or 0
         )
@@ -365,8 +381,8 @@ async def apply_decisions(db: AsyncSession, session: TailorSession, body: Decisi
     for row in rows:
         d = ids[row.id]
         row.status = d.status
-        row.edited_text = d.edited_text if d.status == "edited" else None
-        row.decided_at = None if d.status == "pending" else now
+        row.edited_text = d.edited_text if d.status == Decision.EDITED else None
+        row.decided_at = None if d.status == Decision.PENDING else now
 
 
 async def regenerate(
@@ -386,21 +402,23 @@ async def regenerate(
     inp = TailorInputs(
         resume=await base_document(db, session),
         jd=JDAnalysis.model_validate(jd.analysis),
-        sections=[row.section],
+        sections=[SectionName(row.section)],
         intensity=session.intensity,
     )
-    new = await regenerate_one(request.app.state.ai, settings, inp, row.target, row.section, instruction)
+    new = await regenerate_one(
+        request.app.state.ai, settings, inp, row.target, SectionName(row.section), instruction
+    )
     row.op, row.payload, row.before = new["op"], new["payload"], new["before"]
     row.rationale, row.addresses, row.evidence = new["rationale"], new["addresses"], new["evidence"]
     row.confidence, row.score_delta, row.checks = new["confidence"], new["score_delta"], new["checks"]
     row.requires_confirmation, row.flag_reason = new["requires_confirmation"], new["flag_reason"]
-    row.status, row.edited_text, row.decided_at = "pending", None, None
+    row.status, row.edited_text, row.decided_at = Decision.PENDING, None, None
     return suggestion_out(row)
 
 
 async def finalize(db: AsyncSession, request: Request, user: User, session: TailorSession) -> ResumeVersion:
-    if session.status not in ("ready", "finalized"):
-        raise AppError("SESSION_NOT_READY", "Suggestions are still being generated.", status=409)
+    if session.status not in REVIEWABLE_STATUSES:
+        raise AppError(ErrorCode.SESSION_NOT_READY, "Suggestions are still being generated.", status=409)
     existing = await db.scalar(select(ResumeVersion).where(ResumeVersion.session_id == session.id))
     if existing is not None:
         return existing  # versions are immutable snapshots; finalizing twice is a no-op
@@ -410,7 +428,7 @@ async def finalize(db: AsyncSession, request: Request, user: User, session: Tail
             select(Suggestion).where(Suggestion.session_id == session.id).order_by(Suggestion.seq)
         )
     ).all()
-    accepted = [r for r in rows if r.status in ("accepted", "edited")]
+    accepted = [r for r in rows if r.status in KEPT_DECISIONS]
     ops = [
         {"op": r.op, "target": r.target, "payload": r.payload, "edited_text": r.edited_text} for r in accepted
     ]
@@ -448,11 +466,11 @@ async def finalize(db: AsyncSession, request: Request, user: User, session: Tail
     activity.record(
         db,
         user.id,
-        "review.finalized",
+        ActivityKind.REVIEW_FINALIZED,
         f"Accepted {len(accepted)} of {len(rows)} edits{delta}",
-        entity_type="version",
+        entity_type=EntityType.VERSION,
         entity_id=version.id,
     )
-    session.status = "finalized"
+    session.status = SessionStatus.FINALIZED
     session.score_after = match.model_dump()
     return version

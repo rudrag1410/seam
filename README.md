@@ -200,4 +200,3 @@ Because the frontend and API live on different domains, the blueprint sets `COOK
 - **English only.**
 
 Short architecture decision records are in [`docs/decisions`](docs/decisions).
-# seam

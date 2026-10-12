@@ -11,6 +11,7 @@ from app.core.config import Settings
 from app.core.errors import not_found
 from app.db.models import MasterResume, SourceFile, User
 from app.parsing.validate import validate_upload
+from app.schemas.enums import ActivityKind, EntityType
 from app.schemas.resume import ResumeOut
 from app.schemas.resume_ast import ExperienceSection, Resume
 from app.services import activity
@@ -104,7 +105,12 @@ async def upload_resume(
     db.add(master)
     await db.flush()
     activity.record(
-        db, user.id, "resume.uploaded", f"Uploaded {filename}", entity_type="resume", entity_id=master.id
+        db,
+        user.id,
+        ActivityKind.RESUME_UPLOADED,
+        f"Uploaded {filename}",
+        entity_type=EntityType.RESUME,
+        entity_id=master.id,
     )
     return to_out(master, source)
 

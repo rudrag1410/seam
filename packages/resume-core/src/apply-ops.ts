@@ -1,3 +1,4 @@
+import { OpName } from "@seam/api-client";
 import type { Op, Resume } from "./ast";
 
 type Item = { id: string; bullets?: { id: string; text: string }[] };
@@ -21,8 +22,8 @@ function textFor(op: Op): string {
 function applyOne(doc: Resume, op: Op): void {
   const { target, payload } = op;
   switch (op.op) {
-    case "replace_text":
-    case "rewrite_summary": {
+    case OpName.ReplaceText:
+    case OpName.RewriteSummary: {
       const section = doc.sections.find((s) => s.id === target);
       if (section?.type === "summary") {
         section.text = textFor(op);
@@ -32,7 +33,7 @@ function applyOne(doc: Resume, op: Op): void {
       if (found) found.bullets[found.index]!.text = textFor(op);
       return;
     }
-    case "reorder": {
+    case OpName.Reorder: {
       const item = eachItem(doc).find((i) => i.id === target);
       if (!item?.bullets) return;
       const byId = new Map(item.bullets.map((b) => [b.id, b]));
@@ -42,24 +43,24 @@ function applyOne(doc: Resume, op: Op): void {
       item.bullets = [...ordered, ...item.bullets.filter((b) => !listed.has(b.id))];
       return;
     }
-    case "insert_bullet": {
+    case OpName.InsertBullet: {
       const item = eachItem(doc).find((i) => i.id === target);
       item?.bullets?.push({ id: String(payload.new_id), text: textFor(op) });
       return;
     }
-    case "remove_bullet": {
+    case OpName.RemoveBullet: {
       const found = findBullet(doc, target);
       if (found) found.bullets.splice(found.index, 1);
       return;
     }
-    case "add_skill":
-    case "remove_skill": {
+    case OpName.AddSkill:
+    case OpName.RemoveSkill: {
       const group = doc.sections.flatMap((s) => (s.type === "skills" ? s.groups : [])).find((g) => g.id === target);
       if (!group) return;
       const value = (op.edited_text || String(payload.value ?? "")).trim();
       const at = group.items.findIndex((x) => x.toLowerCase() === value.toLowerCase());
-      if (op.op === "add_skill" && at < 0) group.items.push(value);
-      if (op.op === "remove_skill" && at >= 0) group.items.splice(at, 1);
+      if (op.op === OpName.AddSkill && at < 0) group.items.push(value);
+      if (op.op === OpName.RemoveSkill && at >= 0) group.items.splice(at, 1);
     }
   }
 }

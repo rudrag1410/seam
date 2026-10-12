@@ -1,30 +1,43 @@
 "use client";
 
+import { Intensity, SectionName } from "@seam/api-client";
 import { Checkbox, Segmented } from "@seam/ui";
 
-export type SectionKey = "summary" | "skills" | "experience" | "projects";
-export type Intensity = "light" | "balanced" | "bold";
+interface SectionOption {
+  key: SectionName;
+  label: string;
+  hint: string;
+}
 
-const SECTIONS: { key: SectionKey; label: string; hint: string }[] = [
-  { key: "summary", label: "Summary", hint: "Align the opening with the role" },
-  { key: "skills", label: "Skills", hint: "Surface what matches, flag gaps" },
-  { key: "experience", label: "Experience", hint: "Rephrase and reorder bullets" },
-  { key: "projects", label: "Projects", hint: "Same treatment for projects" },
+const SECTIONS: SectionOption[] = [
+  { key: SectionName.Summary, label: "Summary", hint: "Align the opening with the role" },
+  { key: SectionName.Skills, label: "Skills", hint: "Surface what matches, flag gaps" },
+  { key: SectionName.Experience, label: "Experience", hint: "Rephrase and reorder bullets" },
+  { key: SectionName.Projects, label: "Projects", hint: "Same treatment for projects" },
 ];
-const INTENSITY: { value: Intensity; label: string }[] = [
-  { value: "light", label: "Light" },
-  { value: "balanced", label: "Balanced" },
-  { value: "bold", label: "Bold" },
-];
-const INTENSITY_HINT: Record<Intensity, string> = {
-  light: "Fix terminology and ordering. Minimal rewording.",
-  balanced: "Rephrase weak bullets and reorder for relevance.",
-  bold: "Rewrite for impact. Still limited to what your resume supports.",
+
+export const INTENSITY_LABEL: Record<Intensity, string> = {
+  [Intensity.Light]: "Light",
+  [Intensity.Balanced]: "Balanced",
+  [Intensity.Bold]: "Bold",
 };
 
-export function ScopePicker({ sections, onSections, intensity, onIntensity }: {
-  sections: SectionKey[]; onSections: (s: SectionKey[]) => void; intensity: Intensity; onIntensity: (i: Intensity) => void;
-}) {
+const INTENSITY = Object.values(Intensity).map((value) => ({ value, label: INTENSITY_LABEL[value] }));
+
+const INTENSITY_HINT: Record<Intensity, string> = {
+  [Intensity.Light]: "Fix terminology and ordering. Minimal rewording.",
+  [Intensity.Balanced]: "Rephrase weak bullets and reorder for relevance.",
+  [Intensity.Bold]: "Rewrite for impact. Still limited to what your resume supports.",
+};
+
+interface ScopePickerProps {
+  sections: SectionName[];
+  onSections: (sections: SectionName[]) => void;
+  intensity: Intensity;
+  onIntensity: (intensity: Intensity) => void;
+}
+
+export function ScopePicker({ sections, onSections, intensity, onIntensity }: ScopePickerProps) {
   return (
     <div className="space-y-6">
       <fieldset>

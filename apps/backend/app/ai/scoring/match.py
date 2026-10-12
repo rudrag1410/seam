@@ -10,6 +10,7 @@ from app.ai.scoring.keywords import (
     keyword_alignment,
     resume_text,
 )
+from app.schemas.enums import SectionType, Verdict
 from app.schemas.jd import JDAnalysis, Requirement
 from app.schemas.scores import MatchScore, RequirementCoverage
 
@@ -23,9 +24,9 @@ Coverage = dict[str, tuple[float, float | None]]
 def _experience_text(document: dict) -> str:
     parts: list[str] = []
     for s in document.get("sections", []):
-        if s["type"] == "summary":
+        if s["type"] == SectionType.SUMMARY:
             parts.append(s["text"])
-        elif s["type"] in ("experience", "projects"):
+        elif s["type"] in (SectionType.EXPERIENCE, SectionType.PROJECTS):
             for it in s["items"]:
                 parts.extend(b["text"] for b in it["bullets"])
     return "\n".join(parts)
@@ -53,14 +54,14 @@ def keyword_coverage(document: dict, requirements: list[Requirement]) -> Coverag
     return out
 
 
-def _verdict(level: float, confidence: float | None, low: float) -> str:
+def _verdict(level: float, confidence: float | None, low: float) -> Verdict:
     if confidence is not None and confidence < low:
-        return "unsure"
+        return Verdict.UNSURE
     if level >= 3:
-        return "demonstrated"
+        return Verdict.DEMONSTRATED
     if level >= 1:
-        return "listed"
-    return "missing"
+        return Verdict.LISTED
+    return Verdict.MISSING
 
 
 def _weighted(reqs: list[Requirement], cov: Coverage) -> float:

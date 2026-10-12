@@ -3,7 +3,8 @@ import uuid
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base, CreatedMixin, IdMixin, Json
+from app.db.base import Base, CreatedMixin, EnumString, IdMixin, Json
+from app.schemas.enums import ParsePath
 
 
 class SourceFile(Base, IdMixin, CreatedMixin):
@@ -17,7 +18,7 @@ class SourceFile(Base, IdMixin, CreatedMixin):
     size_bytes: Mapped[int] = mapped_column(Integer)
     page_count: Mapped[int] = mapped_column(Integer, default=1)
     sha256: Mapped[str] = mapped_column(String(64))
-    parse_path: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    parse_path: Mapped[ParsePath | None] = mapped_column(EnumString(ParsePath, 20), nullable=True)
 
 
 class MasterResume(Base, IdMixin, CreatedMixin):

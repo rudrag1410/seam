@@ -1,5 +1,6 @@
 "use client";
 
+import { ChangeKind } from "@seam/api-client";
 import { Badge, Skeleton } from "@seam/ui";
 import { wordDiff } from "@seam/resume-core";
 import { useQuery } from "@tanstack/react-query";
@@ -10,12 +11,22 @@ import { Suspense, useMemo } from "react";
 import { ErrorState } from "@/components/feedback/states";
 import { InlineDiff } from "@/features/resume-canvas/InlineDiff";
 import { ResumeCanvas } from "@/features/resume-canvas/ResumeCanvas";
-import { buildView } from "@/features/resume-canvas/view-model";
+import { ViewMode, buildView } from "@/features/resume-canvas/view-model";
 import { api, unwrap } from "@/lib/api";
 
-const KIND = { added: "Added", removed: "Removed", changed: "Changed", moved: "Moved" } as const;
+const KIND: Record<ChangeKind, string> = {
+  [ChangeKind.Added]: "Added",
+  [ChangeKind.Removed]: "Removed",
+  [ChangeKind.Changed]: "Changed",
+  [ChangeKind.Moved]: "Moved",
+};
 
-function Delta({ label, value }: { label: string; value: number | null }) {
+interface DeltaProps {
+  label: string;
+  value: number | null;
+}
+
+function Delta({ label, value }: DeltaProps) {
   if (value == null) return null;
   return <Badge tone={value > 0 ? "green" : value < 0 ? "orange" : "neutral"} className="tabular">{label} {value > 0 ? "+" : ""}{value}</Badge>;
 }
@@ -30,7 +41,7 @@ function Compare() {
     queryFn: () => unwrap(api.GET("/v1/versions/{a}/compare/{b}", { params: { path: { a: a!, b: b! } } })),
   });
   const views = useMemo(
-    () => q.data ? { A: buildView(q.data.a.document, [], "original"), B: buildView(q.data.b.document, [], "original") } : null,
+    () => q.data ? { A: buildView(q.data.a.document, [], ViewMode.Original), B: buildView(q.data.b.document, [], ViewMode.Original) } : null,
     [q.data],
   );
 
@@ -54,7 +65,7 @@ function Compare() {
             {d.changes.map((c) => (
               <li key={`${c.kind}-${c.node_id}`} className="grid gap-2 py-3 text-[14px] sm:grid-cols-[96px_1fr]">
                 <span className="text-[12px] font-medium text-ink-muted uppercase">{KIND[c.kind]} · {c.section}</span>
-                <span>{c.kind === "changed" && c.before != null && c.after != null ? <InlineDiff runs={wordDiff(c.before, c.after)} /> : (c.after ?? c.before)}</span>
+                <span>{c.kind === ChangeKind.Changed && c.before != null && c.after != null ? <InlineDiff runs={wordDiff(c.before, c.after)} /> : (c.after ?? c.before)}</span>
               </li>
             ))}
           </ul>

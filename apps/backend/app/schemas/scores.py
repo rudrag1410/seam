@@ -1,6 +1,7 @@
 from pydantic import Field
 
 from app.schemas.base import ApiModel
+from app.schemas.enums import Verdict
 
 
 class RequirementCoverage(ApiModel):
@@ -9,7 +10,7 @@ class RequirementCoverage(ApiModel):
     must_have: bool
     level: float  # 0..4, fractional
     confidence: float | None = None
-    verdict: str  # demonstrated | listed | missing | unsure
+    verdict: Verdict
 
 
 class MatchScore(ApiModel):

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Query
-from sqlalchemy import select
+from sqlalchemy import String, select, type_coerce
 
 from app.api.deps import DbDep, UserDep
 from app.db.models import ActivityEvent
 from app.schemas.common import ActivityOut, ActivityPage
+from app.schemas.enums import ActivityGroup
 
 router = APIRouter(prefix="/activity", tags=["activity"])
 
@@ -13,14 +14,15 @@ async def feed(
     user: UserDep,
     db: DbDep,
     cursor: int | None = None,
-    type: str | None = None,
+    type: ActivityGroup | None = None,
     limit: int = Query(20, ge=1, le=100),
 ) -> ActivityPage:
     q = select(ActivityEvent).where(ActivityEvent.user_id == user.id).order_by(ActivityEvent.id.desc())
     if cursor:
         q = q.where(ActivityEvent.id < cursor)
     if type:
-        q = q.where(ActivityEvent.type.like(f"{type}%"))
+        # the stored value is an enum column, so compare it as the plain text it is
+        q = q.where(type_coerce(ActivityEvent.type, String).like(f"{type.value}.%"))
     rows = (await db.scalars(q.limit(limit + 1))).all()
     page, more = rows[:limit], len(rows) > limit
     return ActivityPage(

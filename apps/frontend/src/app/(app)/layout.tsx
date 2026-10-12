@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/shell/AppShell";
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+interface AppLayoutProps {
+  children: ReactNode;
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
   return <AppShell>{children}</AppShell>;
 }

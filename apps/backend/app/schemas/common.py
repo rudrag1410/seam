@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import EmailStr, Field
 
 from app.schemas.base import ApiModel
+from app.schemas.enums import ActivityKind, EmploymentType, EntityType, Seniority, WorkMode
 
 
 class OrmModel(ApiModel):
@@ -56,9 +57,9 @@ class ProfileIO(ApiModel):
 
 class PreferencesIO(ApiModel):
     target_roles: list[str] = Field(default_factory=list)
-    seniority: str | None = None
-    job_types: list[str] = Field(default_factory=list)
-    work_modes: list[str] = Field(default_factory=list)
+    seniority: Seniority | None = None
+    job_types: list[EmploymentType] = Field(default_factory=list)
+    work_modes: list[WorkMode] = Field(default_factory=list)
     locations: list[str] = Field(default_factory=list)
     open_to_relocation: bool = False
     industries: list[str] = Field(default_factory=list)
@@ -69,8 +70,8 @@ class PreferencesIO(ApiModel):
 
 class ActivityOut(ApiModel):
     id: int
-    type: str
-    entity_type: str | None
+    type: ActivityKind
+    entity_type: EntityType | None
     entity_id: str | None
     summary: str
     created_at: datetime

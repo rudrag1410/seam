@@ -10,6 +10,14 @@ function withTag(tags: string[], raw: string): string[] {
   return tag && !tags.some((x) => x.toLowerCase() === tag.toLowerCase()) ? [...tags, tag] : tags;
 }
 
+interface TagInputProps {
+  value: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+  suggestions?: string[];
+  id?: string;
+}
+
 /** Free-text multi-value input. Enter or comma adds a chip; Backspace on empty removes the last. */
 export function TagInput({
   value,
@@ -17,13 +25,7 @@ export function TagInput({
   placeholder,
   suggestions = [],
   id,
-}: {
-  value: string[];
-  onChange: (v: string[]) => void;
-  placeholder?: string;
-  suggestions?: string[];
-  id?: string;
-}) {
+}: TagInputProps) {
   const [draft, setDraft] = useState("");
 
   const remaining = suggestions.filter((s) => !value.includes(s)).slice(0, 6);
@@ -71,18 +73,20 @@ export function TagInput({
   );
 }
 
+interface ChipSelectProps<T extends string> {
+  value: T[];
+  onChange: (v: T[]) => void;
+  options: { value: T; label: string }[];
+  single?: boolean;
+}
+
 /** Pick any number of options, shown as pills. */
 export function ChipSelect<T extends string>({
   value,
   onChange,
   options,
   single = false,
-}: {
-  value: T[];
-  onChange: (v: T[]) => void;
-  options: { value: T; label: string }[];
-  single?: boolean;
-}) {
+}: ChipSelectProps<T>) {
   return (
     <div className="flex flex-wrap gap-2" role="group">
       {options.map((o) => {

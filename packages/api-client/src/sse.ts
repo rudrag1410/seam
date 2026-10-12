@@ -1,5 +1,29 @@
-export interface StreamHandlers {
-  onEvent: (event: string, data: unknown) => void;
+import { ApiException, UNKNOWN_FAILURE } from "./client";
+import { StreamEvent } from "./schema";
+import type { ChunkData, DoneData, ErrorData, ErrorEnvelope, JobData, LetterSavedData, ScoreData, StageData, SuggestionOut, WarningData } from "./types";
+
+/** What each event of a tailoring run carries. The server checks its output against the same shapes. */
+export interface TailorEventPayloads {
+  [StreamEvent.Stage]: StageData;
+  [StreamEvent.Jd]: JobData;
+  [StreamEvent.Score]: ScoreData;
+  [StreamEvent.Suggestion]: SuggestionOut;
+  [StreamEvent.Warning]: WarningData;
+  [StreamEvent.Done]: DoneData;
+  [StreamEvent.Error]: ErrorData;
+}
+
+/** What each event of a streamed cover letter carries. */
+export interface LetterEventPayloads {
+  [StreamEvent.Chunk]: ChunkData;
+  [StreamEvent.Done]: LetterSavedData;
+  [StreamEvent.Error]: ErrorData;
+}
+
+/** One optional handler per event, each receiving that event's payload. */
+export type EventHandlers<Payloads> = { [E in keyof Payloads]?: (data: Payloads[E]) => void };
+
+export interface ConnectionCallbacks {
   onReconnecting?: () => void;
   onOpen?: () => void;
   /** The connection was refused or ended for good. EventSource hides the status, so the caller
@@ -7,36 +31,50 @@ export interface StreamHandlers {
   onClosed?: () => void;
 }
 
+function eventNames<Payloads>(handlers: EventHandlers<Payloads>): StreamEvent[] {
+  return Object.keys(handlers) as StreamEvent[];
+}
+
+/** An event that ends the run: the stream is done, whether it went well or not. */
+function isFinal(event: StreamEvent): boolean {
+  return event === StreamEvent.Done || event === StreamEvent.Error;
+}
+
 /** EventSource wrapper. The browser resends Last-Event-ID on reconnect, so the server resumes
  *  exactly where the stream left off. Returns a close function. */
-export function openStream(
-  url: string,
-  events: readonly string[],
-  handlers: StreamHandlers,
-): () => void {
+export function openStream<Payloads>(url: string, handlers: EventHandlers<Payloads>, connection: ConnectionCallbacks = {}): () => void {
   const source = new EventSource(url, { withCredentials: true });
-  source.onopen = () => handlers.onOpen?.();
+  source.onopen = () => connection.onOpen?.();
   source.onerror = () => {
-    if (source.readyState === EventSource.CONNECTING) handlers.onReconnecting?.();
-    else if (source.readyState === EventSource.CLOSED) handlers.onClosed?.();
+    if (source.readyState === EventSource.CONNECTING) connection.onReconnecting?.();
+    else if (source.readyState === EventSource.CLOSED) connection.onClosed?.();
   };
-  for (const name of events) {
+  for (const name of eventNames(handlers)) {
     source.addEventListener(name, (e) => {
       // a dropped connection also fires "error", but as a plain event with nothing to parse
       const raw = (e as MessageEvent<string>).data;
       if (typeof raw !== "string") return;
-      handlers.onEvent(name, JSON.parse(raw));
-      if (name === "done" || name === "error") source.close();
+      (handlers[name as keyof Payloads] as ((data: unknown) => void) | undefined)?.(JSON.parse(raw));
+      if (isFinal(name)) source.close();
     });
   }
   return () => source.close();
 }
 
+const FRAME_EVENT = /^event: (.+)$/m;
+const FRAME_DATA = /^data: (.+)$/m;
+
+function dispatchFrame<Payloads>(frame: string, handlers: EventHandlers<Payloads>): void {
+  const event = FRAME_EVENT.exec(frame)?.[1] as keyof Payloads | undefined;
+  const data = FRAME_DATA.exec(frame)?.[1];
+  if (event && data) (handlers[event] as ((payload: unknown) => void) | undefined)?.(JSON.parse(data));
+}
+
 /** POST + SSE (EventSource only does GET), for streamed generations such as cover letters. */
-export async function postStream(
+export async function postStream<Payloads extends { [StreamEvent.Error]: ErrorData }>(
   url: string,
   body: unknown,
-  onEvent: (event: string, data: unknown) => void,
+  handlers: EventHandlers<Payloads>,
   signal?: AbortSignal,
 ): Promise<void> {
   const res = await fetch(url, {
@@ -47,8 +85,9 @@ export async function postStream(
     signal,
   });
   if (!res.ok || !res.body) {
-    const err = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    onEvent("error", err?.error ?? { code: "UNKNOWN", message: "Something went wrong." });
+    const envelope = (await res.json().catch(() => null)) as ErrorEnvelope | null;
+    if (!envelope) throw new ApiException(res.status, UNKNOWN_FAILURE);
+    handlers[StreamEvent.Error]?.(envelope.error);
     return;
   }
   const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -59,10 +98,6 @@ export async function postStream(
     buffer += value;
     const frames = buffer.split("\n\n");
     buffer = frames.pop() ?? "";
-    for (const frame of frames) {
-      const event = /^event: (.+)$/m.exec(frame)?.[1];
-      const data = /^data: (.+)$/m.exec(frame)?.[1];
-      if (event && data) onEvent(event, JSON.parse(data));
-    }
+    for (const frame of frames) dispatchFrame(frame, handlers);
   }
 }

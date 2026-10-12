@@ -1,13 +1,15 @@
+from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.scoring.ats import compute_ats
-from app.core.errors import AppError, not_found
+from app.core.errors import AppError, ErrorCode, not_found
 from app.db.models import JobDescription, ResumeVersion, TailorSession, User
 from app.export.docx import render_docx
 from app.export.pdf import render_pdf
 from app.export.txt import render_txt
+from app.schemas.enums import ActivityKind, ChangeKind, EntityType, ExportFormat, ExportTemplate, SectionType
 from app.schemas.jd import JDAnalysis
 from app.schemas.resume_ast import Resume
 from app.schemas.version import (
@@ -21,10 +23,18 @@ from app.storage.base import Storage
 from app.storage.keys import export_key
 
 FORMATS = {
-    "pdf": ("application/pdf", "pdf"),
-    "docx": ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"),
-    "txt": ("text/plain; charset=utf-8", "txt"),
+    ExportFormat.PDF: ("application/pdf", "pdf"),
+    ExportFormat.DOCX: ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"),
+    ExportFormat.TXT: ("text/plain; charset=utf-8", "txt"),
 }
+
+
+def _choice[E: StrEnum](options: type[E], value: str) -> E | None:
+    """The member for a value the client sent, or None when it isn't one of them."""
+    try:
+        return options(value)
+    except ValueError:
+        return None
 
 
 async def owned_version(db: AsyncSession, user: User, version_id: UUID) -> ResumeVersion:
@@ -65,7 +75,7 @@ def _flatten(doc: dict) -> dict[str, tuple[str, str, str, int]]:
     """node id -> (section, text, parent id, index)."""
     nodes: dict[str, tuple[str, str, str, int]] = {}
     for s in doc["sections"]:
-        if s["type"] == "summary":
+        if s["type"] == SectionType.SUMMARY:
             nodes[s["id"]] = ("summary", s["text"], s["id"], 0)
         for g in s.get("groups", []):
             nodes[g["id"]] = ("skills", ", ".join(g["items"]), s["id"], 0)
@@ -80,18 +90,20 @@ def diff_documents(a: dict, b: dict) -> list[NodeChange]:
     changes: list[NodeChange] = []
     for node_id, (section, text, parent, idx) in nb.items():
         if node_id not in na:
-            changes.append(NodeChange(node_id=node_id, kind="added", section=section, after=text))
+            changes.append(NodeChange(node_id=node_id, kind=ChangeKind.ADDED, section=section, after=text))
             continue
         _, old_text, _, old_idx = na[node_id]
         if old_text != text:
             changes.append(
-                NodeChange(node_id=node_id, kind="changed", section=section, before=old_text, after=text)
+                NodeChange(
+                    node_id=node_id, kind=ChangeKind.CHANGED, section=section, before=old_text, after=text
+                )
             )
         elif old_idx != idx and na[node_id][2] == parent:
-            changes.append(NodeChange(node_id=node_id, kind="moved", section=section, after=text))
+            changes.append(NodeChange(node_id=node_id, kind=ChangeKind.MOVED, section=section, after=text))
     for node_id, (section, text, _, _) in na.items():
         if node_id not in nb:
-            changes.append(NodeChange(node_id=node_id, kind="removed", section=section, before=text))
+            changes.append(NodeChange(node_id=node_id, kind=ChangeKind.REMOVED, section=section, before=text))
     return changes
 
 
@@ -113,13 +125,20 @@ async def compare(db: AsyncSession, user: User, a_id: UUID, b_id: UUID) -> Versi
 
 
 async def render_export(
-    db: AsyncSession, storage: Storage, user: User, version: ResumeVersion, fmt: str, template: str
+    db: AsyncSession,
+    storage: Storage,
+    user: User,
+    version: ResumeVersion,
+    requested_format: str,
+    requested_template: str,
 ) -> tuple[str, bytes | None, str, str, str]:
     """Returns (storage_key, bytes_or_None, content_type, filename, ext). Cached in storage."""
-    if fmt not in FORMATS:
-        raise AppError("FORMAT_UNSUPPORTED", "Choose pdf, docx or txt.")
-    if template not in ("classic", "modern"):
-        raise AppError("TEMPLATE_UNSUPPORTED", "Choose the classic or modern template.")
+    fmt = _choice(ExportFormat, requested_format)
+    template = _choice(ExportTemplate, requested_template)
+    if fmt is None:
+        raise AppError(ErrorCode.FORMAT_UNSUPPORTED, "Choose pdf, docx or txt.")
+    if template is None:
+        raise AppError(ErrorCode.TEMPLATE_UNSUPPORTED, "Choose the classic or modern template.")
     content_type, ext = FORMATS[fmt]
     key = export_key(user.id, version.id, template, ext)
     name = (version.document["contact"].get("name") or "resume").strip().replace(" ", "_")
@@ -128,16 +147,16 @@ async def render_export(
     data: bytes | None = None
     if not await storage.exists(key):
         try:
-            if fmt == "pdf":
+            if fmt is ExportFormat.PDF:
                 data = render_pdf(version.document, template)
-            elif fmt == "docx":
+            elif fmt is ExportFormat.DOCX:
                 data = render_docx(version.document, template)
             else:
                 data = render_txt(version.document)
         except Exception as exc:
             raise AppError(
-                "EXPORT_FAILED",
-                f"{fmt.upper()} export failed.",
+                ErrorCode.EXPORT_FAILED,
+                f"{fmt.value.upper()} export failed.",
                 status=500,
                 hint="The other formats should still work.",
                 retryable=True,
@@ -146,9 +165,9 @@ async def render_export(
         activity.record(
             db,
             user.id,
-            "version.exported",
-            f"Exported {fmt.upper()} ({template.title()})",
-            entity_type="version",
+            ActivityKind.VERSION_EXPORTED,
+            f"Exported {fmt.value.upper()} ({template.value.title()})",
+            entity_type=EntityType.VERSION,
             entity_id=version.id,
         )
     return key, data, content_type, filename, ext

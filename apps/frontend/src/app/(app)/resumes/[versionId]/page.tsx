@@ -9,23 +9,33 @@ import { useMemo, useState } from "react";
 import { ErrorState } from "@/components/feedback/states";
 import { CoverLetterPanel } from "@/features/cover-letter/CoverLetterPanel";
 import { ResumeCanvas } from "@/features/resume-canvas/ResumeCanvas";
-import { buildView } from "@/features/resume-canvas/view-model";
+import { ViewMode, buildView } from "@/features/resume-canvas/view-model";
 import { ScoreRing } from "@/features/scoring/ScoreRing";
 import { ExportPanel } from "@/features/versions/ExportPanel";
 import { InterviewPrepPanel } from "@/features/versions/InterviewPrepPanel";
 import { api, unwrap } from "@/lib/api";
 import { keys } from "@/lib/queries";
 
-type Tab = "export" | "letter" | "prep";
+enum Tab {
+  Export = "export",
+  Letter = "letter",
+  Prep = "prep",
+}
+
+const TAB_OPTIONS = [
+  { value: Tab.Export, label: "Export" },
+  { value: Tab.Letter, label: "Cover letter" },
+  { value: Tab.Prep, label: "Interview prep" },
+];
 
 export default function VersionPage() {
   const { versionId } = useParams<{ versionId: string }>();
-  const [tab, setTab] = useState<Tab>("export");
+  const [tab, setTab] = useState<Tab>(Tab.Export);
   const q = useQuery({
     queryKey: keys.version(versionId),
     queryFn: () => unwrap(api.GET("/v1/versions/{version_id}", { params: { path: { version_id: versionId } } })),
   });
-  const view = useMemo(() => (q.data ? buildView(q.data.document, [], "original") : []), [q.data]);
+  const view = useMemo(() => (q.data ? buildView(q.data.document, [], ViewMode.Original) : []), [q.data]);
 
   if (q.isError) return <div className="mx-auto max-w-xl p-8"><ErrorState error={q.error} onRetry={() => q.refetch()} /></div>;
   if (!q.data) return <div className="p-8"><Skeleton className="mx-auto h-[720px] max-w-[794px]" /></div>;
@@ -71,10 +81,10 @@ export default function VersionPage() {
 
           <div>
             <Segmented size="sm" aria-label="Tools" className="mb-5" value={tab} onChange={setTab}
-              options={[{ value: "export", label: "Export" }, { value: "letter", label: "Cover letter" }, { value: "prep", label: "Interview prep" }]} />
-            {tab === "export" && <ExportPanel versionId={v.id} />}
-            {tab === "letter" && <CoverLetterPanel versionId={v.id} />}
-            {tab === "prep" && <InterviewPrepPanel versionId={v.id} />}
+              options={TAB_OPTIONS} />
+            {tab === Tab.Export && <ExportPanel versionId={v.id} />}
+            {tab === Tab.Letter && <CoverLetterPanel versionId={v.id} />}
+            {tab === Tab.Prep && <InterviewPrepPanel versionId={v.id} />}
           </div>
         </div>
       </aside>

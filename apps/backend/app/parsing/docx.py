@@ -3,7 +3,7 @@ import io
 from docx import Document
 
 from app.core.config import Settings
-from app.core.errors import AppError
+from app.core.errors import AppError, ErrorCode
 from app.parsing.pdf import ExtractedDocument
 
 _WORDS_PER_PAGE = 500
@@ -14,7 +14,7 @@ def extract_docx(data: bytes, settings: Settings) -> ExtractedDocument:
         doc = Document(io.BytesIO(data))
     except Exception as exc:
         raise AppError(
-            "FILE_CORRUPT", "We couldn't open that DOCX.", hint="Re-export it and try again."
+            ErrorCode.FILE_CORRUPT, "We couldn't open that DOCX.", hint="Re-export it and try again."
         ) from exc
 
     lines: list[str] = []
@@ -39,7 +39,7 @@ def extract_docx(data: bytes, settings: Settings) -> ExtractedDocument:
     pages = max(1, round(len(text.split()) / _WORDS_PER_PAGE))
     if pages > settings.max_pages:
         raise AppError(
-            "TOO_MANY_PAGES",
+            ErrorCode.TOO_MANY_PAGES,
             f"Resumes over {settings.max_pages} pages aren't supported. Is this the right file?",
         )
     return ExtractedDocument(text, pages, [text], links)

@@ -23,3 +23,14 @@ export type ActivityOut = S["ActivityOut"];
 export type CoverLetterOut = S["CoverLetterOut"];
 export type InterviewPrep = S["InterviewPrep"];
 export type UserOut = S["UserOut"];
+
+// What each server-sent event carries. See the schema's `TailorEvents` and `LetterEvents`.
+export type StageData = S["StageData"];
+export type JobData = S["JobData"];
+export type ScoreData = S["ScoreData"];
+export type WarningData = S["WarningData"];
+export type DoneData = S["DoneData"];
+export type ErrorData = S["ErrorData"];
+export type ChunkData = S["ChunkData"];
+export type LetterSavedData = S["LetterSavedData"];
+export type ErrorEnvelope = S["ErrorEnvelope"];

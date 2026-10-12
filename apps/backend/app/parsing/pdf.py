@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 import pymupdf as fitz  # PyMuPDF
 
 from app.core.config import Settings
-from app.core.errors import AppError
+from app.core.errors import AppError, ErrorCode
 
 
 @dataclass
@@ -19,18 +19,18 @@ def extract_pdf(data: bytes, settings: Settings) -> ExtractedDocument:
         doc = fitz.open(stream=data, filetype="pdf")
     except Exception as exc:
         raise AppError(
-            "FILE_CORRUPT", "We couldn't open that PDF.", hint="Re-export it and try again."
+            ErrorCode.FILE_CORRUPT, "We couldn't open that PDF.", hint="Re-export it and try again."
         ) from exc
     with doc:
         if doc.needs_pass:
             raise AppError(
-                "PDF_PASSWORD_PROTECTED",
+                ErrorCode.PDF_PASSWORD_PROTECTED,
                 "This PDF is password-protected.",
                 hint="Export an unlocked copy and upload that.",
             )
         if doc.page_count > settings.max_pages:
             raise AppError(
-                "TOO_MANY_PAGES",
+                ErrorCode.TOO_MANY_PAGES,
                 f"Resumes over {settings.max_pages} pages aren't supported. Is this the right file?",
             )
         pages = [str(page.get_text("text", sort=True)) for page in doc]

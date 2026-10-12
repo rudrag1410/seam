@@ -1,6 +1,52 @@
 {
   "components": {
     "schemas": {
+      "ActivityGroup": {
+        "description": "The first part of an activity kind, for filtering the feed (\"resume\" matches \"resume.uploaded\").",
+        "enum": [
+          "resume",
+          "jd",
+          "tailor",
+          "review",
+          "version",
+          "cover_letter",
+          "profile"
+        ],
+        "title": "ActivityGroup",
+        "type": "string",
+        "x-enum-varnames": [
+          "Resume",
+          "Jd",
+          "Tailor",
+          "Review",
+          "Version",
+          "CoverLetter",
+          "Profile"
+        ]
+      },
+      "ActivityKind": {
+        "description": "What an entry in the activity feed records.",
+        "enum": [
+          "resume.uploaded",
+          "jd.analyzed",
+          "tailor.completed",
+          "review.finalized",
+          "version.exported",
+          "cover_letter.generated",
+          "profile.updated"
+        ],
+        "title": "ActivityKind",
+        "type": "string",
+        "x-enum-varnames": [
+          "ResumeUploaded",
+          "JdAnalyzed",
+          "TailorCompleted",
+          "ReviewFinalized",
+          "VersionExported",
+          "CoverLetterGenerated",
+          "ProfileUpdated"
+        ]
+      },
       "ActivityOut": {
         "properties": {
           "created_at": {
@@ -22,13 +68,12 @@
           "entity_type": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/EntityType"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Entity Type"
+            ]
           },
           "id": {
             "title": "Id",
@@ -39,8 +84,7 @@
             "type": "string"
           },
           "type": {
-            "title": "Type",
-            "type": "string"
+            "$ref": "#/components/schemas/ActivityKind"
           }
         },
         "required": [
@@ -173,6 +217,35 @@
           "text"
         ],
         "title": "Bullet",
+        "type": "object"
+      },
+      "ChangeKind": {
+        "enum": [
+          "added",
+          "removed",
+          "changed",
+          "moved"
+        ],
+        "title": "ChangeKind",
+        "type": "string",
+        "x-enum-varnames": [
+          "Added",
+          "Removed",
+          "Changed",
+          "Moved"
+        ]
+      },
+      "ChunkData": {
+        "properties": {
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ChunkData",
         "type": "object"
       },
       "Contact-Input": {
@@ -315,23 +388,12 @@
             "type": "boolean"
           },
           "length": {
-            "default": "standard",
-            "enum": [
-              "short",
-              "standard"
-            ],
-            "title": "Length",
-            "type": "string"
+            "$ref": "#/components/schemas/LetterLength",
+            "default": "standard"
           },
           "tone": {
-            "default": "professional",
-            "enum": [
-              "professional",
-              "warm",
-              "direct"
-            ],
-            "title": "Tone",
-            "type": "string"
+            "$ref": "#/components/schemas/Tone",
+            "default": "professional"
           }
         },
         "title": "CoverLetterIn",
@@ -376,6 +438,22 @@
         "title": "CoverLetterOut",
         "type": "object"
       },
+      "Decision": {
+        "enum": [
+          "pending",
+          "accepted",
+          "rejected",
+          "edited"
+        ],
+        "title": "Decision",
+        "type": "string",
+        "x-enum-varnames": [
+          "Pending",
+          "Accepted",
+          "Rejected",
+          "Edited"
+        ]
+      },
       "DecisionIn": {
         "properties": {
           "edited_text": {
@@ -394,14 +472,7 @@
             "type": "string"
           },
           "status": {
-            "enum": [
-              "pending",
-              "accepted",
-              "rejected",
-              "edited"
-            ],
-            "title": "Status",
-            "type": "string"
+            "$ref": "#/components/schemas/Decision"
           }
         },
         "required": [
@@ -425,6 +496,36 @@
           "decisions"
         ],
         "title": "DecisionsPatch",
+        "type": "object"
+      },
+      "DoneData": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "degraded": {
+            "title": "Degraded",
+            "type": "boolean"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          }
+        },
+        "required": [
+          "count",
+          "degraded",
+          "duration_ms"
+        ],
+        "title": "DoneData",
         "type": "object"
       },
       "EducationItem-Input": {
@@ -594,6 +695,195 @@
           "items"
         ],
         "title": "EducationSection",
+        "type": "object"
+      },
+      "EmploymentType": {
+        "enum": [
+          "full_time",
+          "contract",
+          "part_time",
+          "internship",
+          "freelance",
+          "unspecified"
+        ],
+        "title": "EmploymentType",
+        "type": "string",
+        "x-enum-varnames": [
+          "FullTime",
+          "Contract",
+          "PartTime",
+          "Internship",
+          "Freelance",
+          "Unspecified"
+        ]
+      },
+      "EntityType": {
+        "description": "The kind of thing an activity entry points at.",
+        "enum": [
+          "session",
+          "version",
+          "resume",
+          "jd"
+        ],
+        "title": "EntityType",
+        "type": "string",
+        "x-enum-varnames": [
+          "Session",
+          "Version",
+          "Resume",
+          "Jd"
+        ]
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "retryable": {
+            "default": false,
+            "title": "Retryable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "hint",
+          "retryable"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorCode": {
+        "description": "Stable codes the frontend maps to copy and a recovery action. Never reuse or rename one.",
+        "enum": [
+          "CSRF_BLOCKED",
+          "EMAIL_TAKEN",
+          "EXPORT_FAILED",
+          "FILE_CORRUPT",
+          "FILE_EMPTY",
+          "FILE_TOO_LARGE",
+          "FILE_TYPE_UNSUPPORTED",
+          "FORMAT_UNSUPPORTED",
+          "INVALID_CREDENTIALS",
+          "JD_EMPTY",
+          "JD_NOT_A_JD",
+          "JD_TOO_LONG",
+          "JD_TOO_SHORT",
+          "JD_UNREADABLE",
+          "LLM_NOT_CONFIGURED",
+          "LLM_UNAVAILABLE",
+          "NOT_FOUND",
+          "NO_JD",
+          "PDF_PASSWORD_PROTECTED",
+          "REGENERATE_EMPTY",
+          "RESUME_UNREADABLE",
+          "SESSION_NOT_READY",
+          "TAILOR_FAILED",
+          "TEMPLATE_UNSUPPORTED",
+          "TOO_MANY_PAGES",
+          "UNAUTHORIZED",
+          "URL_BLOCKED",
+          "URL_INVALID",
+          "URL_UNREACHABLE",
+          "VALIDATION_FAILED"
+        ],
+        "title": "ErrorCode",
+        "type": "string",
+        "x-enum-varnames": [
+          "CsrfBlocked",
+          "EmailTaken",
+          "ExportFailed",
+          "FileCorrupt",
+          "FileEmpty",
+          "FileTooLarge",
+          "FileTypeUnsupported",
+          "FormatUnsupported",
+          "InvalidCredentials",
+          "JdEmpty",
+          "JdNotAJd",
+          "JdTooLong",
+          "JdTooShort",
+          "JdUnreadable",
+          "LlmNotConfigured",
+          "LlmUnavailable",
+          "NotFound",
+          "NoJd",
+          "PdfPasswordProtected",
+          "RegenerateEmpty",
+          "ResumeUnreadable",
+          "SessionNotReady",
+          "TailorFailed",
+          "TemplateUnsupported",
+          "TooManyPages",
+          "Unauthorized",
+          "UrlBlocked",
+          "UrlInvalid",
+          "UrlUnreachable",
+          "ValidationFailed"
+        ]
+      },
+      "ErrorData": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "retryable": {
+            "default": false,
+            "title": "Retryable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "hint",
+          "retryable"
+        ],
+        "title": "ErrorData",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "description": "The body of every failed request.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEnvelope",
         "type": "object"
       },
       "ExperienceItem-Input": {
@@ -780,6 +1070,32 @@
         "title": "ExperienceSection",
         "type": "object"
       },
+      "ExportFormat": {
+        "enum": [
+          "pdf",
+          "docx",
+          "txt"
+        ],
+        "title": "ExportFormat",
+        "type": "string",
+        "x-enum-varnames": [
+          "Pdf",
+          "Docx",
+          "Txt"
+        ]
+      },
+      "ExportTemplate": {
+        "enum": [
+          "classic",
+          "modern"
+        ],
+        "title": "ExportTemplate",
+        "type": "string",
+        "x-enum-varnames": [
+          "Classic",
+          "Modern"
+        ]
+      },
       "FinalizeOut": {
         "properties": {
           "version_id": {
@@ -816,28 +1132,14 @@
             "type": "string"
           },
           "key": {
-            "enum": [
-              "work_mode",
-              "location",
-              "job_type",
-              "compensation",
-              "seniority"
-            ],
-            "title": "Key",
-            "type": "string"
+            "$ref": "#/components/schemas/FitKey"
           },
           "label": {
             "title": "Label",
             "type": "string"
           },
           "status": {
-            "enum": [
-              "ok",
-              "warn",
-              "unclear"
-            ],
-            "title": "Status",
-            "type": "string"
+            "$ref": "#/components/schemas/FitStatus"
           }
         },
         "required": [
@@ -849,18 +1151,51 @@
         "title": "FitItem",
         "type": "object"
       },
-      "HTTPValidationError": {
-        "properties": {
-          "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
-            "title": "Detail",
-            "type": "array"
-          }
-        },
-        "title": "HTTPValidationError",
-        "type": "object"
+      "FitKey": {
+        "enum": [
+          "work_mode",
+          "location",
+          "job_type",
+          "compensation",
+          "seniority"
+        ],
+        "title": "FitKey",
+        "type": "string",
+        "x-enum-varnames": [
+          "WorkMode",
+          "Location",
+          "JobType",
+          "Compensation",
+          "Seniority"
+        ]
+      },
+      "FitStatus": {
+        "enum": [
+          "ok",
+          "warn",
+          "unclear"
+        ],
+        "title": "FitStatus",
+        "type": "string",
+        "x-enum-varnames": [
+          "Ok",
+          "Warn",
+          "Unclear"
+        ]
+      },
+      "Intensity": {
+        "enum": [
+          "light",
+          "balanced",
+          "bold"
+        ],
+        "title": "Intensity",
+        "type": "string",
+        "x-enum-varnames": [
+          "Light",
+          "Balanced",
+          "Bold"
+        ]
       },
       "InterviewPrep": {
         "properties": {
@@ -912,17 +1247,8 @@
             "type": "string"
           },
           "employment_type": {
-            "default": "unspecified",
-            "enum": [
-              "full_time",
-              "contract",
-              "part_time",
-              "internship",
-              "freelance",
-              "unspecified"
-            ],
-            "title": "Employment Type",
-            "type": "string"
+            "$ref": "#/components/schemas/EmploymentType",
+            "default": "unspecified"
           },
           "facet_confidence": {
             "additionalProperties": {
@@ -975,17 +1301,8 @@
             ]
           },
           "seniority": {
-            "default": "unspecified",
-            "enum": [
-              "junior",
-              "mid",
-              "senior",
-              "staff",
-              "lead",
-              "unspecified"
-            ],
-            "title": "Seniority",
-            "type": "string"
+            "$ref": "#/components/schemas/Seniority",
+            "default": "unspecified"
           },
           "title": {
             "default": "",
@@ -993,15 +1310,8 @@
             "type": "string"
           },
           "work_mode": {
-            "default": "unspecified",
-            "enum": [
-              "remote",
-              "hybrid",
-              "onsite",
-              "unspecified"
-            ],
-            "title": "Work Mode",
-            "type": "string"
+            "$ref": "#/components/schemas/WorkMode",
+            "default": "unspecified"
           }
         },
         "required": [
@@ -1092,6 +1402,77 @@
           "degraded"
         ],
         "title": "JDAnalyzeResponse",
+        "type": "object"
+      },
+      "JobData": {
+        "properties": {
+          "analysis": {
+            "$ref": "#/components/schemas/JDAnalysis"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "fit": {
+            "$ref": "#/components/schemas/FitCheck"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "company",
+          "analysis",
+          "fit"
+        ],
+        "title": "JobData",
+        "type": "object"
+      },
+      "LetterEvents": {
+        "properties": {
+          "chunk": {
+            "$ref": "#/components/schemas/ChunkData"
+          },
+          "done": {
+            "$ref": "#/components/schemas/LetterSavedData"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorData"
+          }
+        },
+        "required": [
+          "chunk",
+          "done",
+          "error"
+        ],
+        "title": "LetterEvents",
+        "type": "object"
+      },
+      "LetterLength": {
+        "enum": [
+          "short",
+          "standard"
+        ],
+        "title": "LetterLength",
+        "type": "string",
+        "x-enum-varnames": [
+          "Short",
+          "Standard"
+        ]
+      },
+      "LetterSavedData": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "LetterSavedData",
         "type": "object"
       },
       "LoginRequest": {
@@ -1200,14 +1581,7 @@
             "title": "Before"
           },
           "kind": {
-            "enum": [
-              "added",
-              "removed",
-              "changed",
-              "moved"
-            ],
-            "title": "Kind",
-            "type": "string"
+            "$ref": "#/components/schemas/ChangeKind"
           },
           "node_id": {
             "title": "Node Id",
@@ -1227,6 +1601,28 @@
         ],
         "title": "NodeChange",
         "type": "object"
+      },
+      "OpName": {
+        "enum": [
+          "replace_text",
+          "reorder",
+          "insert_bullet",
+          "remove_bullet",
+          "add_skill",
+          "remove_skill",
+          "rewrite_summary"
+        ],
+        "title": "OpName",
+        "type": "string",
+        "x-enum-varnames": [
+          "ReplaceText",
+          "Reorder",
+          "InsertBullet",
+          "RemoveBullet",
+          "AddSkill",
+          "RemoveSkill",
+          "RewriteSummary"
+        ]
       },
       "OtherSection-Input": {
         "properties": {
@@ -1292,6 +1688,21 @@
         "title": "OtherSection",
         "type": "object"
       },
+      "ParsePath": {
+        "description": "How a resume was read: its text, its page images, or the built-in parser without AI.",
+        "enum": [
+          "text",
+          "vision",
+          "basic"
+        ],
+        "title": "ParsePath",
+        "type": "string",
+        "x-enum-varnames": [
+          "Text",
+          "Vision",
+          "Basic"
+        ]
+      },
       "PreferencesIO-Input": {
         "properties": {
           "avoid_tech": {
@@ -1310,7 +1721,7 @@
           },
           "job_types": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/EmploymentType"
             },
             "title": "Job Types",
             "type": "array"
@@ -1337,13 +1748,12 @@
           "seniority": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/Seniority"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Seniority"
+            ]
           },
           "target_roles": {
             "items": {
@@ -1365,7 +1775,7 @@
           },
           "work_modes": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/WorkMode"
             },
             "title": "Work Modes",
             "type": "array"
@@ -1392,7 +1802,7 @@
           },
           "job_types": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/EmploymentType"
             },
             "title": "Job Types",
             "type": "array"
@@ -1419,13 +1829,12 @@
           "seniority": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/Seniority"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Seniority"
+            ]
           },
           "target_roles": {
             "items": {
@@ -1447,7 +1856,7 @@
           },
           "work_modes": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/WorkMode"
             },
             "title": "Work Modes",
             "type": "array"
@@ -1930,8 +2339,7 @@
             "type": "string"
           },
           "verdict": {
-            "title": "Verdict",
-            "type": "string"
+            "$ref": "#/components/schemas/Verdict"
           }
         },
         "required": [
@@ -2080,13 +2488,12 @@
           "parse_path": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/ParsePath"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Parse Path"
+            ]
           },
           "prefill": {
             "additionalProperties": {
@@ -2131,6 +2538,18 @@
         "title": "ResumeOut",
         "type": "object"
       },
+      "SalaryPeriod": {
+        "enum": [
+          "year",
+          "month"
+        ],
+        "title": "SalaryPeriod",
+        "type": "string",
+        "x-enum-varnames": [
+          "Year",
+          "Month"
+        ]
+      },
       "SalaryRange": {
         "properties": {
           "currency": {
@@ -2167,13 +2586,8 @@
             "title": "Min"
           },
           "period": {
-            "default": "year",
-            "enum": [
-              "year",
-              "month"
-            ],
-            "title": "Period",
-            "type": "string"
+            "$ref": "#/components/schemas/SalaryPeriod",
+            "default": "year"
           }
         },
         "required": [
@@ -2184,6 +2598,66 @@
         ],
         "title": "SalaryRange",
         "type": "object"
+      },
+      "ScoreData": {
+        "properties": {
+          "before": {
+            "$ref": "#/components/schemas/MatchScore"
+          },
+          "projected": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchScore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "before",
+          "projected"
+        ],
+        "title": "ScoreData",
+        "type": "object"
+      },
+      "SectionName": {
+        "description": "The sections a user can ask to have tailored.",
+        "enum": [
+          "summary",
+          "skills",
+          "experience",
+          "projects"
+        ],
+        "title": "SectionName",
+        "type": "string",
+        "x-enum-varnames": [
+          "Summary",
+          "Skills",
+          "Experience",
+          "Projects"
+        ]
+      },
+      "Seniority": {
+        "enum": [
+          "junior",
+          "mid",
+          "senior",
+          "staff",
+          "lead",
+          "unspecified"
+        ],
+        "title": "Seniority",
+        "type": "string",
+        "x-enum-varnames": [
+          "Junior",
+          "Mid",
+          "Senior",
+          "Staff",
+          "Lead",
+          "Unspecified"
+        ]
       },
       "SessionListItem": {
         "properties": {
@@ -2245,8 +2719,7 @@
             "title": "Match Before"
           },
           "status": {
-            "title": "Status",
-            "type": "string"
+            "$ref": "#/components/schemas/SessionStatus"
           },
           "suggestion_count": {
             "title": "Suggestion Count",
@@ -2266,6 +2739,24 @@
         ],
         "title": "SessionListItem",
         "type": "object"
+      },
+      "SessionStatus": {
+        "enum": [
+          "queued",
+          "running",
+          "ready",
+          "failed",
+          "finalized"
+        ],
+        "title": "SessionStatus",
+        "type": "string",
+        "x-enum-varnames": [
+          "Queued",
+          "Running",
+          "Ready",
+          "Failed",
+          "Finalized"
+        ]
       },
       "SignupRequest": {
         "properties": {
@@ -2399,6 +2890,91 @@
         "title": "SkillsSection",
         "type": "object"
       },
+      "Stage": {
+        "enum": [
+          "reading",
+          "analyzing",
+          "tailoring"
+        ],
+        "title": "Stage",
+        "type": "string",
+        "x-enum-varnames": [
+          "Reading",
+          "Analyzing",
+          "Tailoring"
+        ]
+      },
+      "StageData": {
+        "properties": {
+          "progress": {
+            "title": "Progress",
+            "type": "number"
+          },
+          "section": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SectionName"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stage": {
+            "$ref": "#/components/schemas/Stage"
+          },
+          "tasks": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "propertyNames": {
+                  "$ref": "#/components/schemas/SectionName"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tasks"
+          }
+        },
+        "required": [
+          "stage",
+          "progress",
+          "section",
+          "tasks"
+        ],
+        "title": "StageData",
+        "type": "object"
+      },
+      "StreamEvent": {
+        "description": "The events a tailoring run publishes, in the order they first appear.",
+        "enum": [
+          "stage",
+          "jd",
+          "score",
+          "suggestion",
+          "warning",
+          "done",
+          "error",
+          "chunk"
+        ],
+        "title": "StreamEvent",
+        "type": "string",
+        "x-enum-varnames": [
+          "Stage",
+          "Jd",
+          "Score",
+          "Suggestion",
+          "Warning",
+          "Done",
+          "Error",
+          "Chunk"
+        ]
+      },
       "SuggestionOut": {
         "properties": {
           "addresses": {
@@ -2470,17 +3046,7 @@
             "type": "string"
           },
           "op": {
-            "enum": [
-              "replace_text",
-              "reorder",
-              "insert_bullet",
-              "remove_bullet",
-              "add_skill",
-              "remove_skill",
-              "rewrite_summary"
-            ],
-            "title": "Op",
-            "type": "string"
+            "$ref": "#/components/schemas/OpName"
           },
           "payload": {
             "additionalProperties": true,
@@ -2515,23 +3081,15 @@
             "title": "Score Delta"
           },
           "section": {
-            "title": "Section",
-            "type": "string"
+            "$ref": "#/components/schemas/SectionName"
           },
           "seq": {
             "title": "Seq",
             "type": "integer"
           },
           "status": {
-            "default": "pending",
-            "enum": [
-              "pending",
-              "accepted",
-              "rejected",
-              "edited"
-            ],
-            "title": "Status",
-            "type": "string"
+            "$ref": "#/components/schemas/Decision",
+            "default": "pending"
           },
           "target": {
             "title": "Target",
@@ -2624,14 +3182,8 @@
             "title": "Base Version Id"
           },
           "intensity": {
-            "default": "balanced",
-            "enum": [
-              "light",
-              "balanced",
-              "bold"
-            ],
-            "title": "Intensity",
-            "type": "string"
+            "$ref": "#/components/schemas/Intensity",
+            "default": "balanced"
           },
           "jd_id": {
             "anyOf": [
@@ -2672,13 +3224,7 @@
           },
           "sections": {
             "items": {
-              "enum": [
-                "summary",
-                "skills",
-                "experience",
-                "projects"
-              ],
-              "type": "string"
+              "$ref": "#/components/schemas/SectionName"
             },
             "minItems": 1,
             "title": "Sections",
@@ -2704,6 +3250,43 @@
         "title": "TailorCreated",
         "type": "object"
       },
+      "TailorEvents": {
+        "description": "One field per event name, so the generated client has a type for each payload.",
+        "properties": {
+          "done": {
+            "$ref": "#/components/schemas/DoneData"
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorData"
+          },
+          "jd": {
+            "$ref": "#/components/schemas/JobData"
+          },
+          "score": {
+            "$ref": "#/components/schemas/ScoreData"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/StageData"
+          },
+          "suggestion": {
+            "$ref": "#/components/schemas/SuggestionOut"
+          },
+          "warning": {
+            "$ref": "#/components/schemas/WarningData"
+          }
+        },
+        "required": [
+          "stage",
+          "jd",
+          "score",
+          "suggestion",
+          "warning",
+          "done",
+          "error"
+        ],
+        "title": "TailorEvents",
+        "type": "object"
+      },
       "TailorSessionOut": {
         "properties": {
           "created_at": {
@@ -2718,13 +3301,12 @@
           "error_code": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/ErrorCode"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Error Code"
+            ]
           },
           "error_message": {
             "anyOf": [
@@ -2752,8 +3334,7 @@
             "type": "string"
           },
           "intensity": {
-            "title": "Intensity",
-            "type": "string"
+            "$ref": "#/components/schemas/Intensity"
           },
           "jd": {
             "anyOf": [
@@ -2836,14 +3417,13 @@
           },
           "sections": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SectionName"
             },
             "title": "Sections",
             "type": "array"
           },
           "status": {
-            "title": "Status",
-            "type": "string"
+            "$ref": "#/components/schemas/SessionStatus"
           },
           "suggestions": {
             "items": {
@@ -2890,6 +3470,20 @@
         "title": "TailorSessionOut",
         "type": "object"
       },
+      "Tone": {
+        "enum": [
+          "professional",
+          "warm",
+          "direct"
+        ],
+        "title": "Tone",
+        "type": "string",
+        "x-enum-varnames": [
+          "Professional",
+          "Warm",
+          "Direct"
+        ]
+      },
       "UserOut": {
         "properties": {
           "email": {
@@ -2923,45 +3517,22 @@
         "title": "UserOut",
         "type": "object"
       },
-      "ValidationError": {
-        "properties": {
-          "ctx": {
-            "title": "Context",
-            "type": "object"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
-            "title": "Location",
-            "type": "array"
-          },
-          "msg": {
-            "title": "Message",
-            "type": "string"
-          },
-          "type": {
-            "title": "Error Type",
-            "type": "string"
-          }
-        },
-        "required": [
-          "loc",
-          "msg",
-          "type"
+      "Verdict": {
+        "description": "How well the resume shows a requirement.",
+        "enum": [
+          "demonstrated",
+          "listed",
+          "missing",
+          "unsure"
         ],
-        "title": "ValidationError",
-        "type": "object"
+        "title": "Verdict",
+        "type": "string",
+        "x-enum-varnames": [
+          "Demonstrated",
+          "Listed",
+          "Missing",
+          "Unsure"
+        ]
       },
       "VersionCompare": {
         "properties": {
@@ -3228,6 +3799,53 @@
         ],
         "title": "VersionOut",
         "type": "object"
+      },
+      "WarningCode": {
+        "enum": [
+          "JD_NOTICE",
+          "PARTIAL",
+          "DEGRADED_CHECKS"
+        ],
+        "title": "WarningCode",
+        "type": "string",
+        "x-enum-varnames": [
+          "JdNotice",
+          "Partial",
+          "DegradedChecks"
+        ]
+      },
+      "WarningData": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/WarningCode"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "WarningData",
+        "type": "object"
+      },
+      "WorkMode": {
+        "enum": [
+          "remote",
+          "hybrid",
+          "onsite",
+          "unspecified"
+        ],
+        "title": "WorkMode",
+        "type": "string",
+        "x-enum-varnames": [
+          "Remote",
+          "Hybrid",
+          "Onsite",
+          "Unspecified"
+        ]
       }
     }
   },
@@ -3252,6 +3870,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Healthz",
@@ -3275,6 +3903,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Readyz",
@@ -3310,7 +3948,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ActivityGroup"
                 },
                 {
                   "type": "null"
@@ -3343,15 +3981,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Feed",
@@ -3386,15 +4024,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Login",
@@ -3409,6 +4047,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Logout",
@@ -3432,6 +4080,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Refresh",
@@ -3466,15 +4124,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Signup",
@@ -3507,15 +4165,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Analyze",
@@ -3531,6 +4189,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Delete Me",
@@ -3550,6 +4218,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Me",
@@ -3564,6 +4242,16 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Complete Onboarding",
@@ -3585,6 +4273,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Get Preferences",
@@ -3615,15 +4313,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Put Preferences",
@@ -3645,6 +4343,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Get Profile",
@@ -3675,15 +4383,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Put Profile",
@@ -3716,15 +4424,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Upload",
@@ -3746,6 +4454,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Primary",
@@ -3780,15 +4498,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Get One",
@@ -3831,15 +4549,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Update",
@@ -3878,15 +4596,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "List All",
@@ -3917,15 +4635,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Create",
@@ -3960,15 +4678,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Get One",
@@ -4003,15 +4721,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Finalize",
@@ -4054,21 +4772,24 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
+              "text/event-stream": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/TailorEvents",
+                  "type": "string"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Server-sent events, one payload type per event name."
+          },
+          "default": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Stream",
@@ -4106,15 +4827,15 @@
           "204": {
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Patch Decisions",
@@ -4169,15 +4890,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Regenerate",
@@ -4203,6 +4924,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "List Versions",
@@ -4247,15 +4978,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Compare",
@@ -4290,15 +5021,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Get One",
@@ -4335,21 +5066,24 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
+              "text/event-stream": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/LetterEvents",
+                  "type": "string"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "Server-sent events, one payload type per event name."
+          },
+          "default": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "The request failed."
           }
         },
         "summary": "Cover Letter",
@@ -4388,15 +5122,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "List Cover Letters",
@@ -4449,15 +5183,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Export",
@@ -4492,15 +5226,15 @@
             },
             "description": "Successful Response"
           },
-          "422": {
+          "default": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/ErrorEnvelope"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The request failed."
           }
         },
         "summary": "Prep",

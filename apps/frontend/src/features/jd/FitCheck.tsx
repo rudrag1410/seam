@@ -1,8 +1,28 @@
-import type { FitCheck as Fit } from "@seam/api-client";
+import { type FitCheck as Fit, FitStatus } from "@seam/api-client";
 import { cn } from "@seam/ui";
 import { AlertTriangle, Check, Minus } from "lucide-react";
 
-export function FitCheck({ fit }: { fit: Fit }) {
+const STATUS_TONE: Record<FitStatus, string> = {
+  [FitStatus.Ok]: "bg-ins text-ins-line",
+  [FitStatus.Warn]: "bg-warn text-warn-ink",
+  [FitStatus.Unclear]: "bg-cream text-ink-muted",
+};
+
+interface StatusGlyphProps {
+  status: FitStatus;
+}
+
+function StatusGlyph({ status }: StatusGlyphProps) {
+  if (status === FitStatus.Ok) return <Check className="size-3" />;
+  if (status === FitStatus.Warn) return <AlertTriangle className="size-2.5" />;
+  return <Minus className="size-3" />;
+}
+
+interface FitCheckProps {
+  fit: Fit;
+}
+
+export function FitCheck({ fit }: FitCheckProps) {
   if (!fit.items.length) return null;
   return (
     <ul className="space-y-2">
@@ -11,12 +31,10 @@ export function FitCheck({ fit }: { fit: Fit }) {
           <span
             className={cn(
               "mt-0.5 grid size-4 shrink-0 place-items-center rounded-full",
-              i.status === "ok" && "bg-ins text-ins-line",
-              i.status === "warn" && "bg-warn text-warn-ink",
-              i.status === "unclear" && "bg-cream text-ink-muted",
+              STATUS_TONE[i.status],
             )}
           >
-            {i.status === "ok" ? <Check className="size-3" /> : i.status === "warn" ? <AlertTriangle className="size-2.5" /> : <Minus className="size-3" />}
+            <StatusGlyph status={i.status} />
           </span>
           <span>
             <span className="font-medium">{i.label}</span>
