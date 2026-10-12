@@ -363,7 +363,7 @@ def test_session_starts_from_pasted_text_and_streams_the_analysis(authed, resume
 
     session = authed.get(f"/v1/tailor-sessions/{sid}").json()
     assert session["status"] == "ready" and session["jd"]["title"].startswith("Senior Frontend")
-    assert session["jd_text"] == jd_text.strip() and session["jd_url"] is None
+    assert session["jd_text"] == jd_text.strip()
 
 
 def test_same_pasted_text_reuses_the_cached_analysis(authed, resume_pdf, jd_text):
@@ -382,7 +382,10 @@ def test_bad_job_text_is_rejected_instantly(authed, resume_pdf):
     long = _start(authed, rid, jd_text="Senior engineer. " * 2000)
     assert long.status_code == 413 and long.json()["error"]["code"] == "JD_TOO_LONG"
     assert _start(authed, rid).status_code == 422
-    assert _start(authed, rid, jd_text="x" * 400, jd_url="https://x.co").status_code == 422
+    assert (
+        _start(authed, rid, jd_text="x" * 400, jd_id="00000000-0000-0000-0000-000000000000").status_code
+        == 422
+    )
 
 
 def test_a_resume_pasted_as_the_job_fails_in_the_stream_with_a_clear_error(authed, resume_pdf):

@@ -61,7 +61,7 @@ Set `DATABASE_URL=postgresql+asyncpg://seam:seam@localhost:5432/seam` in `apps/b
 ## 🧭 How to use
 
 1. **Sign up** and upload your resume (PDF or DOCX, up to 5 MB). Check the details Seam pulled from it.
-2. **Paste a job description**, or import one from a link, and press send.
+2. **Paste a job description** and press send.
 3. **Watch it work.** The conversation ticks off each step while suggestions appear on your resume as they are written.
 4. **Review.** Step through the suggestions, accept, reject or edit each one, or ask for a different wording.
 5. **Finalize** to save a version, then export it, write a cover letter or prepare for the interview.

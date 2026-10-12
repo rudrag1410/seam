@@ -2,8 +2,6 @@ const KEY = "seam-jd-draft";
 
 export interface JdDraft {
   text: string;
-  url: string;
-  byUrl: boolean;
 }
 
 export function loadDraft(): JdDraft | null {
@@ -17,7 +15,7 @@ export function loadDraft(): JdDraft | null {
 
 export function saveDraft(draft: JdDraft) {
   try {
-    if (draft.text || draft.url) sessionStorage.setItem(KEY, JSON.stringify(draft));
+    if (draft.text) sessionStorage.setItem(KEY, JSON.stringify(draft));
     else sessionStorage.removeItem(KEY);
   } catch {}
 }

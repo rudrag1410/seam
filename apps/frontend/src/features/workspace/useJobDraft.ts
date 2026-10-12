@@ -18,9 +18,8 @@ export function useJobDraft(
     restored.current = true;
   }, []);
   useEffect(() => {
-    if (restored.current && composing)
-      saveDraft({ text: draft.text, url: draft.url, byUrl: draft.byUrl });
-  }, [draft.text, draft.url, draft.byUrl, composing]);
+    if (restored.current && composing) saveDraft({ text: draft.text });
+  }, [draft.text, composing]);
   useEffect(() => {
     if (!used) return;
     clearDraft();

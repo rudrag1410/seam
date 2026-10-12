@@ -74,7 +74,6 @@ AI calls are capped: each task has an output budget under a global ceiling, job 
 - State-changing browser requests are origin-checked on top of `SameSite`.
 - Compensation is encrypted at rest, decrypted only for its owner and excluded from every prompt. The fit check compares it in code.
 - Uploads are validated by magic bytes, not extension, with size and page caps and a clear message for password-protected PDFs. With R2, files are private and served by 5-minute presigned URLs.
-- Importing a job description from a link fetches server-side with scheme and private-address checks, a short timeout and a size cap.
 - Job descriptions are treated as untrusted data: invisible characters are stripped and lines that look like instructions to an AI are removed.
 - "Delete my data" removes the user, every row by cascade, and the user's stored files.
 

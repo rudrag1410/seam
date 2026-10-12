@@ -2,7 +2,6 @@
 
 import { Badge, Button, cn } from "@seam/ui";
 import { projectScore } from "@seam/resume-core";
-import { Link2 } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { FitCheck } from "../jd/FitCheck";
 import { JdInsightsCard } from "../jd/JdInsightsCard";
@@ -68,20 +67,10 @@ function UserBubble({ children }: UserBubbleProps) {
 
 interface JobBubbleProps {
   text: string;
-  url: string | null;
 }
 
-function JobBubble({ text, url }: JobBubbleProps) {
+function JobBubble({ text }: JobBubbleProps) {
   const [open, setOpen] = useState(false);
-  if (!text && url) {
-    return (
-      <UserBubble>
-        <span className="flex items-center gap-2 break-all">
-          <Link2 className="size-4 shrink-0 text-ink-muted" aria-hidden /> {url}
-        </span>
-      </UserBubble>
-    );
-  }
   const long = text.length > 280;
   return (
     <UserBubble>
@@ -188,7 +177,7 @@ export function Thread({ intro, onRetry, onEditJob, retrying }: ThreadProps) {
 
       {started && (
         <>
-          {(s.jdText || s.jdUrl) && <JobBubble text={s.jdText} url={s.jdUrl} />}
+          {s.jdText && <JobBubble text={s.jdText} />}
           <RunCard
             steps={steps}
             onJump={s.status === SessionStatus.Finalized ? undefined : jumpToSection}

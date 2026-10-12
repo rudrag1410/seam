@@ -49,7 +49,6 @@ class FitCheck(ApiModel):
 
 class JDAnalyzeRequest(ApiModel):
     text: str | None = None
-    url: str | None = None
 
 
 class JDAnalyzeResponse(ApiModel):

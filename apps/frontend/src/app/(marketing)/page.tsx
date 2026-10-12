@@ -168,7 +168,7 @@ export default function Landing() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-ink-muted sm:px-6">
           <Logo className="text-ink" />
-          <p>Built with Next.js, FastAPI, OpenAI and TypeSafe Jev.</p>
+          <p>Built with ❤️</p>
         </div>
       </footer>
     </>

@@ -61,7 +61,6 @@ function hydrated(cur: ReviewState, session: TailorSessionOut): Change {
       .filter(Boolean)
       .join(" · "),
     jdText: session.jd_text,
-    jdUrl: session.jd_url,
     sections: session.sections,
     suggestions,
     scoreBefore: session.score_before,
@@ -157,12 +156,7 @@ export function reset(): void {
   useReview.setState(initialState());
 }
 
-export function begin(run: {
-  resume: Resume;
-  jdText: string;
-  jdUrl: string | null;
-  sections: SectionName[];
-}): void {
+export function begin(run: { resume: Resume; jdText: string; sections: SectionName[] }): void {
   useReview.setState({ ...initialState(), status: SessionStatus.Queued, ...run });
 }
 

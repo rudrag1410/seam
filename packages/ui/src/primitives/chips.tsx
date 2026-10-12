@@ -4,9 +4,20 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "../cn";
 
-function withTag(tags: string[], raw: string): string[] {
-  const tag = raw.trim().replace(/,$/, "");
-  return tag && !tags.some((x) => x.toLowerCase() === tag.toLowerCase()) ? [...tags, tag] : tags;
+const MAX_TAG_LENGTH = 40;
+
+function sameTag(a: string, b: string): boolean {
+  return a.toLowerCase() === b.toLowerCase();
+}
+
+function addTags(tags: string[], raw: string, max: number, known: string[]): string[] {
+  const next = [...tags];
+  for (const part of raw.split(/[,\n]/)) {
+    const text = part.trim().slice(0, MAX_TAG_LENGTH);
+    if (!text || next.length >= max || next.some((t) => sameTag(t, text))) continue;
+    next.push(known.find((k) => sameTag(k, text)) ?? text);
+  }
+  return next;
 }
 
 interface TagInputProps {
@@ -14,28 +25,39 @@ interface TagInputProps {
   onChange: (v: string[]) => void;
   placeholder?: string;
   suggestions?: string[];
+  max?: number;
   id?: string;
 }
 
-export function TagInput({ value, onChange, placeholder, suggestions = [], id }: TagInputProps) {
+export function TagInput({
+  value,
+  onChange,
+  placeholder,
+  suggestions = [],
+  max = 20,
+  id,
+}: TagInputProps) {
   const [draft, setDraft] = useState("");
 
-  const remaining = suggestions.filter((s) => !value.includes(s)).slice(0, 6);
+  const full = value.length >= max;
+  const remaining = full
+    ? []
+    : suggestions.filter((s) => !value.some((v) => sameTag(v, s))).slice(0, 8);
 
   return (
     <div>
-      <div className="flex min-h-11 flex-wrap items-center gap-1.5 rounded-[12px] border border-line-strong bg-bg px-2.5 py-1.5 focus-within:border-ink">
+      <div className="flex max-h-44 min-h-11 flex-wrap items-center gap-1.5 overflow-y-auto rounded-[12px] border border-line-strong bg-bg px-2.5 py-1.5 focus-within:border-ink">
         {value.map((v) => (
           <span
             key={v}
-            className="inline-flex items-center gap-1 rounded-full bg-cream py-1 pr-1.5 pl-3 text-[13px]"
+            className="inline-flex max-w-full items-center gap-1 rounded-full bg-cream py-1 pr-1.5 pl-3 text-[13px]"
           >
-            {v}
+            <span className="truncate">{v}</span>
             <button
               type="button"
               onClick={() => onChange(value.filter((x) => x !== v))}
               aria-label={`Remove ${v}`}
-              className="grid size-4 place-items-center rounded-full hover:bg-line"
+              className="grid size-4 shrink-0 place-items-center rounded-full hover:bg-line"
             >
               <X className="size-3" />
             </button>
@@ -44,35 +66,60 @@ export function TagInput({ value, onChange, placeholder, suggestions = [], id }:
         <input
           id={id}
           value={draft}
+          maxLength={MAX_TAG_LENGTH}
+          disabled={full}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === ",") {
               e.preventDefault();
-              onChange(withTag(value, draft));
+              onChange(addTags(value, draft, max, suggestions));
               setDraft("");
             } else if (e.key === "Backspace" && !draft && value.length)
               onChange(value.slice(0, -1));
           }}
+          onPaste={(e) => {
+            const text = e.clipboardData.getData("text");
+            if (!/[,\n]/.test(text)) return;
+            e.preventDefault();
+            onChange(addTags(value, `${draft},${text}`, max, suggestions));
+            setDraft("");
+          }}
           onBlur={() => {
-            onChange(withTag(value, draft));
+            onChange(addTags(value, draft, max, suggestions));
             setDraft("");
           }}
           placeholder={value.length ? "" : placeholder}
-          className="min-w-24 flex-1 bg-transparent px-1.5 py-1 text-[15px] outline-none placeholder:text-ink-muted"
+          className="min-w-24 flex-1 bg-transparent px-1.5 py-1 text-[15px] outline-none placeholder:text-ink-muted disabled:cursor-not-allowed"
         />
       </div>
-      {remaining.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+      {(remaining.length > 0 || value.length > 0) && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {remaining.map((s) => (
             <button
               key={s}
               type="button"
-              onClick={() => onChange(withTag(value, s))}
+              onClick={() => onChange(addTags(value, s, max, suggestions))}
               className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-muted hover:border-ink hover:text-ink"
             >
               + {s}
             </button>
           ))}
+          {value.length > 0 && (
+            <span className="ml-auto flex items-center gap-3 text-xs text-ink-muted">
+              <span aria-live="polite">
+                {full ? `Limit of ${max} reached` : `${value.length}/${max}`}
+              </span>
+              {value.length > 2 && (
+                <button
+                  type="button"
+                  onClick={() => onChange([])}
+                  className="underline-offset-2 hover:text-ink hover:underline"
+                >
+                  Clear all
+                </button>
+              )}
+            </span>
+          )}
         </div>
       )}
     </div>

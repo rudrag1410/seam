@@ -1,7 +1,7 @@
 "use client";
 
 import { Popover, PopoverContent, PopoverTrigger, cn } from "@seam/ui";
-import { ArrowUp, Link2, Loader2, SlidersHorizontal, Type } from "lucide-react";
+import { ArrowUp, Loader2, SlidersHorizontal } from "lucide-react";
 import { useLayoutEffect, useRef } from "react";
 import { MAX_JD_CHARS, MIN_JD_CHARS, jdProblem } from "../jd/limits";
 import type { Intensity, SectionName } from "@seam/api-client";
@@ -9,23 +9,16 @@ import { INTENSITY_LABEL, ScopePicker } from "../jd/ScopePicker";
 
 export interface JobDraft {
   text: string;
-  url: string;
-  byUrl: boolean;
   sections: SectionName[];
   intensity: Intensity;
 }
 
-const tool =
-  "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
 const toolShrink =
   "inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-soft transition-colors hover:bg-cream hover:text-ink";
 
 function jobReady(d: JobDraft): boolean {
   const n = d.text.trim().length;
-  const job = d.byUrl
-    ? /^https?:\/\/\S+\.\S+/.test(d.url.trim())
-    : n >= MIN_JD_CHARS && n <= MAX_JD_CHARS;
-  return job && d.sections.length > 0;
+  return n >= MIN_JD_CHARS && n <= MAX_JD_CHARS && d.sections.length > 0;
 }
 
 interface JobComposerProps {
@@ -47,7 +40,7 @@ export function JobComposer({
 }: JobComposerProps) {
   const area = useRef<HTMLTextAreaElement>(null);
   const n = draft.text.trim().length;
-  const problem = draft.byUrl ? null : jdProblem(n);
+  const problem = jdProblem(n);
   const canSend = jobReady(draft) && !disabledReason && !sending;
 
   useLayoutEffect(() => {
@@ -55,7 +48,7 @@ export function JobComposer({
     if (!el) return;
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 260)}px`;
-  }, [draft.text, draft.byUrl]);
+  }, [draft.text]);
 
   const hint =
     error ??
@@ -70,44 +63,23 @@ export function JobComposer({
           error && "border-del-line",
         )}
       >
-        {draft.byUrl ? (
-          <input
-            type="url"
-            autoFocus
-            value={draft.url}
-            onChange={(e) => onChange({ url: e.target.value })}
-            onKeyDown={(e) => e.key === "Enter" && canSend && onSend()}
-            placeholder="https://company.com/careers/senior-engineer"
-            aria-label="Link to the job posting"
-            className="h-[52px] w-full bg-transparent px-5 text-[15px] outline-none placeholder:text-ink-muted"
-          />
-        ) : (
-          <textarea
-            ref={area}
-            rows={2}
-            value={draft.text}
-            onChange={(e) => onChange({ text: e.target.value })}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                if (canSend) onSend();
-              }
-            }}
-            placeholder="Paste the job description…"
-            aria-label="Job description"
-            aria-invalid={!!error || n > MAX_JD_CHARS}
-            className="scroll-thin block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-[15px] leading-relaxed outline-none placeholder:text-ink-muted"
-          />
-        )}
+        <textarea
+          ref={area}
+          rows={2}
+          value={draft.text}
+          onChange={(e) => onChange({ text: e.target.value })}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault();
+              if (canSend) onSend();
+            }
+          }}
+          placeholder="Paste the job description…"
+          aria-label="Job description"
+          aria-invalid={!!error || n > MAX_JD_CHARS}
+          className="scroll-thin block w-full resize-none bg-transparent px-5 pt-4 pb-1 text-[15px] leading-relaxed outline-none placeholder:text-ink-muted"
+        />
         <div className="flex items-center gap-1 p-1.5">
-          <button type="button" onClick={() => onChange({ byUrl: !draft.byUrl })} className={tool}>
-            {draft.byUrl ? (
-              <Type className="size-3.5" aria-hidden />
-            ) : (
-              <Link2 className="size-3.5" aria-hidden />
-            )}
-            {draft.byUrl ? "Paste text" : "Use a link"}
-          </button>
           <Popover>
             <PopoverTrigger className={toolShrink} aria-label="What to tailor">
               <SlidersHorizontal className="size-3.5 shrink-0" aria-hidden />
@@ -130,7 +102,7 @@ export function JobComposer({
             </PopoverContent>
           </Popover>
           <span className="min-w-0 flex-1" />
-          {!draft.byUrl && n > 0 && (
+          {n > 0 && (
             <span
               className={cn(
                 "tabular mr-1 hidden shrink-0 text-[12px] text-ink-muted sm:inline",

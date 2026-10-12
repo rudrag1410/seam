@@ -19,6 +19,7 @@ import {
   Seniority,
   WorkMode,
 } from "@seam/api-client";
+import { AmountInput } from "./AmountInput";
 import { useSavePreferences, useSaveProfile } from "./hooks";
 
 type Prefill = Record<string, string | number | null | undefined>;
@@ -221,6 +222,7 @@ export function CompensationForm({
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<CompensationValues>({
     resolver: zodResolver(compensationSchema),
@@ -231,6 +233,8 @@ export function CompensationForm({
       notice_period_days: profile.notice_period_days ?? undefined,
     },
   });
+
+  const currency = watch("ctc_currency");
 
   const onSubmit = handleSubmit(async (v) => {
     await save.mutateAsync({
@@ -246,17 +250,42 @@ export function CompensationForm({
     <form onSubmit={onSubmit} noValidate className="grid gap-4 sm:grid-cols-2">
       <p className="flex items-center gap-2 rounded-[12px] bg-cream px-4 py-3 text-sm text-ink-soft sm:col-span-2">
         <Lock className="size-4 shrink-0" aria-hidden />
-        Private. Encrypted at rest, never shared, and never sent to AI models.
+        Private. Encrypted at rest, only used to compare against a posting’s pay range, and never
+        shared or sent to AI models.
       </p>
       <Field label="Current CTC (annual)" error={errors.current_ctc?.message} htmlFor="current_ctc">
-        <Input id="current_ctc" type="number" min="0" {...register("current_ctc")} />
+        <Controller
+          control={control}
+          name="current_ctc"
+          render={({ field }) => (
+            <AmountInput
+              id="current_ctc"
+              value={field.value}
+              currency={currency}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
       </Field>
       <Field
         label="Expected CTC (annual)"
         error={errors.expected_ctc?.message}
         htmlFor="expected_ctc"
       >
-        <Input id="expected_ctc" type="number" min="0" {...register("expected_ctc")} />
+        <Controller
+          control={control}
+          name="expected_ctc"
+          render={({ field }) => (
+            <AmountInput
+              id="expected_ctc"
+              value={field.value}
+              currency={currency}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+            />
+          )}
+        />
       </Field>
       <Field label="Currency">
         <Controller
@@ -294,6 +323,22 @@ export function CompensationForm({
     </form>
   );
 }
+
+const PREFERRED_TECH = [
+  "TypeScript",
+  "React",
+  "Next.js",
+  "Node.js",
+  "Python",
+  "Go",
+  "Rust",
+  "PostgreSQL",
+  "AWS",
+  "Docker",
+  "Kubernetes",
+  "GraphQL",
+];
+const AVOID_TECH = ["PHP", "jQuery", "Perl", "Objective-C", "Flash", "COBOL"];
 
 const SENIORITY = [
   Seniority.Junior,
@@ -402,6 +447,9 @@ export function PreferencesForm({
             value={p.preferred_tech ?? []}
             onChange={(v) => setP((s) => ({ ...s, preferred_tech: v }))}
             placeholder="TypeScript"
+            suggestions={PREFERRED_TECH.filter(
+              (t) => !(p.avoid_tech ?? []).some((a) => a.toLowerCase() === t.toLowerCase()),
+            )}
           />
         </Field>
         <Field label="Tech you want to avoid">
@@ -409,6 +457,9 @@ export function PreferencesForm({
             value={p.avoid_tech ?? []}
             onChange={(v) => setP((s) => ({ ...s, avoid_tech: v }))}
             placeholder="PHP"
+            suggestions={AVOID_TECH.filter(
+              (t) => !(p.preferred_tech ?? []).some((a) => a.toLowerCase() === t.toLowerCase()),
+            )}
           />
         </Field>
       </div>

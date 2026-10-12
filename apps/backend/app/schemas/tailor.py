@@ -18,7 +18,6 @@ def _default_sections() -> list[SectionName]:
 class TailorCreate(ApiModel):
     resume_id: str
     jd_text: str | None = None
-    jd_url: str | None = None
     jd_id: str | None = None
     sections: list[SectionName] = Field(default_factory=_default_sections, min_length=1)
     intensity: Intensity = Intensity.BALANCED
@@ -26,8 +25,8 @@ class TailorCreate(ApiModel):
 
     @model_validator(mode="after")
     def _one_job_source(self) -> "TailorCreate":
-        if sum(bool(x) for x in (self.jd_text, self.jd_url, self.jd_id)) != 1:
-            raise ValueError("Provide exactly one of jd_text, jd_url or jd_id.")
+        if sum(bool(x) for x in (self.jd_text, self.jd_id)) != 1:
+            raise ValueError("Provide exactly one of jd_text or jd_id.")
         return self
 
 
@@ -48,7 +47,6 @@ class TailorSessionOut(ApiModel):
     jd_title: str | None
     jd_company: str | None
     jd_text: str = ""
-    jd_url: str | None = None
     jd: JDAnalysis | None
     fit: FitCheck | None = None
     resume: Resume

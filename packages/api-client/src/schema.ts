@@ -646,7 +646,6 @@ export interface components {
         };
         JDAnalyzeRequest: {
             text?: string | null;
-            url?: string | null;
         };
         JDAnalyzeResponse: {
             analysis: components["schemas"]["JDAnalysis"];
@@ -923,7 +922,6 @@ export interface components {
             intensity: components["schemas"]["Intensity"];
             jd_id?: string | null;
             jd_text?: string | null;
-            jd_url?: string | null;
             resume_id: string;
             sections?: components["schemas"]["SectionName"][];
         };
@@ -952,7 +950,6 @@ export interface components {
             jd_id: string;
             jd_text: string;
             jd_title: string | null;
-            jd_url: string | null;
             resume: components["schemas"]["Resume-Output"];
             resume_id: string;
             score_after: components["schemas"]["MatchScore"] | null;
@@ -2120,9 +2117,6 @@ export enum ErrorCode {
     TemplateUnsupported = "TEMPLATE_UNSUPPORTED",
     TooManyPages = "TOO_MANY_PAGES",
     Unauthorized = "UNAUTHORIZED",
-    UrlBlocked = "URL_BLOCKED",
-    UrlInvalid = "URL_INVALID",
-    UrlUnreachable = "URL_UNREACHABLE",
     ValidationFailed = "VALIDATION_FAILED"
 }
 export enum ExportFormat {

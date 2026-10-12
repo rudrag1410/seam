@@ -39,7 +39,6 @@ class JobDescription(Base, IdMixin, CreatedMixin):
     user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"))
     raw_text: Mapped[str] = mapped_column(Text)
     sha256: Mapped[str] = mapped_column(String(64))
-    source_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     analysis: Mapped[dict | None] = mapped_column(Json, nullable=True)
     title: Mapped[str | None] = mapped_column(String(300), nullable=True)
     company: Mapped[str | None] = mapped_column(String(300), nullable=True)

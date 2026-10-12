@@ -11,6 +11,6 @@ router = APIRouter(prefix="/jobs", tags=["jobs"])
 async def analyze(
     body: JDAnalyzeRequest, user: UserDep, db: DbDep, ai: AIDep, settings: SettingsDep
 ) -> JDAnalyzeResponse:
-    out = await jd_service.analyze(db, ai, settings, user, body.text, body.url)
+    out = await jd_service.analyze(db, ai, settings, user, body.text)
     await db.commit()
     return out

@@ -67,7 +67,4 @@ export const JOB_TEXT_CODES: ReadonlySet<ErrorCode> = new Set([
   ErrorCode.JdTooLong,
   ErrorCode.JdTooShort,
   ErrorCode.JdUnreadable,
-  ErrorCode.UrlBlocked,
-  ErrorCode.UrlInvalid,
-  ErrorCode.UrlUnreachable,
 ]);

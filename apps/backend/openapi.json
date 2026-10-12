@@ -794,9 +794,6 @@
           "TEMPLATE_UNSUPPORTED",
           "TOO_MANY_PAGES",
           "UNAUTHORIZED",
-          "URL_BLOCKED",
-          "URL_INVALID",
-          "URL_UNREACHABLE",
           "VALIDATION_FAILED"
         ],
         "title": "ErrorCode",
@@ -828,9 +825,6 @@
           "TemplateUnsupported",
           "TooManyPages",
           "Unauthorized",
-          "UrlBlocked",
-          "UrlInvalid",
-          "UrlUnreachable",
           "ValidationFailed"
         ]
       },
@@ -1338,17 +1332,6 @@
               }
             ],
             "title": "Text"
-          },
-          "url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url"
           }
         },
         "title": "JDAnalyzeRequest",
@@ -3198,17 +3181,6 @@
             ],
             "title": "Jd Text"
           },
-          "jd_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Jd Url"
-          },
           "resume_id": {
             "title": "Resume Id",
             "type": "string"
@@ -3367,17 +3339,6 @@
             ],
             "title": "Jd Title"
           },
-          "jd_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Jd Url"
-          },
           "resume": {
             "$ref": "#/components/schemas/Resume-Output"
           },
@@ -3447,7 +3408,6 @@
           "jd_title",
           "jd_company",
           "jd_text",
-          "jd_url",
           "jd",
           "fit",
           "resume",

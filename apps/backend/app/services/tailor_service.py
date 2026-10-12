@@ -101,7 +101,7 @@ async def create_session(request: Request, db: AsyncSession, user: User, body: T
     if body.jd_id:
         jd = await jd_service.get_jd(db, user, UUID(body.jd_id))
     else:
-        jd = await jd_service.ensure_jd(db, settings, user, body.jd_text, body.jd_url)
+        jd = await jd_service.ensure_jd(db, settings, user, body.jd_text)
     base_version_id = None
     if body.base_version_id:
         version = await db.get(ResumeVersion, UUID(body.base_version_id))
@@ -314,7 +314,6 @@ async def session_out(
         jd_title=jd.title,
         jd_company=jd.company,
         jd_text=jd.raw_text,
-        jd_url=jd.source_url,
         jd=analysis,
         fit=await jd_service.build_fit(db, user, settings, analysis) if analysis else None,
         resume=Resume.model_validate(await base_document(db, session)),

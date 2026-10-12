@@ -11,6 +11,7 @@ import { formatBytes, plural } from "@/lib/format";
 import { keys } from "@/lib/queries";
 import { ApiException } from "@/lib/api";
 import { handleUnauthorized } from "@/lib/session";
+import { readingStatus, useElapsedSeconds } from "./useElapsed";
 import { ClientErrorCode, ParsePath, type ResumeOut } from "@seam/api-client";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -153,6 +154,7 @@ export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
     },
   });
   const busy = mutation.isPending;
+  const status = readingStatus(useElapsedSeconds(busy));
 
   return (
     <div className="flex flex-col gap-3">
@@ -168,8 +170,8 @@ export function Dropzone({ onUploaded, compact = false }: DropzoneProps) {
         {busy ? (
           <>
             <Loader2 className="size-6 animate-spin" aria-hidden />
-            <p className="font-medium">Reading your resume…</p>
-            <p className="text-sm text-ink-muted">This takes a few seconds.</p>
+            <p className="font-medium">{status.title}</p>
+            <p className="text-sm text-ink-muted">{status.detail}</p>
           </>
         ) : (
           <>

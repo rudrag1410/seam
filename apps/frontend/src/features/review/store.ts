@@ -47,7 +47,6 @@ export interface ReviewState {
   fit: FitCheck | null;
   title: string;
   jdText: string;
-  jdUrl: string | null;
   sections: SectionName[];
   tasks: SectionCounts;
   tasksDone: SectionCounts;
@@ -78,7 +77,6 @@ export function initialState(): ReviewState {
     fit: null,
     title: "",
     jdText: "",
-    jdUrl: null,
     sections: [],
     tasks: {},
     tasksDone: {},
